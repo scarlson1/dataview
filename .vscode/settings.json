@@ -32,10 +32,12 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports.biome": "explicit"
   },
+  "deno.enable": true,
+  "deno.unstable": true,
   "deno.enablePaths": [
     "supabase/functions"
   ],
-  "deno.importMap": "./supabase/functions/deno.json",
+  // "deno.importMap": "./supabase/functions/deno.json",
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",

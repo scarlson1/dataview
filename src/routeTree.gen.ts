@@ -14,6 +14,7 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as PoliciesNewRouteImport } from './routes/policies.new'
+import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 
 const LoginRoute = LoginRouteImport.update({
@@ -40,6 +41,11 @@ const PoliciesNewRoute = PoliciesNewRouteImport.update({
   path: '/policies/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardUsersRoute = DashboardUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableRoute = DashboardTableRouteImport.update({
   id: '/$table',
   path: '/$table',
@@ -51,12 +57,14 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRoute
+  '/users': typeof DashboardUsersRoute
   '/policies/new': typeof PoliciesNewRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRoute
+  '/users': typeof DashboardUsersRoute
   '/policies/new': typeof PoliciesNewRoute
   '/': typeof DashboardIndexRoute
 }
@@ -66,20 +74,23 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRoute
+  '/_dashboard/users': typeof DashboardUsersRoute
   '/policies/new': typeof PoliciesNewRoute
   '/_dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/accept-invite' | '/login' | '/$table' | '/policies/new'
+  fullPaths:
+    '/' | '/accept-invite' | '/login' | '/$table' | '/users' | '/policies/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/accept-invite' | '/login' | '/$table' | '/policies/new' | '/'
+  to: '/accept-invite' | '/login' | '/$table' | '/users' | '/policies/new' | '/'
   id:
     | '__root__'
     | '/_dashboard'
     | '/accept-invite'
     | '/login'
     | '/_dashboard/$table'
+    | '/_dashboard/users'
     | '/policies/new'
     | '/_dashboard/'
   fileRoutesById: FileRoutesById
@@ -128,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PoliciesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard/users': {
+      id: '/_dashboard/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof DashboardUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table': {
       id: '/_dashboard/$table'
       path: '/$table'
@@ -140,11 +158,13 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRoute
+  DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRoute,
+  DashboardUsersRoute: DashboardUsersRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 

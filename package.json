@@ -8,8 +8,9 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "gen:schema": "node scripts/gen-schema.mjs",
-    "gen:types": "supabase gen types typescript --db-url \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" --schema public > src/data/database.types.ts",
+    "gen:types:react": "supabase gen types typescript --db-url \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" --schema public > src/data/database.types.ts",
     "gen:types:edge": "pnpm exec supabase gen types typescript --local > supabase/functions/_shared/database.types.ts",
+    "gen:types": "pnpm get:types:react && pnpm get:types:edge",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",

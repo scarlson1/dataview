@@ -1,12 +1,19 @@
 import { useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { Database, LogOut, Network, Settings } from 'lucide-react';
-import { TABLE_ORDER, TABLES, type TableName } from '../../data/tables';
+import { ChevronDown, Database, LogOut, Network, Settings } from 'lucide-react';
+import { useState } from 'react';
+import {
+  TABLE_GROUPS,
+  TABLES,
+  formatTableLabel,
+  type TableName,
+} from '../../data/tables';
 import { TableIcon } from '../TableIcon';
 
 const SIDEBAR_OPEN = 260;
@@ -51,13 +58,86 @@ const FooterItem = ({
   </Tooltip>
 );
 
+const TableRow = ({
+  name,
+  active,
+  collapsed,
+  onSelect,
+}: {
+  name: TableName;
+  active: boolean;
+  collapsed: boolean;
+  onSelect: (name: TableName) => void;
+}) => {
+  const theme = useTheme();
+  const table = TABLES[name];
+  const label = formatTableLabel(table.label);
+  return (
+    <Tooltip title={collapsed ? label : ''} placement='right'>
+      <Box
+        onClick={() => onSelect(name)}
+        sx={(theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          height: 40,
+          px: 1.5,
+          mb: 0.5,
+          borderRadius: 1,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          color: active ? 'primary.main' : 'text.secondary',
+          backgroundColor: active
+            ? theme.vars.palette.primary.light
+            : 'transparent',
+          '&:hover': {
+            backgroundColor: active
+              ? theme.vars.palette.primary.light
+              : theme.vars.palette.hover,
+          },
+        })}
+      >
+        <Box sx={{ display: 'flex', flexShrink: 0 }}>
+          <TableIcon
+            name={table.icon}
+            size={20}
+            color={
+              active
+                ? theme.vars.palette.primary.main
+                : theme.vars.palette.text.secondary
+            }
+          />
+        </Box>
+        {!collapsed && (
+          <Typography
+            sx={{
+              flex: 1,
+              fontSize: 14,
+              fontWeight: 500,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {label}
+          </Typography>
+        )}
+      </Box>
+    </Tooltip>
+  );
+};
+
 export const Sidebar = ({
   collapsed,
   activeTable,
   onSelectTable,
   onSignOut,
 }: SidebarProps) => {
-  const theme = useTheme();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, true])),
+  );
+
+  const toggleGroup = (id: string) =>
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
     <Box
@@ -125,79 +205,69 @@ export const Sidebar = ({
           // p: '12px 10px',
         }}
       >
-        {!collapsed && (
-          <Typography
-            sx={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.09em',
-              color: 'text.disabled',
-              p: '6px 12px 8px',
-            }}
-          >
-            TABLES
-          </Typography>
-        )}
-        {TABLE_ORDER.map((name) => {
-          const table = TABLES[name];
-          const active = name === activeTable;
-          return (
-            <Tooltip
-              key={name}
-              title={collapsed ? table.label : ''}
-              placement='right'
-            >
-              <Box
-                onClick={() => onSelectTable(name)}
-                sx={(theme) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  height: 40,
-                  px: 1.5, // '12px',
-                  mb: 0.5,
-                  borderRadius: 1,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  color: active ? 'primary.main' : 'text.secondary',
-                  backgroundColor: active
-                    ? theme.vars.palette.primary.light
-                    : 'transparent',
-                  '&:hover': {
-                    backgroundColor: active
-                      ? theme.vars.palette.primary.light
-                      : theme.vars.palette.hover,
-                  },
-                })}
-              >
-                <Box sx={{ display: 'flex', flexShrink: 0 }}>
-                  <TableIcon
-                    name={table.icon}
-                    size={20}
-                    color={
-                      active
-                        ? theme.vars.palette.primary.main
-                        : theme.vars.palette.text.secondary
-                    }
-                  />
-                </Box>
-                {!collapsed && (
-                  <Typography
-                    sx={{
-                      flex: 1,
-                      fontSize: 14,
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
+        {collapsed
+          ? TABLE_GROUPS.flatMap((group) => group.tables).map((name) => (
+              <TableRow
+                key={name}
+                name={name}
+                active={name === activeTable}
+                collapsed
+                onSelect={onSelectTable}
+              />
+            ))
+          : TABLE_GROUPS.map((group) => {
+              const open = openGroups[group.id];
+              return (
+                <Box key={group.id} sx={{ mb: 0.5 }}>
+                  <Box
+                    onClick={() => toggleGroup(group.id)}
+                    sx={(theme) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      borderRadius: 1,
+                      p: '6px 12px 6px 8px',
+                      color: 'text.disabled',
+                      userSelect: 'none',
+                      '&:hover': { backgroundColor: theme.vars.palette.hover },
+                    })}
                   >
-                    {table.label}
-                  </Typography>
-                )}
-              </Box>
-            </Tooltip>
-          );
-        })}
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        flexShrink: 0,
+                        transition: 'transform 0.15s ease',
+                        transform: open ? 'none' : 'rotate(-90deg)',
+                      }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: '0.09em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {group.label}
+                    </Typography>
+                  </Box>
+                  <Collapse in={open} timeout='auto' unmountOnExit>
+                    <Box sx={{ mt: 0.5 }}>
+                      {group.tables.map((name) => (
+                        <TableRow
+                          key={name}
+                          name={name}
+                          active={name === activeTable}
+                          collapsed={false}
+                          onSelect={onSelectTable}
+                        />
+                      ))}
+                    </Box>
+                  </Collapse>
+                </Box>
+              );
+            })}
       </Box>
 
       {/* footer */}

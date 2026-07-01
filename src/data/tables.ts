@@ -93,3 +93,74 @@ export const getTable = (name: string): TableDef | undefined => TABLES[name];
 
 export const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Turn a snake_case relation name into a Title Cased label. */
+export const formatTableLabel = (s: string): string =>
+  s.split('_').filter(Boolean).map(capitalize).join(' ');
+
+export interface TableGroup {
+  id: string;
+  label: string;
+  tables: string[];
+}
+
+/** Sidebar sections. Tables are listed in display order within each group. */
+const GROUP_DEFS: TableGroup[] = [
+  {
+    id: 'policies',
+    label: 'Policies',
+    tables: [
+      'policies',
+      'new_business_submissions',
+      'renewals',
+      'binder',
+      'binder_section',
+      'binder_part',
+      'claims',
+    ],
+  },
+  {
+    id: 'entities',
+    label: 'Entities',
+    tables: ['agencies', 'clients', 'carriers', 'underwriters'],
+  },
+  {
+    id: 'billing',
+    label: 'Billing',
+    tables: [
+      'invoices',
+      'payments',
+      'accounts_receivable',
+      'accounts_receivable_payments',
+      'capacity_remittance',
+    ],
+  },
+  {
+    id: 'administrative',
+    label: 'Administrative',
+    tables: ['license', 'surplus_lines_state_rules', 'capacity'],
+  },
+];
+
+/**
+ * Grouped sidebar sections built from the live table registry. Only tables
+ * that actually exist are listed, and any table not assigned to a group is
+ * appended under "Other" so nothing silently disappears.
+ */
+export const TABLE_GROUPS: TableGroup[] = (() => {
+  const assigned = new Set<string>();
+  const groups = GROUP_DEFS.map((group) => {
+    const tables = group.tables.filter((name) => {
+      if (!TABLES[name]) return false;
+      assigned.add(name);
+      return true;
+    });
+    return { ...group, tables };
+  }).filter((group) => group.tables.length > 0);
+
+  const leftovers = TABLE_ORDER.filter((name) => !assigned.has(name));
+  if (leftovers.length > 0) {
+    groups.push({ id: 'other', label: 'Other', tables: leftovers });
+  }
+  return groups;
+})();

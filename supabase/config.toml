@@ -221,7 +221,7 @@ web3 = 30
 # This mirrors Dashboard > Authentication > Providers > Email > "Allow new users to sign up".
 # Admin-issued invites (auth.admin.inviteUserByEmail / admin.createUser) bypass this flag entirely
 # since they're privileged, service_role-gated calls rather than the public /signup endpoint.
-enable_signup = false
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
