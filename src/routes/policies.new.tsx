@@ -15,10 +15,12 @@ export const Route = createFileRoute('/policies/new')({
 });
 
 function RouteComponent() {
+  // may need to be dynamic autocomplete options if many clients
   const { data: clients } = useSuspenseQuery({
     queryKey: ['clients'],
-    queryFn: async () => await supabase.from(''),
+    queryFn: async () => await supabase.from('clients').select(),
   });
+  console.log('clients', clients);
 
   const mutation = useMutation({
     mutationFn: async (values: NewBusinessValues) => {
@@ -27,6 +29,8 @@ function RouteComponent() {
       // .curationSets(resolvedSetName)
       // .items(resolvedItemId)
       // .upsert({ id: resolvedItemId, ...params } as CurationObjectSchema);
+      // return supabase.from('policies').insert(values);
+      alert(`TODO: HANDLE SUBMISSION ${JSON.stringify(values, null, 2)}`);
     },
     onMutate: (vars) => {
       toast.loading(`saving ${vars.companyName}...`, { id: 'new-business' });

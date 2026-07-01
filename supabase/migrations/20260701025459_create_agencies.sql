@@ -5,24 +5,24 @@ create table public.agencies (
   id                 bigint       generated always as identity primary key,
   parent_id          bigint       references public.agencies (id),
   billing_id         bigint       generated always as (
-                        case when billing_entity = 'Parent'
+                        case when billing_entity = 'parent'
                              then parent_id else id end
                      ) stored,
 
   -- classification
   agency_level       varchar(20)  not null
-                        check (agency_level in ('MGA','Wholesale','Retail','Sub-Producer')),
+                        check (agency_level in ('mga','wholesale','retail','sub-producer')),
   licensee_type      varchar(20)  not null
-                        check (licensee_type in ('Entity','Individual')),
+                        check (licensee_type in ('entity','individual')),
   billing_entity     varchar(10)  not null
-                        check (billing_entity in ('Self','Parent')),
+                        check (billing_entity in ('self','parent')),
 
   -- name
   entity_name        varchar(200),
   first_name         varchar(100),
   last_name          varchar(100),
   display_name       varchar(200) generated always as (
-                        case when licensee_type = 'Entity'
+                        case when licensee_type = 'entity'
                              then entity_name
                              else last_name || ', ' || first_name end
                      ) stored,
@@ -37,7 +37,7 @@ create table public.agencies (
   city               varchar(100),
   state              char(2),
   zip                varchar(10),
-  country            varchar(50)  default 'US',
+  country            varchar(50),
 
   -- E&O / D&O coverage
   do_policy_number   varchar(50),
@@ -46,8 +46,8 @@ create table public.agencies (
   -- do_status is derived at read time (depends on current date); see view below
 
   -- audit
-  status             varchar(20)  not null default 'Active'
-                        check (status in ('Active','Inactive')),
+  status             varchar(20)  not null default 'active'
+                        check (status in ('active','inactive')),
   created_at         timestamptz  not null default now(),
   updated_at         timestamptz  not null default now(),
 
@@ -84,8 +84,8 @@ create view public.agencies_with_status
   with (security_invoker = true) as
 select *,
   case when do_expiration_date is null then null
-       when do_expiration_date > current_date then 'Active'
-       else 'Expired' end as do_status
+       when do_expiration_date > current_date then 'active'
+       else 'expired' end as do_status
 from public.agencies;
 
 -- Row Level Security

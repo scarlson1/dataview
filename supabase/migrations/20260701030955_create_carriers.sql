@@ -10,7 +10,7 @@ create table public.carriers (
   am_best_rating     varchar(10),                     -- e.g. A+, A, A-, B++
   lines_of_business  varchar(200),                    -- comma-separated LOB codes
   carrier_type       varchar(30)
-                        check (carrier_type in ('Admitted','E&S','Lloyd''s Syndicate','Lloyd''s Managing Agent')),
+                        check (carrier_type in ('admitted','E&S','lloyds_syndicate','lloyds_managing_agent')),
   state_admitted     varchar(200),                    -- states admitted; 'E&S' if surplus lines only
   domicile_state     char(2),
 

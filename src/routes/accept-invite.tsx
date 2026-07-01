@@ -1,20 +1,17 @@
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Database, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { ShieldCheck } from "lucide-react";
+import { AcceptInviteForm } from "#/components/auth/AcceptInviteForm";
 import { ToggleDarkMode } from "#/components/ToggleDarkMode";
-import { SignInForm } from "../components/auth/SignInForm";
-// import { useColorMode } from '../theme/ColorModeContext';
 
-export const Route = createFileRoute("/login")({ component: LoginPage });
+export const Route = createFileRoute("/accept-invite")({
+	component: AcceptInvitePage,
+});
 
-function LoginPage() {
+function AcceptInvitePage() {
 	const navigate = useNavigate();
-	// const { mode, setMode } = useColorScheme();
 	const goToApp = () => navigate({ to: "/" });
 
 	return (
@@ -27,7 +24,6 @@ function LoginPage() {
 				justifyContent: "center",
 				p: 3,
 				backgroundColor: theme.vars.palette.authBg,
-				// backgroundImage: theme.vars.palette.authDots,
 				backgroundSize: "22px 22px",
 			})}
 		>
@@ -65,57 +61,21 @@ function LoginPage() {
 							boxShadow: `0 4px 12px ${theme.vars.palette.primary.light}`,
 						})}
 					>
-						<Database size={28} />
+						<ShieldCheck size={28} />
 					</Box>
 					<Typography
 						sx={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.015em" }}
 					>
-						Dataview
+						Set your password
 					</Typography>
 					<Typography sx={{ fontSize: 14, color: "text.secondary", mt: "4px" }}>
-						Sign in to your data workspace
+						You've been invited — finish setting up your account
 					</Typography>
 				</Box>
 
-				<SignInForm onSuccess={goToApp} />
+				<AcceptInviteForm onSuccess={goToApp} />
 
-				<Divider sx={{ my: "22px", color: "text.disabled", fontSize: 12 }}>
-					OR
-				</Divider>
-
-				<Button
-					fullWidth
-					variant="outlined"
-					onClick={() => toast.error("SSO is not configured yet")}
-					startIcon={<ShieldCheck size={19} />}
-					sx={{ height: 46, fontSize: 14, fontWeight: 500 }}
-				>
-					Continue with SSO
-				</Button>
-
-				<Box
-					sx={{
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "center",
-						mt: "26px",
-					}}
-				>
-					{/* <Box
-            onClick={() => setMode()}
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              fontSize: 12.5,
-              color: 'text.disabled',
-              '&:hover': { color: 'text.secondary' },
-            }}
-          >
-            {mode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            {mode === 'dark' ? 'Light mode' : 'Dark mode'}
-          </Box> */}
+				<Box sx={{ display: "flex", justifyContent: "center", mt: "22px" }}>
 					<ToggleDarkMode />
 				</Box>
 			</Paper>

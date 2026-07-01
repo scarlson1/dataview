@@ -7,13 +7,18 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
+    "gen:schema": "node scripts/gen-schema.mjs",
+    "gen:types": "supabase gen types typescript --db-url \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" --schema public > src/data/database.types.ts",
+    "gen:types:edge": "pnpm exec supabase gen types typescript --local > supabase/functions/_shared/database.types.ts",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check",
+    "reset:db:local": "pnpm supabase db reset --local",
+    "apply-migration": "pnpm supabase migration up --local"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

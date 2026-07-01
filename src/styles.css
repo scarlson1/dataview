@@ -11,3 +11,11 @@ body,
 body {
   margin: 0;
 }
+
+.lucide {
+  /* Change this! */
+  color: var(--palette-text-secondary);
+  width: 20px;
+  height: 20px;
+  /*stroke-width: 2px; */
+}

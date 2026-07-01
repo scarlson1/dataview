@@ -4,6 +4,8 @@ import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
+import { supabase } from "#/supabaseClient";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -44,7 +46,15 @@ interface SignInFormProps {
 export const SignInForm = ({ onSuccess }: SignInFormProps) => {
 	const form = useForm({
 		defaultValues: { email: "", password: "" },
-		onSubmit: async () => {
+		onSubmit: async ({ value }) => {
+			const { error } = await supabase.auth.signInWithPassword({
+				email: value.email,
+				password: value.password,
+			});
+			if (error) {
+				toast.error(error.message);
+				return;
+			}
 			onSuccess();
 		},
 	});

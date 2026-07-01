@@ -10,51 +10,83 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as PoliciesNewRouteImport } from './routes/policies.new'
+import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => DashboardRoute,
 } as any)
 const PoliciesNewRoute = PoliciesNewRouteImport.update({
   id: '/policies/new',
   path: '/policies/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardTableRoute = DashboardTableRouteImport.update({
+  id: '/$table',
+  path: '/$table',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/$table': typeof DashboardTableRoute
   '/policies/new': typeof PoliciesNewRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/$table': typeof DashboardTableRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/_dashboard/$table': typeof DashboardTableRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/_dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/policies/new'
+  fullPaths: '/' | '/accept-invite' | '/login' | '/$table' | '/policies/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/policies/new'
-  id: '__root__' | '/' | '/login' | '/policies/new'
+  to: '/accept-invite' | '/login' | '/$table' | '/policies/new' | '/'
+  id:
+    | '__root__'
+    | '/_dashboard'
+    | '/accept-invite'
+    | '/login'
+    | '/_dashboard/$table'
+    | '/policies/new'
+    | '/_dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  AcceptInviteRoute: typeof AcceptInviteRoute
   LoginRoute: typeof LoginRoute
   PoliciesNewRoute: typeof PoliciesNewRoute
 }
@@ -68,12 +100,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/policies/new': {
       id: '/policies/new'
@@ -82,11 +128,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PoliciesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard/$table': {
+      id: '/_dashboard/$table'
+      path: '/$table'
+      fullPath: '/$table'
+      preLoaderRoute: typeof DashboardTableRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardTableRoute: typeof DashboardTableRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardTableRoute: DashboardTableRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  AcceptInviteRoute: AcceptInviteRoute,
   LoginRoute: LoginRoute,
   PoliciesNewRoute: PoliciesNewRoute,
 }

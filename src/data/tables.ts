@@ -1,770 +1,95 @@
-export type ColumnKind = "mono" | "text" | "chip";
+/**
+ * Table registry — the single source of truth the dashboard UI reads.
+ *
+ * Built at module load from the auto-generated schema manifest
+ * (`schema.generated.ts`) merged with the hand overlay (`tableMeta.ts`). No
+ * table data lives here anymore; rows are fetched on demand from Supabase
+ * (see hooks/useTableData.ts). Re-run `pnpm gen:schema` after a migration to
+ * refresh the manifest.
+ */
+import {
+  SCHEMA,
+  type ColumnKind,
+  type SchemaColumn,
+  type SchemaTable,
+} from './schema.generated';
+import { COMPUTED_VIEW_SUFFIXES, PREFERRED_ORDER, TABLE_META } from './tableMeta';
 
-export interface TableColumn {
-	field: string;
-	label: string;
-	type: string;
-	nullable: boolean;
-	key?: "PK" | "FK" | "UNIQUE";
-	def?: string;
-	kind: ColumnKind;
-}
-
-export type TableRow = Record<string, string | number | null>;
+export type { ColumnKind };
+export type TableColumn = SchemaColumn;
 
 export interface TableDef {
-	name: string;
-	label: string;
-	/** Material Symbols name from the mock, mapped to a lucide icon. */
-	icon: string;
-	count: number;
-	description: string;
-	columns: TableColumn[];
-	rows: TableRow[];
+  /** Base table name — the route param and sidebar key. */
+  name: string;
+  label: string;
+  /** Icon key for `TableIcon`. */
+  icon: string;
+  description: string;
+  /** Relation actually queried for rows (a computed view, or the table). */
+  source: string;
+  kind: 'table' | 'view';
+  /** Columns of the `source` relation, in ordinal order. */
+  columns: TableColumn[];
+  /** Column used as the DataGrid row id. */
+  primaryKey: string;
+  /** Columns hidden from the data grid (still shown in the Schema tab). */
+  hidden: string[];
 }
 
-export const TABLE_ORDER = [
-	"users",
-	"orders",
-	"products",
-	"sessions",
-	"events",
-	"audit_log",
-] as const;
+/** Dynamic since tables come from the live schema. */
+export type TableName = string;
 
-export type TableName = (typeof TABLE_ORDER)[number];
+const isComputedView = (name: string): boolean =>
+  COMPUTED_VIEW_SUFFIXES.some((suffix) => name.endsWith(suffix));
 
-export const TABLES: Record<TableName, TableDef> = {
-	users: {
-		name: "users",
-		label: "users",
-		icon: "group",
-		count: 2847,
-		description:
-			"All registered user accounts across every workspace, including role and access status.",
-		columns: [
-			{
-				field: "id",
-				label: "ID",
-				type: "bigint",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "email",
-				label: "Email",
-				type: "varchar(255)",
-				nullable: false,
-				key: "UNIQUE",
-				kind: "text",
-			},
-			{
-				field: "full_name",
-				label: "Full name",
-				type: "varchar(120)",
-				nullable: true,
-				kind: "text",
-			},
-			{
-				field: "role",
-				label: "Role",
-				type: "enum",
-				nullable: false,
-				def: "'viewer'",
-				kind: "chip",
-			},
-			{
-				field: "status",
-				label: "Status",
-				type: "enum",
-				nullable: false,
-				kind: "chip",
-			},
-			{
-				field: "created_at",
-				label: "Created",
-				type: "timestamptz",
-				nullable: false,
-				def: "now()",
-				kind: "mono",
-			},
-			{
-				field: "last_login_at",
-				label: "Last login",
-				type: "timestamptz",
-				nullable: true,
-				kind: "mono",
-			},
-		],
-		rows: [
-			{
-				id: 1,
-				email: "ada@acme.io",
-				full_name: "Ada Lovelace",
-				role: "admin",
-				status: "active",
-				created_at: "2024-01-12",
-				last_login_at: "2026-06-29 08:14",
-			},
-			{
-				id: 2,
-				email: "grace@acme.io",
-				full_name: "Grace Hopper",
-				role: "editor",
-				status: "active",
-				created_at: "2024-02-03",
-				last_login_at: "2026-06-28 17:42",
-			},
-			{
-				id: 3,
-				email: "alan@acme.io",
-				full_name: "Alan Turing",
-				role: "admin",
-				status: "active",
-				created_at: "2023-11-20",
-				last_login_at: "2026-06-30 09:01",
-			},
-			{
-				id: 4,
-				email: "linus@acme.io",
-				full_name: "Linus Torvalds",
-				role: "editor",
-				status: "suspended",
-				created_at: "2024-05-19",
-				last_login_at: "2026-05-02 12:20",
-			},
-			{
-				id: 5,
-				email: "margaret@acme.io",
-				full_name: "Margaret Hamilton",
-				role: "viewer",
-				status: "active",
-				created_at: "2024-06-01",
-				last_login_at: "2026-06-27 14:05",
-			},
-			{
-				id: 6,
-				email: "dennis@acme.io",
-				full_name: "Dennis Ritchie",
-				role: "viewer",
-				status: "invited",
-				created_at: "2026-06-15",
-				last_login_at: null,
-			},
-			{
-				id: 7,
-				email: "ken@acme.io",
-				full_name: "Ken Thompson",
-				role: "editor",
-				status: "active",
-				created_at: "2024-03-22",
-				last_login_at: "2026-06-30 07:48",
-			},
-			{
-				id: 8,
-				email: "barbara@acme.io",
-				full_name: "Barbara Liskov",
-				role: "admin",
-				status: "active",
-				created_at: "2023-09-10",
-				last_login_at: "2026-06-29 21:33",
-			},
-			{
-				id: 9,
-				email: "john@acme.io",
-				full_name: "John McCarthy",
-				role: "viewer",
-				status: "active",
-				created_at: "2025-01-08",
-				last_login_at: "2026-06-26 10:12",
-			},
-			{
-				id: 10,
-				email: "radia@acme.io",
-				full_name: "Radia Perlman",
-				role: "editor",
-				status: "invited",
-				created_at: "2026-06-20",
-				last_login_at: null,
-			},
-		],
-	},
-	orders: {
-		name: "orders",
-		label: "orders",
-		icon: "receipt_long",
-		count: 10428,
-		description:
-			"Customer orders including payment totals, currency and fulfillment status.",
-		columns: [
-			{
-				field: "id",
-				label: "Order",
-				type: "bigint",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "user_id",
-				label: "User ID",
-				type: "bigint",
-				nullable: false,
-				key: "FK",
-				kind: "mono",
-			},
-			{
-				field: "total",
-				label: "Total",
-				type: "numeric(10,2)",
-				nullable: false,
-				kind: "mono",
-			},
-			{
-				field: "currency",
-				label: "Currency",
-				type: "char(3)",
-				nullable: false,
-				def: "'USD'",
-				kind: "text",
-			},
-			{
-				field: "status",
-				label: "Status",
-				type: "enum",
-				nullable: false,
-				def: "'pending'",
-				kind: "chip",
-			},
-			{
-				field: "placed_at",
-				label: "Placed at",
-				type: "timestamptz",
-				nullable: false,
-				def: "now()",
-				kind: "mono",
-			},
-		],
-		rows: [
-			{
-				id: "#10428",
-				user_id: 5,
-				total: "129.00",
-				currency: "USD",
-				status: "paid",
-				placed_at: "2026-06-29 11:02",
-			},
-			{
-				id: "#10427",
-				user_id: 2,
-				total: "49.99",
-				currency: "USD",
-				status: "refunded",
-				placed_at: "2026-06-28 09:14",
-			},
-			{
-				id: "#10426",
-				user_id: 7,
-				total: "320.50",
-				currency: "EUR",
-				status: "paid",
-				placed_at: "2026-06-27 16:40",
-			},
-			{
-				id: "#10425",
-				user_id: 9,
-				total: "15.00",
-				currency: "USD",
-				status: "pending",
-				placed_at: "2026-06-30 08:22",
-			},
-			{
-				id: "#10424",
-				user_id: 1,
-				total: "899.00",
-				currency: "USD",
-				status: "paid",
-				placed_at: "2026-06-26 13:11",
-			},
-			{
-				id: "#10423",
-				user_id: 3,
-				total: "74.20",
-				currency: "GBP",
-				status: "pending",
-				placed_at: "2026-06-30 07:05",
-			},
-			{
-				id: "#10422",
-				user_id: 8,
-				total: "210.00",
-				currency: "USD",
-				status: "paid",
-				placed_at: "2026-06-25 19:48",
-			},
-			{
-				id: "#10421",
-				user_id: 4,
-				total: "59.99",
-				currency: "EUR",
-				status: "refunded",
-				placed_at: "2026-06-24 10:30",
-			},
-		],
-	},
-	products: {
-		name: "products",
-		label: "products",
-		icon: "inventory_2",
-		count: 512,
-		description:
-			"Product catalog with pricing, inventory levels and stock status.",
-		columns: [
-			{
-				field: "id",
-				label: "ID",
-				type: "bigint",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "sku",
-				label: "SKU",
-				type: "varchar(16)",
-				nullable: false,
-				key: "UNIQUE",
-				kind: "mono",
-			},
-			{
-				field: "name",
-				label: "Name",
-				type: "varchar(120)",
-				nullable: false,
-				kind: "text",
-			},
-			{
-				field: "price",
-				label: "Price",
-				type: "numeric(10,2)",
-				nullable: false,
-				kind: "mono",
-			},
-			{
-				field: "stock",
-				label: "Stock",
-				type: "integer",
-				nullable: false,
-				def: "0",
-				kind: "mono",
-			},
-			{
-				field: "status",
-				label: "Status",
-				type: "enum",
-				nullable: false,
-				kind: "chip",
-			},
-			{
-				field: "category",
-				label: "Category",
-				type: "varchar(40)",
-				nullable: true,
-				kind: "text",
-			},
-		],
-		rows: [
-			{
-				id: 1,
-				sku: "WID-001",
-				name: "Widget Pro",
-				price: "129.00",
-				stock: 240,
-				status: "in_stock",
-				category: "hardware",
-			},
-			{
-				id: 2,
-				sku: "WID-002",
-				name: "Widget Mini",
-				price: "49.00",
-				stock: 18,
-				status: "low_stock",
-				category: "hardware",
-			},
-			{
-				id: 3,
-				sku: "GAD-114",
-				name: "Gadget X",
-				price: "89.50",
-				stock: 0,
-				status: "out_of_stock",
-				category: "accessories",
-			},
-			{
-				id: 4,
-				sku: "SVC-900",
-				name: "Support Plan",
-				price: "19.00",
-				stock: 9999,
-				status: "in_stock",
-				category: "service",
-			},
-			{
-				id: 5,
-				sku: "GAD-115",
-				name: "Gadget Air",
-				price: "159.00",
-				stock: 52,
-				status: "in_stock",
-				category: "accessories",
-			},
-			{
-				id: 6,
-				sku: "WID-003",
-				name: "Widget Max",
-				price: "249.00",
-				stock: 7,
-				status: "low_stock",
-				category: "hardware",
-			},
-			{
-				id: 7,
-				sku: "KIT-050",
-				name: "Starter Kit",
-				price: "75.00",
-				stock: 0,
-				status: "out_of_stock",
-				category: "bundle",
-			},
-			{
-				id: 8,
-				sku: "GAD-116",
-				name: "Gadget Pro",
-				price: "199.00",
-				stock: 130,
-				status: "in_stock",
-				category: "accessories",
-			},
-		],
-	},
-	sessions: {
-		name: "sessions",
-		label: "sessions",
-		icon: "schedule",
-		count: 96231,
-		description:
-			"Authenticated user sessions with device metadata and duration.",
-		columns: [
-			{
-				field: "id",
-				label: "Session",
-				type: "varchar(24)",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "user_id",
-				label: "User ID",
-				type: "bigint",
-				nullable: false,
-				key: "FK",
-				kind: "mono",
-			},
-			{
-				field: "ip_address",
-				label: "IP address",
-				type: "inet",
-				nullable: false,
-				kind: "mono",
-			},
-			{
-				field: "device",
-				label: "Device",
-				type: "varchar(80)",
-				nullable: true,
-				kind: "text",
-			},
-			{
-				field: "started_at",
-				label: "Started at",
-				type: "timestamptz",
-				nullable: false,
-				def: "now()",
-				kind: "mono",
-			},
-			{
-				field: "duration",
-				label: "Duration",
-				type: "interval",
-				nullable: true,
-				kind: "mono",
-			},
-		],
-		rows: [
-			{
-				id: "sess_9f2a",
-				user_id: 5,
-				ip_address: "192.168.1.24",
-				device: "Chrome · macOS",
-				started_at: "2026-06-30 08:12",
-				duration: "00:42:18",
-			},
-			{
-				id: "sess_7c11",
-				user_id: 2,
-				ip_address: "10.0.4.7",
-				device: "Safari · iOS",
-				started_at: "2026-06-30 07:55",
-				duration: "00:03:41",
-			},
-			{
-				id: "sess_1b8e",
-				user_id: 7,
-				ip_address: "172.16.0.9",
-				device: "Firefox · Linux",
-				started_at: "2026-06-29 22:10",
-				duration: "01:15:02",
-			},
-			{
-				id: "sess_4d20",
-				user_id: 1,
-				ip_address: "192.168.1.5",
-				device: "Chrome · Windows",
-				started_at: "2026-06-29 18:44",
-				duration: "00:27:55",
-			},
-			{
-				id: "sess_2a99",
-				user_id: 8,
-				ip_address: "10.0.4.31",
-				device: "Edge · Windows",
-				started_at: "2026-06-29 14:02",
-				duration: "00:09:12",
-			},
-			{
-				id: "sess_6e73",
-				user_id: 9,
-				ip_address: "172.16.0.44",
-				device: "Chrome · Android",
-				started_at: "2026-06-29 11:30",
-				duration: "00:51:07",
-			},
-		],
-	},
-	events: {
-		name: "events",
-		label: "events",
-		icon: "bolt",
-		count: 1204853,
-		description:
-			"Raw product analytics events, appended in real time from all clients.",
-		columns: [
-			{
-				field: "id",
-				label: "Event ID",
-				type: "bigserial",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "name",
-				label: "Name",
-				type: "varchar(60)",
-				nullable: false,
-				kind: "text",
-			},
-			{
-				field: "user_id",
-				label: "User ID",
-				type: "bigint",
-				nullable: true,
-				key: "FK",
-				kind: "mono",
-			},
-			{
-				field: "properties",
-				label: "Properties",
-				type: "jsonb",
-				nullable: true,
-				def: "'{}'",
-				kind: "mono",
-			},
-			{
-				field: "occurred_at",
-				label: "Occurred at",
-				type: "timestamptz",
-				nullable: false,
-				def: "now()",
-				kind: "mono",
-			},
-		],
-		rows: [
-			{
-				id: 837421,
-				name: "page_view",
-				user_id: 5,
-				properties: '{"path":"/dashboard"}',
-				occurred_at: "2026-06-30 09:14:02",
-			},
-			{
-				id: 837420,
-				name: "table_open",
-				user_id: 7,
-				properties: '{"table":"users"}',
-				occurred_at: "2026-06-30 09:13:58",
-			},
-			{
-				id: 837419,
-				name: "query_run",
-				user_id: 2,
-				properties: '{"ms":142}',
-				occurred_at: "2026-06-30 09:13:40",
-			},
-			{
-				id: 837418,
-				name: "export_csv",
-				user_id: 1,
-				properties: '{"rows":2847}',
-				occurred_at: "2026-06-30 09:12:11",
-			},
-			{
-				id: 837417,
-				name: "login",
-				user_id: 8,
-				properties: '{"method":"sso"}',
-				occurred_at: "2026-06-30 09:10:03",
-			},
-			{
-				id: 837416,
-				name: "page_view",
-				user_id: 9,
-				properties: '{"path":"/orders"}',
-				occurred_at: "2026-06-30 09:09:47",
-			},
-		],
-	},
-	audit_log: {
-		name: "audit_log",
-		label: "audit_log",
-		icon: "history",
-		count: 44190,
-		description:
-			"Immutable record of privileged actions and configuration changes.",
-		columns: [
-			{
-				field: "id",
-				label: "ID",
-				type: "bigint",
-				nullable: false,
-				key: "PK",
-				kind: "mono",
-			},
-			{
-				field: "actor",
-				label: "Actor",
-				type: "varchar(255)",
-				nullable: false,
-				kind: "text",
-			},
-			{
-				field: "action",
-				label: "Action",
-				type: "varchar(60)",
-				nullable: false,
-				kind: "mono",
-			},
-			{
-				field: "target",
-				label: "Target",
-				type: "varchar(120)",
-				nullable: true,
-				kind: "mono",
-			},
-			{
-				field: "status",
-				label: "Status",
-				type: "enum",
-				nullable: false,
-				kind: "chip",
-			},
-			{
-				field: "at",
-				label: "Timestamp",
-				type: "timestamptz",
-				nullable: false,
-				def: "now()",
-				kind: "mono",
-			},
-		],
-		rows: [
-			{
-				id: 5521,
-				actor: "ada@acme.io",
-				action: "role.update",
-				target: "user:4",
-				status: "success",
-				at: "2026-06-30 08:20",
-			},
-			{
-				id: 5520,
-				actor: "alan@acme.io",
-				action: "table.export",
-				target: "users",
-				status: "success",
-				at: "2026-06-30 07:41",
-			},
-			{
-				id: 5519,
-				actor: "system",
-				action: "session.revoke",
-				target: "sess_1b8e",
-				status: "success",
-				at: "2026-06-29 23:00",
-			},
-			{
-				id: 5518,
-				actor: "linus@acme.io",
-				action: "login.attempt",
-				target: "auth",
-				status: "failed",
-				at: "2026-06-29 20:12",
-			},
-			{
-				id: 5517,
-				actor: "barbara@acme.io",
-				action: "user.invite",
-				target: "radia@acme.io",
-				status: "success",
-				at: "2026-06-29 16:33",
-			},
-			{
-				id: 5516,
-				actor: "ken@acme.io",
-				action: "connection.create",
-				target: "db:analytics",
-				status: "pending",
-				at: "2026-06-29 15:05",
-			},
-		],
-	},
+const pickPrimaryKey = (base: SchemaTable, columns: TableColumn[]): string => {
+  const pk = base.columns.find((c) => c.key === 'PK');
+  if (pk) return pk.field;
+  if (columns.some((c) => c.field === 'id')) return 'id';
+  return columns[0]?.field ?? 'id';
 };
 
-export const formatCount = (n: number): string => n.toLocaleString("en-US");
+const buildTable = (base: SchemaTable): TableDef => {
+  const overlay = TABLE_META[base.name] ?? {};
+  const source =
+    overlay.source && SCHEMA[overlay.source as keyof typeof SCHEMA]
+      ? overlay.source
+      : base.name;
+  const sourceSchema = SCHEMA[source as keyof typeof SCHEMA] as SchemaTable;
 
-/** Case-insensitive substring match across every cell of a row. */
-export const filterRows = (rows: TableRow[], query: string): TableRow[] => {
-	const q = query.trim().toLowerCase();
-	if (!q) return rows;
-	return rows.filter((row) =>
-		Object.values(row).some(
-			(v) => v != null && String(v).toLowerCase().includes(q),
-		),
-	);
+  return {
+    name: base.name,
+    label: overlay.label ?? base.name,
+    icon: overlay.icon ?? base.name,
+    description: overlay.description ?? `The public.${base.name} table.`,
+    source,
+    kind: base.kind,
+    columns: sourceSchema.columns,
+    primaryKey: pickPrimaryKey(base, sourceSchema.columns),
+    hidden: overlay.hidden ?? [],
+  };
 };
+
+const allRelations = Object.values(SCHEMA) as SchemaTable[];
+
+/** Base tables only — companion computed views are queried, never listed. */
+export const TABLES: Record<string, TableDef> = Object.fromEntries(
+  allRelations
+    .filter((r) => r.kind === 'table' && !isComputedView(r.name))
+    .map((r) => [r.name, buildTable(r)]),
+);
+
+const orderIndex = (name: string): number => {
+  const i = (PREFERRED_ORDER as readonly string[]).indexOf(name);
+  return i === -1 ? PREFERRED_ORDER.length : i;
+};
+
+export const TABLE_ORDER: string[] = Object.keys(TABLES).sort((a, b) => {
+  const d = orderIndex(a) - orderIndex(b);
+  return d !== 0 ? d : a.localeCompare(b);
+});
+
+export const getTable = (name: string): TableDef | undefined => TABLES[name];
 
 export const capitalize = (s: string): string =>
-	s.charAt(0).toUpperCase() + s.slice(1);
+  s.charAt(0).toUpperCase() + s.slice(1);
