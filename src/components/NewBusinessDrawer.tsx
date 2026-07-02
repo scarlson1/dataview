@@ -1,6 +1,7 @@
 import { NewBusinessForm } from '#/components/NewBusinessForm';
 import {
   Box,
+  CircularProgress,
   Drawer,
   IconButton,
   Typography,
@@ -8,6 +9,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { X } from 'lucide-react';
+import { Suspense } from 'react';
 
 interface NewBusinessDrawerProps {
   open: boolean;
@@ -59,12 +61,27 @@ export const NewBusinessDrawer = ({
         </IconButton>
       </Box>
 
-      <NewBusinessForm
-        onSuccess={() => {
-          onCreated?.();
-          onClose();
-        }}
-      />
+      <Suspense
+        fallback={
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        }
+      >
+        <NewBusinessForm
+          onSuccess={() => {
+            onCreated?.();
+            onClose();
+          }}
+        />
+      </Suspense>
     </Drawer>
   );
 };

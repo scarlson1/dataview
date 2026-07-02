@@ -5,36 +5,70 @@ import {
   type NewClientValues,
 } from '#/constants/newClientForm';
 import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
 import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
+import type { ComponentType } from 'react';
 
 type ClientRowInsert = TablesInsert<'clients'>;
 type ClientRow = Tables<'clients'>;
 
 interface NewClientFormProps {
   defaultValues?: Partial<NewClientValues>;
+  recordId?: number;
+  initialRow?: Record<string, unknown> | null;
   onCreated?: (data: ClientRow) => void;
+  onSaved?: (data: ClientRow) => void;
   onCancel?: () => void;
 }
 
+const clientStr = (v: unknown): string => (v == null ? '' : String(v));
+
+const clientRowToValues = (
+  row: Record<string, unknown> | null | undefined,
+): Partial<NewClientValues> =>
+  row
+    ? ({
+        companyName: clientStr(row.company_name),
+        clientType: clientStr(row.client_type),
+        firstName: clientStr(row.first_name),
+        lastName: clientStr(row.last_name),
+        email: clientStr(row.email),
+        phone: clientStr(row.phone),
+        address: {
+          addressLine1: clientStr(row.address_line1),
+          addressLine2: clientStr(row.address_line2),
+          city: clientStr(row.city),
+          state: clientStr(row.state),
+          postal: clientStr(row.postal),
+        },
+      } as unknown as Partial<NewClientValues>)
+    : {};
+
 export const NewClientForm = ({
   defaultValues = {},
+  recordId,
+  initialRow,
   onCreated,
+  onSaved,
   onCancel,
 }: NewClientFormProps) => {
+  const editing = recordId != null;
   const { mutateAsync, isPending, error, isError } = useMutation({
     mutationFn: async (values: ClientRowInsert) => {
-      const { data, error } = await supabase
-        .from('clients')
-        .upsert(values)
-        .select();
+      const q =
+        recordId != null
+          ? supabase.from('clients').update(values).eq('id', recordId).select()
+          : supabase.from('clients').insert(values).select();
+      const { data, error } = await q;
       if (error) throw new Error(error.message);
       return data[0] as ClientRow;
     },
     onSuccess: (data) => {
-      if (onCreated) onCreated(data);
+      onCreated?.(data);
+      onSaved?.(data);
     },
     // onError: () => {},
   });
@@ -43,6 +77,7 @@ export const NewClientForm = ({
     ...newClientFormOpts,
     defaultValues: {
       ...newClientFormOpts.defaultValues,
+      ...clientRowToValues(initialRow),
       ...defaultValues,
     },
     onSubmit: async ({ value }) => {
@@ -129,9 +164,12 @@ export const NewClientForm = ({
           >
             Cancel
           </Button>
-          <form.SubmitButton label='Create client' />
+          <form.SubmitButton label={editing ? 'Save client' : 'Create client'} />
         </Stack>
       </Stack>
     </form.AppForm>
   );
 };
+
+// Registry-facing default export (props are a superset of EntityFormProps).
+export default NewClientForm as unknown as ComponentType<EntityFormProps>;

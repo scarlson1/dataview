@@ -13,10 +13,18 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { NewBusinessDrawer } from '../components/NewBusinessDrawer';
+import {
+  type ArTarget,
+  RecordPaymentDialog,
+} from '../components/RecordPaymentDialog';
+import {
+  type CapTarget,
+  RecordRemittanceDialog,
+} from '../components/RecordRemittanceDialog';
 import { StatusChip } from '../components/StatusChip';
 import { valueTone } from '../theme/tokens';
 
@@ -68,10 +76,28 @@ interface ArRow {
   total_paid: number | null;
   balance_due: number | null;
 }
+interface CapRow {
+  id: number;
+  cap_ref: string;
+  ap_status: string;
+  net_premium_due_carrier: number | null;
+  available_for_payment: number | null;
+  balance_owing: number | null;
+}
+interface RenewalRow {
+  id: number;
+  rnw_ref: string;
+  renewal_status: string;
+  new_policy_id: number | null;
+  days_to_renewal: number | null;
+  ev_rnw_gwp: number | null;
+}
 
 function WorkflowPage() {
   const qc = useQueryClient();
   const [newBusinessOpen, setNewBusinessOpen] = useState(false);
+  const [payTarget, setPayTarget] = useState<ArTarget | null>(null);
+  const [remitTarget, setRemitTarget] = useState<CapTarget | null>(null);
 
   const nbsQuery = useQuery({
     queryKey: ['wf', 'nbs'],
@@ -93,7 +119,9 @@ function WorkflowPage() {
       const [pc, inv] = await Promise.all([
         supabase
           .from('policies_computed')
-          .select('id, pol_ref, transaction_type, carrier_id, total_term_prem_fees')
+          .select(
+            'id, pol_ref, transaction_type, carrier_id, total_term_prem_fees',
+          )
           .order('id'),
         supabase.from('invoices').select('policy_id'),
       ]);
@@ -116,6 +144,34 @@ function WorkflowPage() {
         .order('id');
       if (error) throw error;
       return data as unknown as ArRow[];
+    },
+  });
+
+  const capQuery = useQuery({
+    queryKey: ['wf', 'cap'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('capacity_computed')
+        .select(
+          'id, cap_ref, ap_status, net_premium_due_carrier, available_for_payment, balance_owing',
+        )
+        .order('id');
+      if (error) throw error;
+      return data as unknown as CapRow[];
+    },
+  });
+
+  const renewalsQuery = useQuery({
+    queryKey: ['wf', 'renewals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('renewals_computed')
+        .select(
+          'id, rnw_ref, renewal_status, new_policy_id, days_to_renewal, ev_rnw_gwp',
+        )
+        .order('days_to_renewal');
+      if (error) throw error;
+      return data as unknown as RenewalRow[];
     },
   });
 
@@ -143,7 +199,7 @@ function WorkflowPage() {
   );
 
   const invalidate = () => {
-    for (const k of ['nbs', 'policies', 'ar', 'kpis'])
+    for (const k of ['nbs', 'policies', 'ar', 'cap', 'renewals', 'kpis'])
       qc.invalidateQueries({ queryKey: ['wf', k] });
     qc.invalidateQueries({ queryKey: ['table-data'] });
   };
@@ -178,69 +234,87 @@ function WorkflowPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const pay = useMutation({
-    mutationFn: async (vars: { arId: number; amount: number }) => {
-      const { data, error } = await supabase.rpc('record_ar_payment', {
-        p_ar_id: vars.arId,
-        p_amount: vars.amount,
+  const bindRenewal = useMutation({
+    mutationFn: async (renewalId: number) => {
+      const { data, error } = await supabase.rpc('bind_renewal', {
+        p_renewal_id: renewalId,
       });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      toast.success('Payment recorded');
+    onSuccess: (policyId) => {
+      toast.success(`Renewal bound → policy #${policyId}`);
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const promptPayment = (row: ArRow) => {
-    const suggested = Math.max(Number(row.balance_due) || 0, 0);
-    const raw = window.prompt(
-      `Payment amount for ${row.ar_ref} (balance ${money(row.balance_due)})`,
-      String(suggested),
-    );
-    if (raw == null) return;
-    const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error('Enter a positive amount');
-      return;
-    }
-    pay.mutate({ arId: row.id, amount });
-  };
+  const seedRenewals = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('seed_renewals', {
+        p_days_ahead: 120,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (count) => {
+      toast.success(`Seeded ${count ?? 0} renewal(s)`);
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const unboundNbs = (nbsQuery.data ?? []).filter((n) => n.policy_id == null);
   const uninvoiced = (policiesQuery.data ?? []).filter((p) => !p.invoiced);
   const openAr = (arQuery.data ?? []).filter(
     (r) => (Number(r.balance_due) || 0) > 0,
   );
+  const openCap = (capQuery.data ?? []).filter(
+    (r) => (Number(r.balance_owing) || 0) > 0,
+  );
+  const openRenewals = (renewalsQuery.data ?? []).filter(
+    (r) => r.new_policy_id == null,
+  );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 1100 }}>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 1100 }}
+    >
       <Box>
         <Typography sx={{ fontSize: 22, fontWeight: 700 }}>Workflow</Typography>
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Drive the policy lifecycle: bind submissions, invoice policies, and collect receivables.
+          Drive the policy lifecycle: bind submissions, invoice policies, and
+          collect receivables.
         </Typography>
       </Box>
 
       {/* KPIs */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-        <Kpi label="Pipeline Expected GWP" value={money(kpiQuery.data?.pipelineEvGwp)} />
-        <Kpi label="Funded Net-Com UEP Reserve" value={money(kpiQuery.data?.uepReserve)} />
-        <Kpi label="Outstanding Receivables" value={money(outstandingAr)} />
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}
+      >
+        <Kpi
+          label='Pipeline Expected GWP'
+          value={money(kpiQuery.data?.pipelineEvGwp)}
+        />
+        <Kpi
+          label='Funded Net-Com UEP Reserve'
+          value={money(kpiQuery.data?.uepReserve)}
+        />
+        <Kpi label='Outstanding Receivables' value={money(outstandingAr)} />
       </Box>
 
       {/* New Business pipeline */}
       <Section
-        title="New Business — ready to bind"
+        title='New Business — ready to bind'
         empty={unboundNbs.length === 0}
-        emptyText="No unbound submissions."
+        emptyText='No unbound submissions.'
         action={
           <Button
-            size="small"
-            variant="contained"
-            startIcon={<Plus size={16} />}
+            size='small'
+            variant='contained'
+            startIcon={
+              <Plus size={16} color={'var(--variant-containedColor)'} />
+            }
             onClick={() => setNewBusinessOpen(true)}
           >
             New submission
@@ -254,8 +328,8 @@ function WorkflowPage() {
             <Cell>{n.line_of_business ?? '—'}</Cell>
             <StatusChip label={labelize(n.stage)} tone={valueTone(n.stage)} />
             <Button
-              size="small"
-              variant="contained"
+              size='small'
+              variant='contained'
               disabled={bind.isPending}
               onClick={() => bind.mutate(n.id)}
             >
@@ -267,19 +341,21 @@ function WorkflowPage() {
 
       {/* Policies needing an invoice */}
       <Section
-        title="Policies — ready to invoice"
+        title='Policies — ready to invoice'
         empty={uninvoiced.length === 0}
-        emptyText="Every policy has been invoiced."
+        emptyText='Every policy has been invoiced.'
       >
         {uninvoiced.map((p) => (
           <Row key={p.id}>
             <Mono>{p.pol_ref}</Mono>
             <Cell grow>{labelize(p.transaction_type)}</Cell>
             <Cell>{money(p.total_term_prem_fees)}</Cell>
-            <Cell>{p.carrier_id == null ? 'subscription' : 'single carrier'}</Cell>
+            <Cell>
+              {p.carrier_id == null ? 'subscription' : 'single carrier'}
+            </Cell>
             <Button
-              size="small"
-              variant="contained"
+              size='small'
+              variant='contained'
               disabled={invoice.isPending}
               onClick={() => invoice.mutate(p.id)}
             >
@@ -291,9 +367,9 @@ function WorkflowPage() {
 
       {/* Receivables */}
       <Section
-        title="Receivables — open balances"
+        title='Receivables — open balances'
         empty={openAr.length === 0}
-        emptyText="No open receivables."
+        emptyText='No open receivables.'
       >
         {openAr.map((r) => (
           <Row key={r.id}>
@@ -302,14 +378,86 @@ function WorkflowPage() {
               {money(r.total_paid)} / {money(r.invoice_total)} collected
             </Cell>
             <Cell>Balance {money(r.balance_due)}</Cell>
-            <StatusChip label={labelize(r.ar_status)} tone={valueTone(r.ar_status)} />
+            <StatusChip
+              label={labelize(r.ar_status)}
+              tone={valueTone(r.ar_status)}
+            />
             <Button
-              size="small"
-              variant="outlined"
-              disabled={pay.isPending}
-              onClick={() => promptPayment(r)}
+              size='small'
+              variant='outlined'
+              onClick={() => setPayTarget(r)}
             >
               Record Payment
+            </Button>
+          </Row>
+        ))}
+      </Section>
+
+      {/* Carrier AP — ready to remit */}
+      <Section
+        title='Carrier AP — ready to remit'
+        empty={openCap.length === 0}
+        emptyText='No open carrier payables.'
+      >
+        {openCap.map((c) => (
+          <Row key={c.id}>
+            <Mono>{c.cap_ref}</Mono>
+            <Cell grow>Net due {money(c.net_premium_due_carrier)}</Cell>
+            <Cell>Available {money(c.available_for_payment)}</Cell>
+            <Cell>Owing {money(c.balance_owing)}</Cell>
+            <StatusChip
+              label={labelize(c.ap_status)}
+              tone={valueTone(c.ap_status)}
+            />
+            <Button
+              size='small'
+              variant='outlined'
+              disabled={(Number(c.available_for_payment) || 0) <= 0}
+              onClick={() => setRemitTarget(c)}
+            >
+              Record Remittance
+            </Button>
+          </Row>
+        ))}
+      </Section>
+
+      {/* Renewals pipeline */}
+      <Section
+        title='Renewals — pipeline'
+        empty={openRenewals.length === 0}
+        emptyText='No renewals awaiting a bind. Seed the pipeline to pull upcoming expiries.'
+        action={
+          <Button
+            size='small'
+            variant='outlined'
+            startIcon={<RefreshCw size={16} />}
+            disabled={seedRenewals.isPending}
+            onClick={() => seedRenewals.mutate()}
+          >
+            Seed renewals
+          </Button>
+        }
+      >
+        {openRenewals.map((r) => (
+          <Row key={r.id}>
+            <Mono>{r.rnw_ref}</Mono>
+            <Cell grow>
+              {r.days_to_renewal == null
+                ? '—'
+                : `${r.days_to_renewal} days to renewal`}
+            </Cell>
+            <Cell>EV GWP {money(r.ev_rnw_gwp)}</Cell>
+            <StatusChip
+              label={labelize(r.renewal_status)}
+              tone={valueTone(r.renewal_status)}
+            />
+            <Button
+              size='small'
+              variant='contained'
+              disabled={bindRenewal.isPending}
+              onClick={() => bindRenewal.mutate(r.id)}
+            >
+              Bind renewal
             </Button>
           </Row>
         ))}
@@ -320,6 +468,18 @@ function WorkflowPage() {
         onClose={() => setNewBusinessOpen(false)}
         onCreated={() => qc.invalidateQueries({ queryKey: ['wf', 'nbs'] })}
       />
+      <RecordPaymentDialog
+        ar={payTarget}
+        open={payTarget != null}
+        onClose={() => setPayTarget(null)}
+        onRecorded={invalidate}
+      />
+      <RecordRemittanceDialog
+        cap={remitTarget}
+        open={remitTarget != null}
+        onClose={() => setRemitTarget(null)}
+        onRecorded={invalidate}
+      />
     </Box>
   );
 }
@@ -328,11 +488,15 @@ const labelize = (s: string): string =>
   s.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
 
 const Kpi = ({ label, value }: { label: string; value: string }) => (
-  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-    <Typography sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}>
+  <Paper variant='outlined' sx={{ p: 2, borderRadius: 2 }}>
+    <Typography
+      sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}
+    >
       {label}
     </Typography>
-    <Typography sx={{ fontSize: 26, fontWeight: 700, mt: 0.5 }}>{value}</Typography>
+    <Typography sx={{ fontSize: 26, fontWeight: 700, mt: 0.5 }}>
+      {value}
+    </Typography>
   </Paper>
 );
 
@@ -349,7 +513,7 @@ const Section = ({
   action?: React.ReactNode;
   children: React.ReactNode;
 }) => (
-  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+  <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
     <Box
       sx={(t) => ({
         display: 'flex',
@@ -367,7 +531,9 @@ const Section = ({
       {action}
     </Box>
     {empty ? (
-      <Box sx={{ px: 2, py: 3, color: 'text.disabled', fontSize: 13.5 }}>{emptyText}</Box>
+      <Box sx={{ px: 2, py: 3, color: 'text.disabled', fontSize: 13.5 }}>
+        {emptyText}
+      </Box>
     ) : (
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>{children}</Box>
     )}
@@ -390,12 +556,22 @@ const Row = ({ children }: { children: React.ReactNode }) => (
   </Box>
 );
 
-const Cell = ({ children, grow }: { children: React.ReactNode; grow?: boolean }) => (
-  <Box sx={{ flex: grow ? 1 : 'none', fontSize: 13.5, color: 'text.secondary' }}>
+const Cell = ({
+  children,
+  grow,
+}: {
+  children: React.ReactNode;
+  grow?: boolean;
+}) => (
+  <Box
+    sx={{ flex: grow ? 1 : 'none', fontSize: 13.5, color: 'text.secondary' }}
+  >
     {children}
   </Box>
 );
 
 const Mono = ({ children }: { children: React.ReactNode }) => (
-  <Box sx={{ fontFamily: 'monospace', fontSize: 13, minWidth: 120 }}>{children}</Box>
+  <Box sx={{ fontFamily: 'monospace', fontSize: 13, minWidth: 120 }}>
+    {children}
+  </Box>
 );

@@ -66,6 +66,12 @@ export interface EntitySelectProps {
   /** Max rows fetched per search (default 20). */
   pageSize?: number;
   helperText?: string;
+  /**
+   * Called with the full selected row (or null when cleared) in addition to
+   * writing its id into the field — lets a parent form auto-fill sibling
+   * fields (e.g. pick a policy, auto-set its client/carrier).
+   */
+  onSelectRow?: (row: EntityRow | null) => void;
   /** Dialog title (default `New {label}`). */
   createTitle?: string;
   /**
@@ -78,6 +84,7 @@ export interface EntitySelectProps {
     onCreated: (row: EntityRow) => void;
     onCancel: () => void;
   }) => React.ReactNode;
+  size?: 'small' | 'medium';
 }
 
 // Loose PostgREST builder type (mirrors src/hooks/useTableData.ts) — `table` is
@@ -100,8 +107,10 @@ export function EntitySelect({
   orderBy = 'id',
   pageSize = 20,
   helperText,
+  onSelectRow,
   createTitle,
   renderCreateForm,
+  size = 'medium',
 }: EntitySelectProps) {
   const { state, store, handleBlur, handleChange } = useFieldContext<
     number | null
@@ -173,6 +182,7 @@ export function EntitySelect({
   const select = (row: EntityRow | null) => {
     setSelectedRow(row);
     handleChange(row ? row.id : null);
+    onSelectRow?.(row);
   };
 
   const CreatePaper = (paperProps: PaperProps) => (
@@ -218,6 +228,7 @@ export function EntitySelect({
         }}
         blurOnSelect
         fullWidth
+        size={size}
         slots={{ paper: CreatePaper }}
         renderInput={(params) => {
           const inputSlot = (params.slotProps?.input ?? {}) as {

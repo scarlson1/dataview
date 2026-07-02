@@ -129,6 +129,18 @@ begin
      '212-555-0130', 'jane.doe@mainstreetins.example', '900 Elm St', 'New York', 'NY', '10001', 'USA', 'active')
   returning id into v_subproducer;
 
+  -- Bulk independent retail agencies (pagination test data).
+  insert into public.agencies
+    (parent_id, agency_level, licensee_type, billing_entity, entity_name,
+     phone, email, address_line1, city, state, postal, country, status)
+  select
+    null, 'retail', 'entity', 'self', 'Test Agency ' || lpad(g::text, 3, '0'),
+    '555-' || lpad((4000 + g)::text, 4, '0'), 'agency' || g || '@example.com',
+    g || ' Broker Blvd', 'Metropolis',
+    (array['CA', 'TX', 'NY', 'FL', 'IL'])[1 + (g % 5)], '00000', 'USA',
+    (array['active', 'inactive'])[1 + (g % 2)]
+  from generate_series(1, 120) as g;
+
   -- ==========================================================================
   -- Underwriters
   -- ==========================================================================
@@ -187,6 +199,23 @@ begin
      '202 Hall''s Mill Rd', 'Whitehouse Station', 'NJ', '08889', 'USA', 'active')
   returning id into v_car_chubb;
 
+  -- Bulk carriers (pagination test data).
+  insert into public.carriers
+    (carrier_name, naic_number, am_best_rating, lines_of_business, carrier_type,
+     state_admitted, domicile_state, contact_name, phone, email, claims_phone,
+     address_line1, city, state, postal, country, status)
+  select
+    'Test Carrier ' || lpad(g::text, 3, '0'), null,
+    (array['A++', 'A+', 'A', 'A-', 'B++'])[1 + (g % 5)], 'GL,Property',
+    (array['admitted', 'E&S'])[1 + (g % 2)], 'ALL',
+    (array['OH', 'DE', 'NJ', 'NY', 'CA'])[1 + (g % 5)], 'Contact ' || g,
+    '800-555-' || lpad((5000 + g)::text, 4, '0'), 'carrier' || g || '@example.com',
+    '800-555-' || lpad((6000 + g)::text, 4, '0'),
+    g || ' Insurance Way', 'Metropolis',
+    (array['OH', 'DE', 'NJ', 'NY', 'CA'])[1 + (g % 5)], '00000', 'USA',
+    (array['active', 'inactive'])[1 + (g % 2)]
+  from generate_series(1, 120) as g;
+
   -- ==========================================================================
   -- Clients
   -- ==========================================================================
@@ -224,6 +253,21 @@ begin
   values ('TechFlow Solutions', null, null, 'commercial', 'Technology', 'active',
      '650-555-0440', 'ops@techflow.example', '2200 Mission College Blvd', 'Santa Clara', 'CA', '95054', 'USA', date '2026-02-20')
   returning id into v_cli_techflow;
+
+  -- Bulk clients (pagination test data).
+  insert into public.clients
+    (company_name, first_name, last_name, client_type, industry, status,
+     phone, email, address_line1, city, state, postal, country, date_added)
+  select
+    'Test Client ' || lpad(g::text, 3, '0'), null, null,
+    (array['commercial', 'individual', 'non_profit', 'government'])[1 + (g % 4)]::public.clienttype,
+    (array['Manufacturing', 'Technology', 'Healthcare', 'Retail', 'Hospitality', 'Construction', 'Finance', 'Real Estate'])[1 + (g % 8)],
+    (array['active', 'inactive', 'prospect'])[1 + (g % 3)]::public.clientstatus,
+    '555-' || lpad((1000 + g)::text, 4, '0'), 'client' || g || '@example.com',
+    g || ' Test Ave', 'Springfield',
+    (array['CA', 'TX', 'NY', 'FL', 'IL'])[1 + (g % 5)], '00000', 'USA',
+    date '2026-01-01' + g
+  from generate_series(1, 120) as g;
 
   -- ==========================================================================
   -- Binders + sections + participants
@@ -401,6 +445,22 @@ begin
     (v_pol_bayside, v_cli_bayside, v_car_nationwide, date '2026-04-02', date '2026-04-03', 'Property Damage',
      'Kitchen fire, smoke damage to dining area.', 30000.00, 30000.00, 'Gina Alvarez', 'closed');
 
+  -- Bulk claims against the existing policies (pagination test data).
+  insert into public.claims
+    (policy_id, client_id, carrier_id, date_of_loss, date_reported, loss_type,
+     description, reserve_amt, paid_amt, adjuster, status)
+  select
+    (array[v_pol_acme_gl, v_pol_bayside, v_pol_techflow, v_pol_acme_rnw])[1 + (g % 4)],
+    (array[v_cli_acme, v_cli_bayside, v_cli_techflow, v_cli_acme])[1 + (g % 4)],
+    v_car_chubb,
+    date '2026-01-01' + g, date '2026-01-02' + g,
+    (array['Property Damage', 'Bodily Injury', 'GL', 'Auto', 'Cyber'])[1 + (g % 5)],
+    'Auto-generated test claim #' || g,
+    (1000 * (1 + g % 50))::decimal(14,2), (500 * (1 + g % 30))::decimal(14,2),
+    'Test Adjuster ' || (1 + g % 5),
+    (array['open', 'closed', 'reopened', 'denied'])[1 + (g % 4)]
+  from generate_series(1, 100) as g;
+
   -- ==========================================================================
   -- Payments (installment schedule against Acme GL policy)
   -- ==========================================================================
@@ -480,9 +540,10 @@ begin
 
   update public.invoices set ar_id = v_ar_bayside where id = v_inv_bayside;
 
-  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=%',
+  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=% claims=%',
     (select count(*) from public.agencies),
     (select count(*) from public.carriers),
     (select count(*) from public.clients),
-    (select count(*) from public.policies);
+    (select count(*) from public.policies),
+    (select count(*) from public.claims);
 end $$;

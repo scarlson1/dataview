@@ -13,7 +13,7 @@ export const carrierStatus = z.enum(['active', 'inactive']);
 export const newCarrierValues = z.object({
   carrierName: z.string().min(1, 'Required'),
   naicNumber: z.string(),
-  amBestRating: z.string(),
+  amBestRating: z.string(), // select ??
   carrierType: z.string(),
   linesOfBusiness: z.string(),
   stateAdmitted: z.string(),

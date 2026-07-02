@@ -7,25 +7,64 @@ import {
   type NewAgencyValues,
 } from '#/constants/newAgentForm';
 import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
 import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import type { ComponentType } from 'react';
 
 type AgencyRowInsert = TablesInsert<'agencies'>;
 type AgencyRow = Tables<'agencies'>;
 
 interface NewAgencyFormProps {
   defaultValues?: Partial<NewAgencyValues>;
+  /** Present when editing an existing agency. */
+  recordId?: number;
+  /** Fetched agency row used to pre-fill an edit. */
+  initialRow?: Record<string, unknown> | null;
+  /** Called on insert (also used by EntitySelect inline-create). */
   onCreated?: (row: AgencyRow) => void;
+  /** Registry-standard success callback (create or edit). */
+  onSaved?: (row: AgencyRow) => void;
   onCancel?: () => void;
 }
 
+const agencyStr = (v: unknown): string => (v == null ? '' : String(v));
+
+const agencyRowToValues = (
+  row: Record<string, unknown> | null | undefined,
+): Partial<NewAgencyValues> =>
+  row
+    ? ({
+        entityName: agencyStr(row.entity_name),
+        agentLevel: agencyStr(row.agency_level),
+        licenseeType: agencyStr(row.licensee_type),
+        firstName: agencyStr(row.first_name),
+        lastName: agencyStr(row.last_name),
+        parentAgencyId: row.parent_id == null ? '' : String(row.parent_id),
+        billingEntity: agencyStr(row.billing_entity),
+        email: agencyStr(row.email),
+        phone: agencyStr(row.phone),
+        address: {
+          addressLine1: agencyStr(row.address_line1),
+          addressLine2: agencyStr(row.address_line2),
+          city: agencyStr(row.city),
+          state: agencyStr(row.state),
+          postal: agencyStr(row.postal),
+        },
+      } as unknown as Partial<NewAgencyValues>)
+    : {};
+
 export const NewAgencyForm = ({
   defaultValues = {},
+  recordId,
+  initialRow,
   onCreated,
+  onSaved,
   onCancel,
 }: NewAgencyFormProps) => {
+  const editing = recordId != null;
   const { data: agencies } = useSuspenseQuery({
     queryKey: ['agencies'],
     queryFn: async () => {
@@ -41,19 +80,17 @@ export const NewAgencyForm = ({
 
   const { mutateAsync, error, isError, isPending } = useMutation({
     mutationFn: async (values: AgencyRowInsert) => {
-      const { data, error } = await supabase
-        .from('agencies')
-        .upsert(values) // onConflict requires unique key constraint
-        .select(); // , { onConflict: 'entity_name, first_name, last_name' }
-      // "The Target Must Have an Index: The column(s) specified in onConflict must have a UNIQUE constraint or a unique index configured"
-
+      const q =
+        recordId != null
+          ? supabase.from('agencies').update(values).eq('id', recordId).select()
+          : supabase.from('agencies').insert(values).select();
+      const { data, error } = await q;
       if (error) throw new Error(error.message);
-      // const row = data[0]
-      // if (!row) throw new Error('upsert succeeded, failed to return data')
       return data[0] as AgencyRow;
     },
     onSuccess: (data) => {
-      if (onCreated) onCreated(data);
+      onCreated?.(data);
+      onSaved?.(data);
     },
     // onError: () => {},
   });
@@ -62,6 +99,7 @@ export const NewAgencyForm = ({
     ...newAgencyFormOpts,
     defaultValues: {
       ...newAgencyFormOpts.defaultValues,
+      ...agencyRowToValues(initialRow),
       ...defaultValues,
     },
     onSubmit: async ({ value }) => {
@@ -202,9 +240,12 @@ export const NewAgencyForm = ({
             </Button>
           ) : null}
 
-          <form.SubmitButton label='Create client' />
+          <form.SubmitButton label={editing ? 'Save agency' : 'Create agency'} />
         </Stack>
       </Stack>
     </form.AppForm>
   );
 };
+
+// Registry-facing default export (props are a superset of EntityFormProps).
+export default NewAgencyForm as unknown as ComponentType<EntityFormProps>;

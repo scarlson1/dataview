@@ -38,6 +38,18 @@ const lazyForm = (
 ): LazyExoticComponent<ComponentType<EntityFormProps>> => lazy(loader);
 
 export const ENTITY_FORMS: Record<string, EntityFormEntry> = {
+  clients: {
+    relation: 'clients',
+    createTitle: 'New Client',
+    editTitle: 'Edit Client',
+    component: lazyForm(() => import('#/components/NewClientForm')),
+  },
+  agencies: {
+    relation: 'agencies',
+    createTitle: 'New Agency',
+    editTitle: 'Edit Agency',
+    component: lazyForm(() => import('#/components/NewAgencyForm')),
+  },
   carriers: {
     relation: 'carriers',
     createTitle: 'New Carrier',
@@ -55,6 +67,36 @@ export const ENTITY_FORMS: Record<string, EntityFormEntry> = {
     createTitle: 'New License',
     editTitle: 'Edit License',
     component: lazyForm(() => import('#/components/NewLicenseForm')),
+  },
+  claims: {
+    relation: 'claims',
+    createTitle: 'New Claim',
+    editTitle: 'Edit Claim',
+    component: lazyForm(() => import('#/components/NewClaimForm')),
+  },
+  binder: {
+    relation: 'binder',
+    createTitle: 'New Binder',
+    editTitle: 'Edit Binder',
+    component: lazyForm(() => import('#/components/NewBinderForm')),
+  },
+  binder_section: {
+    relation: 'binder_section',
+    createTitle: 'New Binder Section',
+    editTitle: 'Edit Binder Section',
+    component: lazyForm(() => import('#/components/NewBinderSectionForm')),
+  },
+  binder_part: {
+    relation: 'binder_part',
+    createTitle: 'New Participant',
+    editTitle: 'Edit Participant',
+    component: lazyForm(() => import('#/components/NewBinderPartForm')),
+  },
+  payments: {
+    relation: 'payments',
+    createTitle: 'New Payment',
+    editTitle: 'Edit Payment',
+    component: lazyForm(() => import('#/components/NewPaymentForm')),
   },
 };
 

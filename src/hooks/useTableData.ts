@@ -30,6 +30,15 @@ export interface TablePage {
 /** Column kinds worth matching against a free-text quick search. */
 const SEARCHABLE = new Set(['text', 'mono', 'chip', 'json']);
 
+// `ilike` (`~~*`) only has a text overload — running it against a bigint,
+// numeric or enum column raises `operator does not exist: <type> ~~* unknown`.
+// A column's `kind` (e.g. `mono`) doesn't tell us the underlying Postgres type,
+// so the quick search partitions searchable columns by `type` instead.
+const TEXT_TYPE = /^(text|varchar|char|character|bpchar|citext|name)/i;
+const NUMERIC_TYPE =
+  /^(bigint|int|integer|int2|int4|int8|smallint|numeric|decimal|real|double|money|serial)/i;
+const isNumericTerm = (t: string): boolean => /^\d+(\.\d+)?$/.test(t);
+
 // PostgREST `or()` treats commas and parens as syntax — strip them from
 // user-supplied terms rather than trying to escape.
 const sanitize = (term: string): string => term.replace(/[(),]/g, ' ').trim();
@@ -115,17 +124,25 @@ const fetchPage = async (
     query = applyFilterItem(query, item);
   }
 
-  // Quick-filter search box → OR ilike across searchable columns.
+  // Quick-filter search box → OR across searchable columns. Text columns match
+  // with `ilike`; numeric columns can only be compared with `eq`, and only when
+  // the term is itself numeric (otherwise they're skipped, not crashed on).
   const terms = (filterModel.quickFilterValues ?? [])
     .map((t) => sanitize(String(t)))
     .filter(Boolean);
-  const cols = table.columns
-    .filter((c) => SEARCHABLE.has(c.kind))
+  const searchCols = table.columns.filter((c) => SEARCHABLE.has(c.kind));
+  const textCols = searchCols
+    .filter((c) => TEXT_TYPE.test(c.type))
     .map((c) => c.field);
-  if (terms.length && cols.length) {
-    for (const term of terms) {
-      query = query.or(cols.map((c) => `${c}.ilike.%${term}%`).join(','));
+  const numCols = searchCols
+    .filter((c) => NUMERIC_TYPE.test(c.type))
+    .map((c) => c.field);
+  for (const term of terms) {
+    const ors = textCols.map((c) => `${c}.ilike.%${term}%`);
+    if (isNumericTerm(term)) {
+      ors.push(...numCols.map((c) => `${c}.eq.${term}`));
     }
+    if (ors.length) query = query.or(ors.join(','));
   }
 
   const { data, count, error } = await query;

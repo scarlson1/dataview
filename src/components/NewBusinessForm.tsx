@@ -166,7 +166,9 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <form.AppField name='submissionNumber'>
-                {(field) => <field.TextField label='Submission #' />}
+                {(field) => (
+                  <field.TextField label='Submission #' size='small' />
+                )}
               </form.AppField>
             </Grid>
 
@@ -206,7 +208,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
             <Grid size={{ xs: 12, sm: 6 }}>
               <form.AppField name='stage'>
                 {(field) => (
-                  <field.TextField label='Stage' select>
+                  <field.TextField label='Stage' size='small' select>
                     {newBusinessStage.options.map((o) => (
                       <MenuItem key={`stage-${o}`} value={o}>
                         {o}
@@ -275,7 +277,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
             <Grid size={12}>
               <form.AppField name='assignedTo'>
                 {(field) => (
-                  <field.TextField label='Assigned to' select>
+                  <field.TextField label='Assigned to' size='small' select>
                     {underwriters.map((o) => (
                       <MenuItem key={`uw-${o.id}`} value={o.id}>
                         <Badge
@@ -317,6 +319,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
                     />
                     // <ClientCreateBody defaultName={defaultName} onCreated={onCreated} onCancel={onCancel} />
                   )}
+                  size='small'
                 />
               )}
             </form.AppField>
@@ -338,6 +341,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
                       onCancel={onCancel}
                     />
                   )}
+                  size='small'
                 />
               )}
             </form.AppField>
