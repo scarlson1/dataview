@@ -10,10 +10,13 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
   Database,
+  FileDown,
   Layers,
   LogOut,
   Network,
+  PiggyBank,
   Settings,
+  Stamp,
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -302,6 +305,24 @@ export const Sidebar = ({
           label='Subscriptions'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/subscriptions' })}
+        />
+        <FooterItem
+          icon={<PiggyBank size={20} />}
+          label='UEP Reserve'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/uep' })}
+        />
+        <FooterItem
+          icon={<Stamp size={20} />}
+          label='Stamp'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/stamp' })}
+        />
+        <FooterItem
+          icon={<FileDown size={20} />}
+          label='Exports'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/exports' })}
         />
         <FooterItem
           icon={<Network size={20} />}

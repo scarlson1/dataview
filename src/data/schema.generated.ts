@@ -156,6 +156,68 @@ export const SCHEMA = {
       }
     ]
   },
+  "accounts_receivable_aging": {
+    "name": "accounts_receivable_aging",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "ar_ref",
+        "label": "AR Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "client_name",
+        "label": "Client Name",
+        "type": "varchar",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "due_date",
+        "label": "Due Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "invoice_total",
+        "label": "Invoice Total",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "balance_due",
+        "label": "Balance Due",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "days_outstanding",
+        "label": "Days Outstanding",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "ar_status",
+        "label": "AR Status",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "aging_bucket",
+        "label": "Aging Bucket",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      }
+    ]
+  },
   "accounts_receivable_computed": {
     "name": "accounts_receivable_computed",
     "kind": "view",
@@ -1542,6 +1604,61 @@ export const SCHEMA = {
       }
     ]
   },
+  "carrier_prem_com_report": {
+    "name": "carrier_prem_com_report",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "carrier_id",
+        "label": "Carrier ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "carrier_name",
+        "label": "Carrier Name",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "transaction_count",
+        "label": "Transaction Count",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_premium",
+        "label": "Total Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_gross_com",
+        "label": "Total Gross Com",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_mga_net_com",
+        "label": "Total Mga Net Com",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_carrier_net",
+        "label": "Total Carrier Net",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
   "carriers": {
     "name": "carriers",
     "kind": "table",
@@ -2420,6 +2537,207 @@ export const SCHEMA = {
         "type": "boolean",
         "nullable": true,
         "kind": "bool"
+      }
+    ]
+  },
+  "lly_a_premium": {
+    "name": "lly_a_premium",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "umr",
+        "label": "Umr",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "year_of_account",
+        "label": "Year Of Account",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "section_no",
+        "label": "Section No",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "class_of_business",
+        "label": "Class Of Business",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "certificate_ref",
+        "label": "Certificate Ref",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "risk_inception_date",
+        "label": "Risk Inception Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "risk_expiry_date",
+        "label": "Risk Expiry Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "insured_name",
+        "label": "Insured Name",
+        "type": "varchar",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "risk_location_state",
+        "label": "Risk Location State",
+        "type": "char(2)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "transaction_type",
+        "label": "Transaction Type",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "effective_date_of_transaction",
+        "label": "Effective Date Of Transaction",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "gross_written_premium",
+        "label": "Gross Written Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "commission_pct",
+        "label": "Commission PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "commission_amount",
+        "label": "Commission Amount",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
+  "lly_b_claims": {
+    "name": "lly_b_claims",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "umr",
+        "label": "Umr",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "year_of_account",
+        "label": "Year Of Account",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "certificate_ref",
+        "label": "Certificate Ref",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "class_of_business",
+        "label": "Class Of Business",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "insured_name",
+        "label": "Insured Name",
+        "type": "varchar",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "claim_reference",
+        "label": "Claim Reference",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "claim_status",
+        "label": "Claim Status",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "date_of_loss",
+        "label": "Date Of Loss",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "date_reported",
+        "label": "Date Reported",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "cause_of_loss",
+        "label": "Cause Of Loss",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "paid_indemnity",
+        "label": "Paid Indemnity",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "reserve_indemnity",
+        "label": "Reserve Indemnity",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_incurred",
+        "label": "Total Incurred",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
       }
     ]
   },
@@ -3905,6 +4223,171 @@ export const SCHEMA = {
         "field": "sl_eligible_licensees",
         "label": "SL Eligible Licensees",
         "type": "bigint",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
+  "qbo_ap_bills": {
+    "name": "qbo_ap_bills",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "bill_no",
+        "label": "Bill No",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "vendor",
+        "label": "Vendor",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "bill_date",
+        "label": "Bill Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "due_date",
+        "label": "Due Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "line_account",
+        "label": "Line Account",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "line_amount",
+        "label": "Line Amount",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "currency",
+        "label": "Currency",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      }
+    ]
+  },
+  "qbo_ar_invoices": {
+    "name": "qbo_ar_invoices",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "invoice_no",
+        "label": "Invoice No",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "customer",
+        "label": "Customer",
+        "type": "varchar",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "invoice_date",
+        "label": "Invoice Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "due_date",
+        "label": "Due Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "item",
+        "label": "Item",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "item_quantity",
+        "label": "Item Quantity",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "item_rate",
+        "label": "Item Rate",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "item_amount",
+        "label": "Item Amount",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "currency",
+        "label": "Currency",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      }
+    ]
+  },
+  "qbo_je_commission": {
+    "name": "qbo_je_commission",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "journal_no",
+        "label": "Journal No",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "journal_date",
+        "label": "Journal Date",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "account",
+        "label": "Account",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "debit",
+        "label": "Debit",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "credit",
+        "label": "Credit",
+        "type": "numeric",
         "nullable": true,
         "kind": "number"
       }
