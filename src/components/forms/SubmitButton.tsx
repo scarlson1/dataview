@@ -6,11 +6,16 @@ interface SubmitButtonProps extends ButtonProps {
   label: string;
 }
 
-export function SubmitButton({ label, sx, ...props }: SubmitButtonProps) {
-  const { Subscribe } = useFormContext();
+export function SubmitButton({
+  label,
+  sx,
+  onClick,
+  ...props
+}: SubmitButtonProps) {
+  const form = useFormContext();
 
   return (
-    <Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
       {([canSubmit, isSubmitting]) => (
         <Button
           variant='contained'
@@ -20,13 +25,19 @@ export function SubmitButton({ label, sx, ...props }: SubmitButtonProps) {
             // primaryButtonSx,
             ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
           ]}
-          type='submit'
+          // The forms don't render a native <form>, so drive submission
+          // directly instead of relying on type='submit'.
+          type='button'
+          onClick={(e) => {
+            onClick?.(e);
+            void form.handleSubmit();
+          }}
           loading={isSubmitting || props.loading}
           disabled={!canSubmit || props.disabled}
         >
           {label}
         </Button>
       )}
-    </Subscribe>
+    </form.Subscribe>
   );
 }

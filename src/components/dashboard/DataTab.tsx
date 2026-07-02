@@ -7,6 +7,7 @@ import {
   type GridPaginationModel,
   type GridSortModel,
 } from '@mui/x-data-grid';
+import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { toGridColumns } from '../../data/columns';
 import type { TableDef } from '../../data/tables';
@@ -29,6 +30,7 @@ export const DataTab = ({ table }: DataTabProps) => {
   });
 
   const columns = useMemo(() => toGridColumns(table), [table]);
+  const navigate = useNavigate();
 
   const { data, isFetching, isError, error } = useTableData(table, {
     paginationModel,
@@ -53,6 +55,12 @@ export const DataTab = ({ table }: DataTabProps) => {
         getRowId={(row) => row[table.primaryKey] as string | number}
         loading={isFetching}
         showToolbar
+        onRowClick={(params) =>
+          navigate({
+            to: '/$table/$id',
+            params: { table: table.name, id: String(params.id) },
+          })
+        }
         paginationMode='server'
         sortingMode='server'
         filterMode='server'
@@ -78,6 +86,9 @@ export const DataTab = ({ table }: DataTabProps) => {
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
             outline: 'none',
+          },
+          '& .MuiDataGrid-row': {
+            cursor: 'pointer',
           },
           '& .MuiDataGrid-row:hover': {
             backgroundColor: theme.vars.palette.primaryHover,

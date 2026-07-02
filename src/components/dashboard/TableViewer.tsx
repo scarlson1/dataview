@@ -1,12 +1,15 @@
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { getEntityForm } from '#/data/entityForms';
 import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { Download, RefreshCw, Rows3, Workflow } from 'lucide-react';
-import { useState } from 'react';
+import { Download, Plus, RefreshCw, Rows3, Workflow } from 'lucide-react';
+import { Suspense, useState } from 'react';
 import type { TableDef } from '../../data/tables';
 import { TableIcon } from '../TableIcon';
 import { DataTab } from './DataTab';
@@ -21,6 +24,9 @@ interface TableViewerProps {
 
 export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
   const [tab, setTab] = useState<ViewerTab>('data');
+  const [createOpen, setCreateOpen] = useState(false);
+  const entityForm = getEntityForm(table.name);
+  const FormComponent = entityForm?.component;
 
   return (
     <>
@@ -107,14 +113,24 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
             Refresh
           </Button>
           <Button
-            variant='contained'
-            startIcon={
-              <Download size={18} color={'var(--variant-containedColor)'} />
-            }
+            variant='outlined'
+            startIcon={<Download size={18} />}
             sx={{ height: 40 }}
           >
             Export
           </Button>
+          {entityForm && (
+            <Button
+              variant='contained'
+              onClick={() => setCreateOpen(true)}
+              startIcon={
+                <Plus size={18} color={'var(--variant-containedColor)'} />
+              }
+              sx={{ height: 40 }}
+            >
+              New
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -158,6 +174,30 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
           <SchemaTab table={table} />
         )}
       </Paper>
+
+      {entityForm && FormComponent && (
+        <EntityDrawer
+          open={createOpen}
+          title={entityForm.createTitle}
+          onClose={() => setCreateOpen(false)}
+        >
+          <Suspense
+            fallback={
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress size={24} />
+              </Box>
+            }
+          >
+            <FormComponent
+              onSaved={() => {
+                setCreateOpen(false);
+                onRefresh();
+              }}
+              onCancel={() => setCreateOpen(false)}
+            />
+          </Suspense>
+        </EntityDrawer>
+      )}
     </>
   );
 };

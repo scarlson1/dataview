@@ -8,6 +8,7 @@ import {
 import { US_STATES } from '#/constants/usStates';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
 import {
   Badge,
@@ -20,7 +21,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import dayjs, { type ConfigType } from 'dayjs';
+import dayjs from 'dayjs';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
 
@@ -30,20 +31,6 @@ type NewBusinessSubmission = Tables<'new_business_submissions'>;
 type UwStatus = 'active' | 'inactive' | 'on_leave';
 
 const stateOptions = US_STATES.map((s) => ({ value: s.code, label: s.name }));
-
-// Form fields are strings / Dayjs; DB columns are numeric / date. Coerce and
-// drop empty values so we send NULL rather than '' for nullable columns.
-const toNumber = (v: string): number | null => {
-  const trimmed = v?.trim();
-  if (!trimmed) return null;
-  const n = Number(trimmed);
-  return Number.isNaN(n) ? null : n;
-};
-
-const toDateStr = (v: ConfigType): string | null =>
-  v && dayjs(v).isValid() ? dayjs(v).format('YYYY-MM-DD') : null;
-
-const emptyToNull = (v: string): string | null => v?.trim() || null;
 
 // interface NewBusinessFormProps {
 //   onSuccess: (row: NewBusinessSubmission) => void;
@@ -57,7 +44,7 @@ interface NewBusinessFormProps {
 export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
   const theme = useTheme();
 
-  const { mutateAsync, error, isError, isPending } = useMutation({
+  const { mutateAsync } = useMutation({
     mutationFn: async (values: NewBusinessSubmissionInsert) => {
       const { data, error } = await supabase
         .from('new_business_submissions')

@@ -18,6 +18,8 @@ import { Route as AuthPasswordResetRouteImport } from './routes/auth.password-re
 import { Route as DashboardWorkflowRouteImport } from './routes/_dashboard.workflow'
 import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
+import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
+import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -63,38 +65,53 @@ const DashboardTableRoute = DashboardTableRouteImport.update({
   path: '/$table',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardTableRoute,
+} as any)
+const DashboardTableIdRoute = DashboardTableIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardTableRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
-  '/$table': typeof DashboardTableRoute
+  '/$table': typeof DashboardTableRouteWithChildren
   '/users': typeof DashboardUsersRoute
   '/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/$table/$id': typeof DashboardTableIdRoute
+  '/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
-  '/$table': typeof DashboardTableRoute
   '/users': typeof DashboardUsersRoute
   '/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/': typeof DashboardIndexRoute
+  '/$table/$id': typeof DashboardTableIdRoute
+  '/$table': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
-  '/_dashboard/$table': typeof DashboardTableRoute
+  '/_dashboard/$table': typeof DashboardTableRouteWithChildren
   '/_dashboard/users': typeof DashboardUsersRoute
   '/_dashboard/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/$table/$id': typeof DashboardTableIdRoute
+  '/_dashboard/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,16 +124,19 @@ export interface FileRouteTypes {
     | '/workflow'
     | '/auth/password-reset'
     | '/policies/new'
+    | '/$table/$id'
+    | '/$table/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
     | '/login'
-    | '/$table'
     | '/users'
     | '/workflow'
     | '/auth/password-reset'
     | '/policies/new'
     | '/'
+    | '/$table/$id'
+    | '/$table'
   id:
     | '__root__'
     | '/_dashboard'
@@ -128,6 +148,8 @@ export interface FileRouteTypes {
     | '/auth/password-reset'
     | '/policies/new'
     | '/_dashboard/'
+    | '/_dashboard/$table/$id'
+    | '/_dashboard/$table/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -203,18 +225,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/$table/': {
+      id: '/_dashboard/$table/'
+      path: '/'
+      fullPath: '/$table/'
+      preLoaderRoute: typeof DashboardTableIndexRouteImport
+      parentRoute: typeof DashboardTableRoute
+    }
+    '/_dashboard/$table/$id': {
+      id: '/_dashboard/$table/$id'
+      path: '/$id'
+      fullPath: '/$table/$id'
+      preLoaderRoute: typeof DashboardTableIdRouteImport
+      parentRoute: typeof DashboardTableRoute
+    }
   }
 }
 
+interface DashboardTableRouteChildren {
+  DashboardTableIdRoute: typeof DashboardTableIdRoute
+  DashboardTableIndexRoute: typeof DashboardTableIndexRoute
+}
+
+const DashboardTableRouteChildren: DashboardTableRouteChildren = {
+  DashboardTableIdRoute: DashboardTableIdRoute,
+  DashboardTableIndexRoute: DashboardTableIndexRoute,
+}
+
+const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
+  DashboardTableRouteChildren,
+)
+
 interface DashboardRouteChildren {
-  DashboardTableRoute: typeof DashboardTableRoute
+  DashboardTableRoute: typeof DashboardTableRouteWithChildren
   DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardTableRoute: DashboardTableRoute,
+  DashboardTableRoute: DashboardTableRouteWithChildren,
   DashboardUsersRoute: DashboardUsersRoute,
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,
