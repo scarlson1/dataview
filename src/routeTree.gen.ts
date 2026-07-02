@@ -21,6 +21,7 @@ import { Route as DashboardUepRouteImport } from './routes/_dashboard.uep'
 import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
 import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
+import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard.carrier-prem-com'
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
@@ -85,6 +86,11 @@ const DashboardExportsRoute = DashboardExportsRouteImport.update({
   path: '/exports',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCarrierPremComRoute = DashboardCarrierPremComRouteImport.update({
+  id: '/carrier-prem-com',
+  path: '/carrier-prem-com',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardBudgetRoute = DashboardBudgetRouteImport.update({
   id: '/budget',
   path: '/budget',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRouteWithChildren
   '/budget': typeof DashboardBudgetRoute
+  '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/budget': typeof DashboardBudgetRoute
+  '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRouteWithChildren
   '/_dashboard/budget': typeof DashboardBudgetRoute
+  '/_dashboard/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
   '/_dashboard/stamp': typeof DashboardStampRoute
   '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/$table'
     | '/budget'
+    | '/carrier-prem-com'
     | '/exports'
     | '/stamp'
     | '/subscriptions'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/budget'
+    | '/carrier-prem-com'
     | '/exports'
     | '/stamp'
     | '/subscriptions'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_dashboard/$table'
     | '/_dashboard/budget'
+    | '/_dashboard/carrier-prem-com'
     | '/_dashboard/exports'
     | '/_dashboard/stamp'
     | '/_dashboard/subscriptions'
@@ -306,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardExportsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/carrier-prem-com': {
+      id: '/_dashboard/carrier-prem-com'
+      path: '/carrier-prem-com'
+      fullPath: '/carrier-prem-com'
+      preLoaderRoute: typeof DashboardCarrierPremComRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/budget': {
       id: '/_dashboard/budget'
       path: '/budget'
@@ -354,6 +373,7 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
   DashboardBudgetRoute: typeof DashboardBudgetRoute
+  DashboardCarrierPremComRoute: typeof DashboardCarrierPremComRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
   DashboardStampRoute: typeof DashboardStampRoute
   DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
@@ -366,6 +386,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRouteWithChildren,
   DashboardBudgetRoute: DashboardBudgetRoute,
+  DashboardCarrierPremComRoute: DashboardCarrierPremComRoute,
   DashboardExportsRoute: DashboardExportsRoute,
   DashboardStampRoute: DashboardStampRoute,
   DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,

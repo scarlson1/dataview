@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
+  Coins,
   Database,
   FileDown,
   Layers,
@@ -318,6 +319,12 @@ export const Sidebar = ({
           label='Budget'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/budget' })}
+        />
+        <FooterItem
+          icon={<Coins size={20} />}
+          label='Carrier Prem/Com'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/carrier-prem-com' })}
         />
         <FooterItem
           icon={<Stamp size={20} />}

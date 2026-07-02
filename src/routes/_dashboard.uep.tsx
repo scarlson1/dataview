@@ -117,8 +117,8 @@ function UepReport() {
         <Table size='small'>
           <TableHead>
             <TableRow>
-              <TableCell>Policy</TableCell>
               <TableCell>Client</TableCell>
+              <TableCell>Line of business</TableCell>
               <TableCell>Status</TableCell>
               <TableCell align='right'>Term Premium</TableCell>
               <TableCell align='right'>MGA Net Com</TableCell>
