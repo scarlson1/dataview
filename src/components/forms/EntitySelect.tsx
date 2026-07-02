@@ -46,7 +46,7 @@ import TextField from '@mui/material/TextField';
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from '@tanstack/react-store';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 export interface EntityRow {
   id: number;
@@ -273,15 +273,29 @@ export function EntitySelect({
         >
           <DialogTitle>{createTitle ?? `New ${label}`}</DialogTitle>
           <DialogContent>
-            {renderCreateForm({
-              defaultName: inputValue,
-              onCreated: (row) => {
-                select(row); // <-- writes row.id into the TanStack form field
-                setInputValue(getOptionLabel(row));
-                setDialogOpen(false);
-              },
-              onCancel: () => setDialogOpen(false),
-            })}
+            <Suspense
+              fallback={
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    py: 4,
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              }
+            >
+              {renderCreateForm({
+                defaultName: inputValue,
+                onCreated: (row) => {
+                  select(row); // <-- writes row.id into the TanStack form field
+                  setInputValue(getOptionLabel(row));
+                  setDialogOpen(false);
+                },
+                onCancel: () => setDialogOpen(false),
+              })}
+            </Suspense>
           </DialogContent>
         </Dialog>
       )}

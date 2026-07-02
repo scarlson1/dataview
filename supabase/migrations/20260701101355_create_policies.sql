@@ -5,8 +5,6 @@
 create table public.policies (
   -- identity & relationships
   id                          bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str                      text         generated always as (id::text) stored,
   parent_policy_id               bigint       references public.policies (id),   -- NULL = New Business
   -- human-readable reference id (e.g. POL-2026-0001); see agencies migration for rationale.
   ref_year                    smallint     not null default extract(year from now())::smallint,

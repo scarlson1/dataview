@@ -44,7 +44,6 @@ export type Database = {
           created_at: string
           due_date: string
           id: number
-          id_str: string | null
           inv_id: number
           invoice_date: string
           invoice_total: number
@@ -62,7 +61,6 @@ export type Database = {
           created_at?: string
           due_date: string
           id?: never
-          id_str?: string | null
           inv_id: number
           invoice_date: string
           invoice_total: number
@@ -80,7 +78,6 @@ export type Database = {
           created_at?: string
           due_date?: string
           id?: never
-          id_str?: string | null
           inv_id?: number
           invoice_date?: string
           invoice_total?: number
@@ -141,7 +138,6 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: number
-          id_str: string | null
           notes: string | null
           payment_amount: number
           payment_date: string
@@ -155,7 +151,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: never
-          id_str?: string | null
           notes?: string | null
           payment_amount: number
           payment_date: string
@@ -169,7 +164,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: never
-          id_str?: string | null
           notes?: string | null
           payment_amount?: number
           payment_date?: string
@@ -213,7 +207,6 @@ export type Database = {
           entity_name: string | null
           first_name: string | null
           id: number
-          id_str: string | null
           last_name: string | null
           licensee_type: string
           parent_id: number | null
@@ -242,7 +235,6 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: never
-          id_str?: string | null
           last_name?: string | null
           licensee_type: string
           parent_id?: number | null
@@ -271,7 +263,6 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: never
-          id_str?: string | null
           last_name?: string | null
           licensee_type?: string
           parent_id?: number | null
@@ -323,7 +314,6 @@ export type Database = {
           exp_date: string
           gross_com_pct: number
           id: number
-          id_str: string | null
           notes: string | null
           ref_year: number
           updated_at: string
@@ -338,7 +328,6 @@ export type Database = {
           exp_date: string
           gross_com_pct: number
           id?: never
-          id_str?: string | null
           notes?: string | null
           ref_year?: number
           updated_at?: string
@@ -353,7 +342,6 @@ export type Database = {
           exp_date?: string
           gross_com_pct?: number
           id?: never
-          id_str?: string | null
           notes?: string | null
           ref_year?: number
           updated_at?: string
@@ -373,7 +361,6 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          id_str: string | null
           notes: string | null
           part_ref: string | null
           participant_name: string
@@ -387,7 +374,6 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: never
-          id_str?: string | null
           notes?: string | null
           part_ref?: string | null
           participant_name: string
@@ -401,7 +387,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: never
-          id_str?: string | null
           notes?: string | null
           part_ref?: string | null
           participant_name?: string
@@ -427,7 +412,6 @@ export type Database = {
           binder_id: number
           created_at: string
           id: number
-          id_str: string | null
           lob_codes: string | null
           notes: string | null
           participation_amt: number | null
@@ -444,7 +428,6 @@ export type Database = {
           binder_id: number
           created_at?: string
           id?: never
-          id_str?: string | null
           lob_codes?: string | null
           notes?: string | null
           participation_amt?: number | null
@@ -461,7 +444,6 @@ export type Database = {
           binder_id?: number
           created_at?: string
           id?: never
-          id_str?: string | null
           lob_codes?: string | null
           notes?: string | null
           participation_amt?: number | null
@@ -495,7 +477,6 @@ export type Database = {
           created_at: string
           gross_commission_amt: number | null
           id: number
-          id_str: string | null
           inv_id: number
           net_premium_due_carrier: number | null
           notes: string | null
@@ -514,7 +495,6 @@ export type Database = {
           created_at?: string
           gross_commission_amt?: number | null
           id?: never
-          id_str?: string | null
           inv_id: number
           net_premium_due_carrier?: number | null
           notes?: string | null
@@ -533,7 +513,6 @@ export type Database = {
           created_at?: string
           gross_commission_amt?: number | null
           id?: never
-          id_str?: string | null
           inv_id?: number
           net_premium_due_carrier?: number | null
           notes?: string | null
@@ -600,7 +579,6 @@ export type Database = {
           cprm_ref: string | null
           created_at: string
           id: number
-          id_str: string | null
           ref_year: number
           remit_amount: number
           remit_date: string
@@ -610,7 +588,6 @@ export type Database = {
           cprm_ref?: string | null
           created_at?: string
           id?: never
-          id_str?: string | null
           ref_year?: number
           remit_amount: number
           remit_date: string
@@ -620,7 +597,6 @@ export type Database = {
           cprm_ref?: string | null
           created_at?: string
           id?: never
-          id_str?: string | null
           ref_year?: number
           remit_amount?: number
           remit_date?: string
@@ -658,7 +634,6 @@ export type Database = {
           domicile_state: string | null
           email: string | null
           id: number
-          id_str: string | null
           lines_of_business: string | null
           naic_number: string | null
           phone: string | null
@@ -684,7 +659,6 @@ export type Database = {
           domicile_state?: string | null
           email?: string | null
           id?: never
-          id_str?: string | null
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
@@ -710,7 +684,6 @@ export type Database = {
           domicile_state?: string | null
           email?: string | null
           id?: never
-          id_str?: string | null
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
@@ -734,7 +707,6 @@ export type Database = {
           date_reported: string
           description: string | null
           id: number
-          id_str: string | null
           loss_type: string | null
           paid_amt: number | null
           policy_id: number
@@ -753,7 +725,6 @@ export type Database = {
           date_reported: string
           description?: string | null
           id?: never
-          id_str?: string | null
           loss_type?: string | null
           paid_amt?: number | null
           policy_id: number
@@ -772,7 +743,6 @@ export type Database = {
           date_reported?: string
           description?: string | null
           id?: never
-          id_str?: string | null
           loss_type?: string | null
           paid_amt?: number | null
           policy_id?: number
@@ -826,7 +796,6 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: number
-          id_str: string | null
           industry: string
           last_name: string | null
           phone: string | null
@@ -849,7 +818,6 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: number
-          id_str?: string | null
           industry: string
           last_name?: string | null
           phone?: string | null
@@ -872,7 +840,6 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: number
-          id_str?: string | null
           industry?: string
           last_name?: string | null
           phone?: string | null
@@ -892,7 +859,6 @@ export type Database = {
           created_at: string
           due_date: string | null
           id: number
-          id_str: string | null
           inspection_fee: number | null
           inv_ref: string | null
           invoice_date: string | null
@@ -923,7 +889,6 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           inv_ref?: string | null
           invoice_date?: string | null
@@ -954,7 +919,6 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           inv_ref?: string | null
           invoice_date?: string | null
@@ -1031,7 +995,6 @@ export type Database = {
           eff_date: string
           exp_date: string
           id: number
-          id_str: string | null
           lic_ref: string | null
           license_number: string
           license_type: string
@@ -1046,7 +1009,6 @@ export type Database = {
           eff_date: string
           exp_date: string
           id?: never
-          id_str?: string | null
           lic_ref?: string | null
           license_number: string
           license_type: string
@@ -1061,7 +1023,6 @@ export type Database = {
           eff_date?: string
           exp_date?: string
           id?: never
-          id_str?: string | null
           lic_ref?: string | null
           license_number?: string
           license_type?: string
@@ -1128,7 +1089,6 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number
-          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string | null
@@ -1179,7 +1139,6 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string | null
@@ -1230,7 +1189,6 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string | null
@@ -1326,7 +1284,6 @@ export type Database = {
           created_at: string
           due_date: string
           id: number
-          id_str: string | null
           invoice_number: string | null
           payment_date: string | null
           payment_method: string | null
@@ -1343,7 +1300,6 @@ export type Database = {
           created_at?: string
           due_date: string
           id?: never
-          id_str?: string | null
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
@@ -1360,7 +1316,6 @@ export type Database = {
           created_at?: string
           due_date?: string
           id?: never
-          id_str?: string | null
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
@@ -1417,7 +1372,6 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number
-          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string
@@ -1469,7 +1423,6 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business: string
@@ -1521,7 +1474,6 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string
@@ -1621,6 +1573,13 @@ export type Database = {
             referencedRelation: "agencies_with_status"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "policies_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscription"
+            referencedColumns: ["id"]
+          },
         ]
       }
       renewals: {
@@ -1635,7 +1594,6 @@ export type Database = {
           created_at: string
           gross_com_pct_override: number | null
           id: number
-          id_str: string | null
           inspection_fee: number | null
           min_earned_prem_pct: number | null
           new_policy_eff_date: string | null
@@ -1665,7 +1623,6 @@ export type Database = {
           created_at?: string
           gross_com_pct_override?: number | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           min_earned_prem_pct?: number | null
           new_policy_eff_date?: string | null
@@ -1695,7 +1652,6 @@ export type Database = {
           created_at?: string
           gross_com_pct_override?: number | null
           id?: never
-          id_str?: string | null
           inspection_fee?: number | null
           min_earned_prem_pct?: number | null
           new_policy_eff_date?: string | null
@@ -1766,6 +1722,114 @@ export type Database = {
           },
         ]
       }
+      subscription: {
+        Row: {
+          basis_of_participation: string
+          created_at: string
+          id: number
+          market_lead_carrier: string | null
+          notes: string | null
+          policy_id: number
+          ref_year: number
+          several_liability_disclaimer: string
+          subs_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          basis_of_participation?: string
+          created_at?: string
+          id?: never
+          market_lead_carrier?: string | null
+          notes?: string | null
+          policy_id: number
+          ref_year?: number
+          several_liability_disclaimer?: string
+          subs_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          basis_of_participation?: string
+          created_at?: string
+          id?: never
+          market_lead_carrier?: string | null
+          notes?: string | null
+          policy_id?: number
+          ref_year?: number
+          several_liability_disclaimer?: string
+          subs_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_participant: {
+        Row: {
+          carrier_id: number
+          created_at: string
+          id: number
+          notes: string | null
+          participation_pct: number
+          ref_year: number
+          role: string
+          status: string
+          subp_ref: string | null
+          subscription_id: number
+        }
+        Insert: {
+          carrier_id: number
+          created_at?: string
+          id?: never
+          notes?: string | null
+          participation_pct: number
+          ref_year?: number
+          role?: string
+          status?: string
+          subp_ref?: string | null
+          subscription_id: number
+        }
+        Update: {
+          carrier_id?: number
+          created_at?: string
+          id?: never
+          notes?: string | null
+          participation_pct?: number
+          ref_year?: number
+          role?: string
+          status?: string
+          subp_ref?: string | null
+          subscription_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_participant_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_participant_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscription"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       surplus_lines_state_rules: {
         Row: {
           entity_license_accepted: boolean
@@ -1806,7 +1870,6 @@ export type Database = {
           email: string | null
           first_name: string
           id: number
-          id_str: string | null
           last_name: string
           phone: string | null
           ref_year: number
@@ -1821,7 +1884,6 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: never
-          id_str?: string | null
           last_name: string
           phone?: string | null
           ref_year?: number
@@ -1836,7 +1898,6 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: never
-          id_str?: string | null
           last_name?: string
           phone?: string | null
           ref_year?: number
@@ -1861,7 +1922,6 @@ export type Database = {
           days_outstanding: number | null
           due_date: string | null
           id: number | null
-          id_str: string | null
           inv_id: number | null
           invoice_date: string | null
           invoice_total: number | null
@@ -1937,7 +1997,6 @@ export type Database = {
           entity_name: string | null
           first_name: string | null
           id: number | null
-          id_str: string | null
           last_name: string | null
           licensee_type: string | null
           parent_id: number | null
@@ -1967,7 +2026,6 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: number | null
-          id_str?: string | null
           last_name?: string | null
           licensee_type?: string | null
           parent_id?: number | null
@@ -1997,7 +2055,6 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: number | null
-          id_str?: string | null
           last_name?: string | null
           licensee_type?: string | null
           parent_id?: number | null
@@ -2043,7 +2100,6 @@ export type Database = {
         Row: {
           created_at: string | null
           id: number | null
-          id_str: string | null
           notes: string | null
           part_ref: string | null
           participant_name: string | null
@@ -2083,7 +2139,6 @@ export type Database = {
           funding_status: string | null
           gross_commission_amt: number | null
           id: number | null
-          id_str: string | null
           inv_id: number | null
           net_premium_due_carrier: number | null
           notes: string | null
@@ -2156,7 +2211,6 @@ export type Database = {
           entity_license_accepted: boolean | null
           exp_date: string | null
           id: number | null
-          id_str: string | null
           lic_ref: string | null
           license_number: string | null
           license_type: string | null
@@ -2239,7 +2293,6 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number | null
-          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string | null
@@ -2347,6 +2400,13 @@ export type Database = {
             referencedRelation: "agencies_with_status"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "policies_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscription"
+            referencedColumns: ["id"]
+          },
         ]
       }
       renewals_computed: {
@@ -2365,7 +2425,6 @@ export type Database = {
           ev_rnw_gwp: number | null
           gross_com_pct_override: number | null
           id: number | null
-          id_str: string | null
           inspection_fee: number | null
           min_earned_prem_pct: number | null
           new_policy_eff_date: string | null
@@ -2438,10 +2497,89 @@ export type Database = {
           },
         ]
       }
+      subscription_participant_computed: {
+        Row: {
+          carrier_id: number | null
+          carrier_name: string | null
+          created_at: string | null
+          id: number | null
+          notes: string | null
+          participation_amt: number | null
+          participation_pct: number | null
+          policy_id: number | null
+          ref_year: number | null
+          role: string | null
+          status: string | null
+          subp_ref: string | null
+          subscription_id: number | null
+          subscription_total_pct: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_participant_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_participant_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscription"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       bind_new_business: { Args: { p_nbs_id: number }; Returns: number }
       bind_renewal: { Args: { p_renewal_id: number }; Returns: number }
+      cancel_policy: {
+        Args: {
+          p_policy_id: number
+          p_reason?: string
+          p_return_premium?: number
+          p_txn_eff_date?: string
+        }
+        Returns: number
+      }
+      create_endorsement: {
+        Args: {
+          p_cov_a_limit?: number
+          p_cov_c_limit?: number
+          p_deductible_amt?: number
+          p_policy_id: number
+          p_premium_change: number
+          p_reason?: string
+          p_txn_eff_date: string
+          p_txn_exp_date?: string
+        }
+        Returns: number
+      }
+      create_subscription: {
+        Args: {
+          p_market_lead_carrier: string
+          p_notes?: string
+          p_participants: Json
+          p_policy_id: number
+        }
+        Returns: number
+      }
       generate_invoice: { Args: { p_policy_id: number }; Returns: number }
       net_com_uep_asof: {
         Args: { p_report_date?: string }
@@ -2484,6 +2622,14 @@ export type Database = {
       }
       record_cap_remittance: {
         Args: { p_amount: number; p_cap_id: number; p_date?: string }
+        Returns: number
+      }
+      reinstate_policy: {
+        Args: {
+          p_policy_id: number
+          p_reason?: string
+          p_txn_eff_date?: string
+        }
         Returns: number
       }
       seed_renewals: { Args: { p_days_ahead?: number }; Returns: number }

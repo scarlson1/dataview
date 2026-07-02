@@ -22,8 +22,6 @@ alter table public.lob_defaults enable row level security;
 create table public.renewals (
   -- identity
   id                          bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str                      text         generated always as (id::text) stored,
   policy_id                      bigint       not null references public.policies (id),  -- expiring policy
   new_policy_id                  bigint       references public.policies (id),           -- NULL until bound
   -- human-readable reference id (e.g. RNW-2026-0001); see agencies migration for rationale.

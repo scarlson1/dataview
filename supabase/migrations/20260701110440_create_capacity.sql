@@ -5,8 +5,6 @@
 create table public.capacity (
   -- identity & relationships (all targets exist -> live FKs)
   id                      bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str                  text         generated always as (id::text) stored,
   inv_id                  bigint       not null references public.invoices (id),
   -- human-readable reference id (e.g. CAP-2026-0001); see agencies migration for rationale.
   ref_year                smallint     not null default extract(year from now())::smallint,
@@ -52,8 +50,6 @@ create trigger capacity_set_updated_at
 -- Child table: individual carrier remittances (replaces remit1..remit4 slots).
 create table public.capacity_remittance (
   id           bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str       text         generated always as (id::text) stored,
   cap_id       bigint       not null references public.capacity (id) on delete cascade,
   -- human-readable reference id (e.g. CPRM-2026-0001); see agencies migration for rationale.
   ref_year     smallint     not null default extract(year from now())::smallint,

@@ -3,8 +3,6 @@
 create table public.claims (
   -- identity
   id            bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str        text         generated always as (id::text) stored,
   policy_id        bigint       not null references public.policies (id),
   client_id        bigint       not null references public.clients (id),
   carrier_id        bigint       not null references public.carriers (id),

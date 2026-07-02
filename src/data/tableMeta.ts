@@ -128,6 +128,17 @@ export const TABLE_META: Record<string, TableOverlay> = {
     label: 'lob_defaults',
     description: 'Per-line-of-business default renewal probability used by the renewal pipeline.',
   },
+  subscription: {
+    icon: 'binder',
+    description:
+      'Multi-carrier co-insurance headers. Build new ones from the Subscriptions page.',
+  },
+  subscription_participant: {
+    icon: 'binder',
+    source: 'subscription_participant_computed',
+    description:
+      'Per-carrier participation shares with participation $ and the 100% balance check.',
+  },
 };
 
 /** Relations that are companion computed views — hidden from the sidebar. */

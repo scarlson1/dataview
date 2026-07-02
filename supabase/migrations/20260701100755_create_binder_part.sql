@@ -3,8 +3,6 @@
 create table public.binder_part (
   -- identity
   id                      bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str                  text         generated always as (id::text) stored,
   sect_id                 bigint       not null
                              references public.binder_section (id),
   -- human-readable reference id (e.g. PART-2026-0001); see agencies migration for rationale.

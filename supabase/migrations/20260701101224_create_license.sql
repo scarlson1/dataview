@@ -3,8 +3,6 @@
 create table public.license (
   -- identity
   id                  bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str              text         generated always as (id::text) stored,
   agent_id              bigint       not null
                          references public.agencies (id),   -- agent that holds this license
   -- human-readable reference id (e.g. LIC-2026-0001); see agencies migration for rationale.

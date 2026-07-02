@@ -3,8 +3,6 @@
 create table public.agencies (
   -- identity & hierarchy
   id                 bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str             text         generated always as (id::text) stored,
   parent_id          bigint       references public.agencies (id),
   billing_id         bigint       generated always as (
                         case when billing_entity = 'parent'

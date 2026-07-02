@@ -7,6 +7,7 @@
  * same create form pre-filled with the row.
  */
 import { EntityDrawer } from '#/components/EntityDrawer';
+import { PolicyActions } from '#/components/PolicyActions';
 import { StatusChip } from '#/components/StatusChip';
 import { getEntityForm } from '#/data/entityForms';
 import { getTable } from '#/data/tables';
@@ -101,15 +102,30 @@ function DetailRoute() {
         <Typography sx={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace' }}>
           {title}
         </Typography>
-        {entityForm && (
-          <Button
-            variant='contained'
-            startIcon={<Pencil size={16} />}
-            onClick={() => setEditOpen(true)}
-          >
-            Edit
-          </Button>
-        )}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {tableName === 'policies' && (
+            <PolicyActions
+              policyId={Number(id)}
+              polRef={title}
+              onDone={() => {
+                qc.invalidateQueries({
+                  queryKey: ['entity-detail', tableName, id],
+                });
+                qc.invalidateQueries({ queryKey: ['table-data'] });
+                qc.invalidateQueries({ queryKey: ['wf'] });
+              }}
+            />
+          )}
+          {entityForm && (
+            <Button
+              variant='contained'
+              startIcon={<Pencil size={16} />}
+              onClick={() => setEditOpen(true)}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {rowQuery.isLoading ? (

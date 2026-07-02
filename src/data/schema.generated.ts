@@ -43,13 +43,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "inv_id",
         "label": "Inv ID",
         "type": "bigint",
@@ -173,13 +166,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -322,13 +308,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "ar_id",
         "label": "AR ID",
         "type": "bigint",
@@ -416,13 +395,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "parent_id",
@@ -622,13 +594,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "parent_id",
         "label": "Parent ID",
         "type": "bigint",
@@ -825,13 +790,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "carrier_id",
         "label": "Carrier ID",
         "type": "bigint",
@@ -930,13 +888,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "sect_id",
         "label": "Sect ID",
         "type": "bigint",
@@ -1024,13 +975,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "sect_id",
@@ -1129,13 +1073,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "binder_id",
@@ -1247,13 +1184,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -1387,13 +1317,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -1571,13 +1494,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "cap_id",
         "label": "Cap ID",
         "type": "bigint",
@@ -1637,13 +1553,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "ref_year",
@@ -1821,13 +1730,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -1958,13 +1860,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "created_at",
@@ -2117,13 +2012,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -2340,13 +2228,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "agent_id",
         "label": "Agent ID",
         "type": "bigint",
@@ -2441,13 +2322,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "agent_id",
@@ -2749,13 +2623,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "submission_number",
@@ -3119,13 +2986,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -3240,13 +3100,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "parent_policy_id",
         "label": "Parent Policy ID",
         "type": "bigint",
@@ -3312,6 +3165,8 @@ export const SCHEMA = {
         "label": "Subscription ID",
         "type": "bigint",
         "nullable": true,
+        "key": "FK",
+        "references": "subscription",
         "kind": "mono"
       },
       {
@@ -3618,13 +3473,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "parent_policy_id",
@@ -4075,13 +3923,6 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
-      },
-      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -4291,13 +4132,6 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -4525,6 +4359,281 @@ export const SCHEMA = {
       }
     ]
   },
+  "subscription": {
+    "name": "subscription",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "policy_id",
+        "label": "Policy ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "FK",
+        "references": "policies",
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "subs_ref",
+        "label": "Subs Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "basis_of_participation",
+        "label": "Basis Of Participation",
+        "type": "varchar(30)",
+        "nullable": false,
+        "def": "'quota_share'::character varying",
+        "kind": "chip"
+      },
+      {
+        "field": "market_lead_carrier",
+        "label": "Market Lead Carrier",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "several_liability_disclaimer",
+        "label": "Several Liability Disclaimer",
+        "type": "text",
+        "nullable": false,
+        "def": "'Each carrier is liable only for its own share — not for the share of any other participant.'::text",
+        "kind": "text"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
+  "subscription_participant": {
+    "name": "subscription_participant",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "subscription_id",
+        "label": "Subscription ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "FK",
+        "references": "subscription",
+        "kind": "mono"
+      },
+      {
+        "field": "carrier_id",
+        "label": "Carrier ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "FK",
+        "references": "carriers",
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "subp_ref",
+        "label": "Subp Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "role",
+        "label": "Role",
+        "type": "varchar(20)",
+        "nullable": false,
+        "def": "'following'::character varying",
+        "kind": "chip"
+      },
+      {
+        "field": "participation_pct",
+        "label": "Participation PCT",
+        "type": "numeric(10,5)",
+        "nullable": false,
+        "kind": "number"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "varchar(20)",
+        "nullable": false,
+        "def": "'active'::character varying",
+        "kind": "chip"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
+  "subscription_participant_computed": {
+    "name": "subscription_participant_computed",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "subscription_id",
+        "label": "Subscription ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "carrier_id",
+        "label": "Carrier ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "subp_ref",
+        "label": "Subp Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "role",
+        "label": "Role",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "participation_pct",
+        "label": "Participation PCT",
+        "type": "numeric(10,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "carrier_name",
+        "label": "Carrier Name",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "policy_id",
+        "label": "Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "participation_amt",
+        "label": "Participation AMT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "subscription_total_pct",
+        "label": "Subscription Total PCT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
   "surplus_lines_state_rules": {
     "name": "surplus_lines_state_rules",
     "kind": "table",
@@ -4599,13 +4708,6 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
-      },
-      {
-        "field": "id_str",
-        "label": "ID Str",
-        "type": "text",
-        "nullable": true,
-        "kind": "text"
       },
       {
         "field": "ref_year",

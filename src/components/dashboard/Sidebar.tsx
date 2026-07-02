@@ -10,6 +10,7 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
   Database,
+  Layers,
   LogOut,
   Network,
   Settings,
@@ -295,6 +296,12 @@ export const Sidebar = ({
           label='Workflow'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/workflow' })}
+        />
+        <FooterItem
+          icon={<Layers size={20} />}
+          label='Subscriptions'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/subscriptions' })}
         />
         <FooterItem
           icon={<Network size={20} />}

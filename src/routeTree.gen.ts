@@ -17,6 +17,7 @@ import { Route as PoliciesNewRouteImport } from './routes/policies.new'
 import { Route as AuthPasswordResetRouteImport } from './routes/auth.password-reset'
 import { Route as DashboardWorkflowRouteImport } from './routes/_dashboard.workflow'
 import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
+import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
@@ -60,6 +61,11 @@ const DashboardUsersRoute = DashboardUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSubscriptionsRoute = DashboardSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableRoute = DashboardTableRouteImport.update({
   id: '/$table',
   path: '/$table',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRouteWithChildren
+  '/subscriptions': typeof DashboardSubscriptionsRoute
   '/users': typeof DashboardUsersRoute
   '/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/subscriptions': typeof DashboardSubscriptionsRoute
   '/users': typeof DashboardUsersRoute
   '/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRouteWithChildren
+  '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
   '/_dashboard/users': typeof DashboardUsersRoute
   '/_dashboard/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/$table'
+    | '/subscriptions'
     | '/users'
     | '/workflow'
     | '/auth/password-reset'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
   to:
     | '/accept-invite'
     | '/login'
+    | '/subscriptions'
     | '/users'
     | '/workflow'
     | '/auth/password-reset'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/_dashboard/$table'
+    | '/_dashboard/subscriptions'
     | '/_dashboard/users'
     | '/_dashboard/workflow'
     | '/auth/password-reset'
@@ -218,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUsersRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/subscriptions': {
+      id: '/_dashboard/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof DashboardSubscriptionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table': {
       id: '/_dashboard/$table'
       path: '/$table'
@@ -258,6 +277,7 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
 
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
+  DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
   DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -265,6 +285,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRouteWithChildren,
+  DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
   DashboardUsersRoute: DashboardUsersRoute,
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,

@@ -5,8 +5,6 @@
 create table public.accounts_receivable (
   -- identity
   id               bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str           text         generated always as (id::text) stored,
   inv_id           bigint       not null unique references public.invoices (id),  -- one AR per invoice
   -- human-readable reference id (e.g. AR-2026-0001); see agencies migration for rationale.
   ref_year         smallint     not null default extract(year from now())::smallint,
@@ -47,8 +45,6 @@ create trigger accounts_receivable_set_updated_at
 -- Supports unlimited payments; AR summary columns aggregate from this table.
 create table public.accounts_receivable_payments (
   id               bigint       generated always as identity primary key,
-  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
-  id_str           text         generated always as (id::text) stored,
   ar_id            bigint       not null references public.accounts_receivable (id) on delete cascade,
   -- human-readable reference id (e.g. ARPM-2026-0001); see agencies migration for rationale.
   ref_year         smallint     not null default extract(year from now())::smallint,
