@@ -3,11 +3,17 @@
 create table public.agencies (
   -- identity & hierarchy
   id                 bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str             text         generated always as (id::text) stored,
   parent_id          bigint       references public.agencies (id),
   billing_id         bigint       generated always as (
                         case when billing_entity = 'parent'
                              then parent_id else id end
                      ) stored,
+  -- human-readable reference id (e.g. AGT-2026-0001). ref_year is stamped at
+  -- insert; id is zero-padded (global, not per-year) so the value is immutable.
+  ref_year           smallint     not null default extract(year from now())::smallint,
+  agt_ref            varchar(24)  generated always as ('AGT-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
 
   -- classification
   agency_level       varchar(20)  not null

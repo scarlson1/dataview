@@ -52,6 +52,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "ar_ref",
+        "label": "AR Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -157,6 +173,20 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "ar_ref",
+        "label": "AR Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -287,6 +317,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "arpm_ref",
+        "label": "Arpm Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "payment_date",
         "label": "Payment Date",
         "type": "date",
@@ -367,6 +413,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "agencies",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "agt_ref",
+        "label": "AGT Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "agency_level",
@@ -546,6 +608,20 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "agt_ref",
+        "label": "AGT Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "agency_level",
         "label": "Agency Level",
         "type": "varchar(20)",
@@ -723,6 +799,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "bdr_ref",
+        "label": "Bdr Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "binder_number",
         "label": "Binder Number",
         "type": "varchar(50)",
@@ -805,6 +897,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "part_ref",
+        "label": "Part Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "participant_name",
         "label": "Participant Name",
         "type": "varchar(200)",
@@ -874,6 +982,20 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "part_ref",
+        "label": "Part Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "participant_name",
@@ -960,6 +1082,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "binder",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "sect_ref",
+        "label": "Sect Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "section_number",
@@ -1055,6 +1193,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "invoices",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "cap_ref",
+        "label": "Cap Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "ar_id",
@@ -1170,6 +1324,20 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cap_ref",
+        "label": "Cap Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "ar_id",
@@ -1335,6 +1503,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "cprm_ref",
+        "label": "Cprm Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "remit_date",
         "label": "Remit Date",
         "type": "date",
@@ -1369,6 +1553,22 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "car_ref",
+        "label": "CAR Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "carrier_name",
@@ -1557,6 +1757,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "clm_ref",
+        "label": "Clm Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "date_of_loss",
         "label": "Date Of Loss",
         "type": "date",
@@ -1652,6 +1868,22 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "clt_ref",
+        "label": "CLT Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "company_name",
@@ -1789,6 +2021,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "policies",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "inv_ref",
+        "label": "Inv Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "ar_id",
@@ -1989,6 +2237,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "lic_ref",
+        "label": "Lic Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "license_type",
         "label": "License Type",
         "type": "varchar(50)",
@@ -2067,6 +2331,20 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "lic_ref",
+        "label": "Lic Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "license_type",
         "label": "License Type",
         "type": "varchar(50)",
@@ -2142,6 +2420,35 @@ export const SCHEMA = {
         "type": "boolean",
         "nullable": true,
         "kind": "bool"
+      }
+    ]
+  },
+  "lob_defaults": {
+    "name": "lob_defaults",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "line_of_business",
+        "label": "Line Of Business",
+        "type": "varchar(50)",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "default_renew_prob_pct",
+        "label": "Default Renew Prob PCT",
+        "type": "numeric(7,5)",
+        "nullable": false,
+        "kind": "number"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
       }
     ]
   },
@@ -2333,6 +2640,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "policies",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "nbs_ref",
+        "label": "NBS Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "stage",
@@ -2681,6 +3004,22 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "pmt_ref",
+        "label": "Pmt Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
         "field": "due_date",
         "label": "Due Date",
         "type": "date",
@@ -2768,6 +3107,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "policies",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "pol_ref",
+        "label": "POL Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "client_id",
@@ -3106,6 +3461,453 @@ export const SCHEMA = {
       }
     ]
   },
+  "policies_computed": {
+    "name": "policies_computed",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "parent_policy_id",
+        "label": "Parent Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "pol_ref",
+        "label": "POL Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "client_id",
+        "label": "Client ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "agent_id",
+        "label": "Agent ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "carrier_id",
+        "label": "Carrier ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "binder_id",
+        "label": "Binder ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "subscription_id",
+        "label": "Subscription ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "transaction_type",
+        "label": "Transaction Type",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "placement_type",
+        "label": "Placement Type",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "line_of_business",
+        "label": "Line Of Business",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "policy_number",
+        "label": "Policy Number",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "common_policy_prefix",
+        "label": "Common Policy Prefix",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "common_named_insured",
+        "label": "Common Named Insured",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "binder_number",
+        "label": "Binder Number",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "policy_eff_date",
+        "label": "Policy Eff Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "policy_exp_date",
+        "label": "Policy Exp Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "txn_date",
+        "label": "Txn Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "txn_eff_date",
+        "label": "Txn Eff Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "txn_exp_date",
+        "label": "Txn Exp Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "accounting_date",
+        "label": "Accounting Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "annual_premium",
+        "label": "Annual Premium",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "term_terrorism_premium",
+        "label": "Term Terrorism Premium",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "policy_fee",
+        "label": "Policy Fee",
+        "type": "numeric(10,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "inspection_fee",
+        "label": "Inspection Fee",
+        "type": "numeric(10,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "other_fees",
+        "label": "Other Fees",
+        "type": "numeric(10,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "other_fee_description",
+        "label": "Other Fee Description",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "gross_com_pct_override",
+        "label": "Gross Com PCT Override",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "agency_com_pct",
+        "label": "Agency Com PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "min_earned_prem_pct",
+        "label": "Min Earned Prem PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cov_a_limit",
+        "label": "Cov A Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cov_b_limit",
+        "label": "Cov B Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cov_c_limit",
+        "label": "Cov C Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cov_d_limit",
+        "label": "Cov D Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_amt",
+        "label": "Deductible AMT",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_base",
+        "label": "Deductible Base",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "jurisdiction",
+        "label": "Jurisdiction",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "home_state",
+        "label": "Home State",
+        "type": "char(2)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "agency_name_sl_key",
+        "label": "Agency Name SL Key",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "sl_licensee_override_agent_id",
+        "label": "SL Licensee Override Agent ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "yoa",
+        "label": "Yoa",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "lloyds_umr",
+        "label": "Lloyds Umr",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "section_number",
+        "label": "Section Number",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "assigned_to_uw_id",
+        "label": "Assigned To UW ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "term_days",
+        "label": "Term Days",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "current_policy_exp_date",
+        "label": "Current Policy Exp Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "gross_com_pct",
+        "label": "Gross Com PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "term_premium",
+        "label": "Term Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_term_premium",
+        "label": "Total Term Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_term_prem_fees",
+        "label": "Total Term Prem Fees",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "mga_net_com_pct",
+        "label": "Mga Net Com PCT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "carrier_net_pct",
+        "label": "Carrier Net PCT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "gross_com_amt",
+        "label": "Gross Com AMT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "agency_com_amt",
+        "label": "Agency Com AMT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "mga_net_com_amt",
+        "label": "Mga Net Com AMT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "carrier_net_amt",
+        "label": "Carrier Net AMT",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "sl_licensee_name",
+        "label": "SL Licensee Name",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "sl_eligible_licensees",
+        "label": "SL Eligible Licensees",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
   "renewals": {
     "name": "renewals",
     "kind": "table",
@@ -3135,6 +3937,22 @@ export const SCHEMA = {
         "key": "FK",
         "references": "policies",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "rnw_ref",
+        "label": "RNW Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "renewal_status",
@@ -3302,6 +4120,243 @@ export const SCHEMA = {
       }
     ]
   },
+  "renewals_computed": {
+    "name": "renewals_computed",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "policy_id",
+        "label": "Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "new_policy_id",
+        "label": "New Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "rnw_ref",
+        "label": "RNW Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "renewal_status",
+        "label": "Renewal Status",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "assigned_to",
+        "label": "Assigned To",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "bind_order_date",
+        "label": "Bind Order Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "bound_date",
+        "label": "Bound Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "txn_type",
+        "label": "Txn Type",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "new_policy_number",
+        "label": "New Policy Number",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "new_policy_eff_date",
+        "label": "New Policy Eff Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "new_policy_exp_date",
+        "label": "New Policy Exp Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "annual_premium",
+        "label": "Annual Premium",
+        "type": "numeric(14,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "gross_com_pct_override",
+        "label": "Gross Com PCT Override",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "agency_com_pct",
+        "label": "Agency Com PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "min_earned_prem_pct",
+        "label": "Min Earned Prem PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "sl_licensee_override_agent_id",
+        "label": "SL Licensee Override Agent ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "inspection_fee",
+        "label": "Inspection Fee",
+        "type": "numeric(10,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "other_fees",
+        "label": "Other Fees",
+        "type": "numeric(10,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "renew_prob_pct_override",
+        "label": "Renew Prob PCT Override",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "common_policy_prefix",
+        "label": "Common Policy Prefix",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "common_named_insured",
+        "label": "Common Named Insured",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "yoa",
+        "label": "Yoa",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "current_renewal_date",
+        "label": "Current Renewal Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "days_to_renewal",
+        "label": "Days To Renewal",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "term_premium",
+        "label": "Term Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "annualized_premium",
+        "label": "Annualized Premium",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "renew_prob_pct",
+        "label": "Renew Prob PCT",
+        "type": "numeric(7,5)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "ev_rnw_gwp",
+        "label": "EV RNW GWP",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
   "surplus_lines_state_rules": {
     "name": "surplus_lines_state_rules",
     "kind": "table",
@@ -3376,6 +4431,22 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "uw_ref",
+        "label": "UW Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
       },
       {
         "field": "first_name",

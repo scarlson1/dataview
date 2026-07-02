@@ -13,6 +13,8 @@ import { Toaster } from 'sonner';
 // import { ColorModeProvider } from '../theme/ColorModeContext';
 import { theme } from '#/theme/theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -21,25 +23,27 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     // <ColorModeProvider>
-    <ThemeProvider theme={theme}>
-      <CssBaseline enableColorScheme />
-      <Toaster />
-      <QueryClientProvider client={queryClient}>
-        <Outlet />
-      </QueryClientProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline enableColorScheme />
+        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
 
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'TanStack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
-    </ThemeProvider>
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right',
+          }}
+          plugins={[
+            {
+              name: 'TanStack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
+      </ThemeProvider>
+    </LocalizationProvider>
     // </ColorModeProvider>
   );
 }

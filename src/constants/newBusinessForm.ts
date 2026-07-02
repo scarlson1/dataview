@@ -10,28 +10,28 @@ export const addressValues = z.object({
 });
 
 export const newBusinessValues = addressValues.and(z.object({
-    companyName: z.string().min(1),
+  companyName: z.string().min(1),
   clientType: z.string().min(1),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
 }));
-export type NewBusinessValues = z.infer<typeof newBusinessValues>
+export type NewBusinessValues = z.infer<typeof newBusinessValues>;
 
 export const defaultNewBusinessValues: NewBusinessValues = {
-  addressLine1: '',
-  addressLine2: '',
-  city: '',
-  state: '',
-  postal: '',
-  companyName: '',
-  clientType: '',
-  firstName: '',
-  lastName: '',
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  postal: "",
+  companyName: "",
+  clientType: "",
+  firstName: "",
+  lastName: "",
 };
 
 export const newBusinessFormOpts = formOptions({
-    defaultValues: defaultNewBusinessValues,
-    validators: {
-        onSubmit: newBusinessValues,
-    },
-})
+  defaultValues: defaultNewBusinessValues,
+  validators: {
+    onSubmit: newBusinessValues,
+  },
+});

@@ -3,6 +3,11 @@
 create table public.underwriters (
   -- identity
   id           bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str       text         generated always as (id::text) stored,
+  -- human-readable reference id (e.g. UW-2026-0001); see agencies migration for rationale.
+  ref_year     smallint     not null default extract(year from now())::smallint,
+  uw_ref       varchar(24)  generated always as ('UW-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
 
   -- name
   first_name   varchar(100) not null,

@@ -3,7 +3,12 @@
 create table public.binder_section (
   -- identity
   id                   bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str               text         generated always as (id::text) stored,
   binder_id               bigint       not null references public.binder (id),
+  -- human-readable reference id (e.g. SECT-2026-0001); see agencies migration for rationale.
+  ref_year             smallint     not null default extract(year from now())::smallint,
+  sect_ref             varchar(24)  generated always as ('SECT-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
 
   -- section details
   section_number       varchar(20)  not null,   -- e.g. A, B, 1, 2

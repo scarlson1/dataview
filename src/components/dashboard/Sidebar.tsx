@@ -6,7 +6,15 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { ChevronDown, Database, LogOut, Network, Settings } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import {
+  ChevronDown,
+  Database,
+  LogOut,
+  Network,
+  Settings,
+  Workflow,
+} from 'lucide-react';
 import { useState } from 'react';
 import {
   TABLE_GROUPS,
@@ -30,13 +38,16 @@ const FooterItem = ({
   icon,
   label,
   collapsed,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   collapsed: boolean;
+  onClick?: () => void;
 }) => (
   <Tooltip title={collapsed ? label : ''} placement='right'>
     <Box
+      onClick={onClick}
       sx={(theme) => ({
         display: 'flex',
         alignItems: 'center',
@@ -132,6 +143,7 @@ export const Sidebar = ({
   onSelectTable,
   onSignOut,
 }: SidebarProps) => {
+  const navigate = useNavigate();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, true])),
   );
@@ -278,6 +290,12 @@ export const Sidebar = ({
           borderTop: `1px solid ${theme.vars.palette.borderSoft}`,
         })}
       >
+        <FooterItem
+          icon={<Workflow size={20} />}
+          label='Workflow'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/workflow' })}
+        />
         <FooterItem
           icon={<Network size={20} />}
           label='Connections'

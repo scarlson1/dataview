@@ -3,7 +3,12 @@
 create table public.invoices (
   -- identity
   id                     bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str                 text         generated always as (id::text) stored,
   policy_id                 bigint       not null references public.policies (id),
+  -- human-readable reference id (e.g. INV-2026-0001); see agencies migration for rationale.
+  ref_year               smallint     not null default extract(year from now())::smallint,
+  inv_ref                varchar(24)  generated always as ('INV-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
   ar_id                  bigint       unique,   -- FK -> public.accounts_receivable(id), added in AR migration.
                                                  -- Nullable (populated after the AR row is created) to break the
                                                  -- invoices<->AR circular FK; still one invoice per AR (unique).

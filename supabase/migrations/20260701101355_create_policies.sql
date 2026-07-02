@@ -5,7 +5,12 @@
 create table public.policies (
   -- identity & relationships
   id                          bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str                      text         generated always as (id::text) stored,
   parent_policy_id               bigint       references public.policies (id),   -- NULL = New Business
+  -- human-readable reference id (e.g. POL-2026-0001); see agencies migration for rationale.
+  ref_year                    smallint     not null default extract(year from now())::smallint,
+  pol_ref                     varchar(24)  generated always as ('POL-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
   client_id                      bigint       not null references public.clients (id),
   agent_id                      bigint       not null references public.agencies (id),
   carrier_id                      bigint       references public.carriers (id),    -- NULL if Subscription
@@ -126,53 +131,50 @@ alter table public.policies enable row level security;
 -- ============================================================================
 
 -- ============================================================================
--- DEFERRED VIEW: policies_computed
--- All referenced tables now exist (binder, license, agencies). This is no longer
--- blocked by a missing table — it is gated only on confirming the BUSINESS
--- ASSUMPTIONS below before it's trusted for revenue/commission numbers:
---   * term_days interpretation (transaction term vs policy term)
---   * "chain" = COALESCE(parent_policy_id, id) for current_policy_exp_date
---   * SL licensee resolution across the agency vertical chain (approximated to
---     the license's own agent_id; sl_licensee_name pulls agencies.display_name via
---     license.agent_id, since LIC has no name column)
---
--- create view public.policies_computed
---   with (security_invoker = true) as
--- with derived as (
---   select p.*,
---     -- pro-rata term (ASSUMPTION: transaction term, falling back to policy term)
---     (coalesce(p.txn_exp_date, p.policy_exp_date)
---        - coalesce(p.txn_eff_date, p.policy_eff_date))                 as term_days,
---     max(p.txn_exp_date) over (partition by coalesce(p.parent_policy_id, p.id))
---                                                                       as current_policy_exp_date,
---     coalesce(p.gross_com_pct_override, b.gross_com_pct)               as gross_com_pct
---   from public.policies p
---   left join public.binder b on b.id = p.binder_id
--- )
--- select d.*,
---   round(d.annual_premium * d.term_days / 365.0, 2)                    as term_premium,
---   round(d.annual_premium * d.term_days / 365.0, 2)
---     + coalesce(d.term_terrorism_premium, 0)                           as total_term_premium,
---   round(d.annual_premium * d.term_days / 365.0, 2)
---     + coalesce(d.term_terrorism_premium, 0)
---     + coalesce(d.policy_fee, 0) + coalesce(d.inspection_fee, 0)
---     + coalesce(d.other_fees, 0)                                       as total_term_prem_fees,
---   (d.gross_com_pct - d.agency_com_pct)                                as mga_net_com_pct,
---   (1 - d.gross_com_pct)                                               as carrier_net_pct,
---   -- *_amt use total_term_premium (= pro-rata + terrorism):
---   (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * d.gross_com_pct               as gross_com_amt,
---   (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * d.agency_com_pct              as agency_com_amt,
---   (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * (d.gross_com_pct - d.agency_com_pct) as mga_net_com_amt,
---   (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * (1 - d.gross_com_pct)         as carrier_net_amt,
---   -- SL resolution (APPROXIMATED to the license's own agent_id + home_state;
---   -- refine for the agency vertical chain):
---   (select a.display_name from public.license l
---      join public.agencies a on a.id = l.agent_id
---      where l.default_sl_licensee and l.state = d.home_state
---        and l.agent_id = coalesce(d.sl_licensee_override_agent_id, d.agent_id)
---      limit 1)                                                         as sl_licensee_name,
---   (select count(*) from public.license l
---      where l.state = d.home_state and l.status = 'active'
---        and l.agent_id = d.agent_id)                                       as sl_eligible_licensees
--- from derived d;
+-- VIEW: policies_computed — derived premium & commission math for POL.
+-- BUSINESS ASSUMPTIONS (confirm before trusting revenue/commission numbers):
+--   * term_days = transaction term (txn_eff/exp), falling back to policy term.
+--   * "chain" = COALESCE(parent_policy_id, id) for current_policy_exp_date.
+--   * SL licensee resolution approximated to the license's own agent_id;
+--     sl_licensee_name pulls agencies.display_name via license.agent_id
+--     (LIC has no name column). Refine for the agency vertical chain later.
+-- "Active" license = exp_date >= current_date (matches license_computed.status).
+create view public.policies_computed
+  with (security_invoker = true) as
+with derived as (
+  select p.*,
+    (coalesce(p.txn_exp_date, p.policy_exp_date)
+       - coalesce(p.txn_eff_date, p.policy_eff_date))                 as term_days,
+    max(p.txn_exp_date) over (partition by coalesce(p.parent_policy_id, p.id))
+                                                                      as current_policy_exp_date,
+    coalesce(p.gross_com_pct_override, b.gross_com_pct)               as gross_com_pct
+  from public.policies p
+  left join public.binder b on b.id = p.binder_id
+)
+select d.*,
+  round(d.annual_premium * d.term_days / 365.0, 2)                    as term_premium,
+  round(d.annual_premium * d.term_days / 365.0, 2)
+    + coalesce(d.term_terrorism_premium, 0)                           as total_term_premium,
+  round(d.annual_premium * d.term_days / 365.0, 2)
+    + coalesce(d.term_terrorism_premium, 0)
+    + coalesce(d.policy_fee, 0) + coalesce(d.inspection_fee, 0)
+    + coalesce(d.other_fees, 0)                                       as total_term_prem_fees,
+  (d.gross_com_pct - d.agency_com_pct)                                as mga_net_com_pct,
+  (1 - d.gross_com_pct)                                               as carrier_net_pct,
+  -- *_amt use total_term_premium (= pro-rata + terrorism):
+  (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * d.gross_com_pct               as gross_com_amt,
+  (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * d.agency_com_pct              as agency_com_amt,
+  (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * (d.gross_com_pct - d.agency_com_pct) as mga_net_com_amt,
+  (round(d.annual_premium * d.term_days / 365.0, 2) + coalesce(d.term_terrorism_premium,0)) * (1 - d.gross_com_pct)         as carrier_net_amt,
+  (select a.display_name from public.license l
+     join public.agencies a on a.id = l.agent_id
+     where l.default_sl_licensee and l.state = d.home_state
+       and l.agent_id = coalesce(d.sl_licensee_override_agent_id, d.agent_id)
+     limit 1)                                                         as sl_licensee_name,
+  (select count(*) from public.license l
+     where l.state = d.home_state and l.exp_date >= current_date
+       and l.agent_id = d.agent_id)                                   as sl_eligible_licensees
+from derived d;
+
+grant select on public.policies_computed to authenticated;
 -- ============================================================================

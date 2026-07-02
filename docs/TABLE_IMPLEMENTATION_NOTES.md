@@ -8,6 +8,12 @@ spec fields do not translate literally to Postgres.
 
 - **`id` is `bigint generated always as identity`** (auto-increment), replacing
   the `*-YYYY-NNN` string ID formats in the specs. Related FKs are `bigint`.
+- **`id_str text generated always as (id::text) stored`** on every table with a
+  `bigint` `id` PK. supabase-js can't cast a column in a query (`select('id::text')`)
+  and can't `ilike` an integer, so this stored column exposes the id as text for
+  string reads/search. Writes still use the `bigint` `id`/FKs (coerce form string →
+  number at the boundary). Not on the two natural-key tables (`lob_defaults`,
+  `surplus_lines_state_rules`), which have no `id`.
 - **`TIMESTAMP` → `timestamptz`** for all audit columns.
 - **`updated_at ON UPDATE NOW()`** → a `before update` trigger, since Postgres
   has no `ON UPDATE` clause. Shared function: `public.set_updated_at()`
@@ -309,3 +315,74 @@ total_term_premium → total_term_prem_fees`, commission rates/amounts) must be 
   `annualized_premium`) — both still undefined.
 - (Done: binder/`binder`, POL/`policies`, UW/`underwriters`, AR — all `binder_id`/
   `policy_id`/`new_policy_id`/`assigned_to`/`ar_id` FKs are now live.)
+
+---
+
+## Policy-cycle logic implementation (workbook v3) — June 2026
+
+Implemented on top of the existing schema; migrations edited **in place** (not yet
+deployed) and validated with `supabase db reset --local`.
+
+### Human-readable reference IDs
+
+Every top-level entity now has a stored generated `*_ref` column
+(`AGT-`, `CAR-`, `CLT-`, `BDR-`, `SECT-`, `PART-`, `LIC-`, `UW-`, `POL-`, `NBS-`,
+`RNW-`, `CLM-`, `PMT-`, `INV-`, `AR-`, `ARPM-`, `CAP-`, `CPRM-`), e.g.
+`POL-2026-00001`, with an inline `unique`. Format is `PREFIX-<ref_year>-<id padded 5>`:
+
+- **Pad width is 5** (`lpad(id::text, 5, '0')`). `lpad` truncates from the right
+  when the string exceeds the width, so a width of 4 would silently map id `10000`
+  → `1000` and collide with id `1000`'s ref — and since `*_ref` is `unique`, the
+  10,000th insert in a year would fail. Width 5 caps at 99,999 per year per table;
+  raise the number (or switch to `lpad(id::text, greatest(5, length(id::text)), '0')`
+  to never truncate) if a table can exceed that.
+
+- `ref_year smallint` is stamped at insert (`extract(year from now())`); the
+  workbook's per-year `NNN` reset is **not** reproduced — we zero-pad the global
+  `id` instead, which is unique and stable.
+- `to_char(timestamptz, …)` is **not IMMUTABLE**, so the year comes from the
+  stored `ref_year` column (not `created_at`) to keep the generated expression valid.
+
+### Activated computed views
+
+- **`policies_computed`** (was staged/commented in `create_policies.sql`) is now
+  live — resolves `gross_com_pct = COALESCE(override, binder rate)`, pro-rata
+  `term_premium`, `total_term_premium`, `total_term_prem_fees`, `mga_net_com_*`,
+  `carrier_net_*`, chain `current_policy_exp_date`, and SL licensee resolution.
+  Fixed a latent bug: the `sl_eligible_licensees` subquery referenced
+  `license.status` (which doesn't exist — status lives in `license_computed`);
+  replaced with an inline `exp_date >= current_date` "active" check.
+  **Assumptions still to confirm:** term_days = transaction term (fallback policy
+  term); chain = `COALESCE(parent_policy_id, id)`; SL resolution approximated to
+  the license's own `agent_id`.
+- **`lob_defaults`** reference table (`line_of_business` PK,
+  `default_renew_prob_pct`) seeded per LOB — supplies the previously-missing
+  renewal-probability source.
+- **`renewals_computed`** now live — sources `current_renewal_date`/`term_premium`
+  from `policies_computed`, `renew_prob_pct` from `lob_defaults`, and derives
+  `days_to_renewal`, `annualized_premium` (prior-year adjustments treated as 0),
+  `ev_rnw_gwp`.
+
+### Lifecycle functions — `20260701180000_lifecycle_functions.sql`
+
+`security definer`, `search_path = public`, `execute` granted to `authenticated`:
+
+- `bind_new_business(nbs_id)` → POL (mirror fields), sets `nbs.policy_id`/`stage='bound'`.
+- `bind_renewal(renewal_id)` → renewal POL (parent = expiring), sets
+  `renewals.new_policy_id`/`bound`, expires the prior policy. Guards non-renewal
+  and already-bound.
+- `seed_renewals(days_ahead)` → pending RNW rows for active head policies expiring
+  in-window without one.
+- `generate_invoice(policy_id)` → INV snapshot (from `policies_computed`) → AR →
+  back-fill `invoices.ar_id` → CAP (only when `carrier_id` is set; subscription
+  placements have no single-carrier payable). One invoice per policy.
+- `record_ar_payment(...)` / `record_cap_remittance(...)` → validated child inserts;
+  the latter is bounded by live `capacity_computed.available_for_payment`; both
+  refresh the parent status column.
+
+### RLS
+
+`grant_authenticated_read_access.sql` extended from read-only to permissive
+read **+ write** (`select, insert, update, delete` + `for all` policy) for
+`authenticated` across base tables (incl. `lob_defaults`), since the app now writes.
+Single-tenant internal tool; per-underwriter/agency scoping is a future refinement.

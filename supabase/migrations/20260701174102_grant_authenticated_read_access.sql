@@ -30,12 +30,22 @@ begin
     'accounts_receivable',
     'accounts_receivable_payments',
     'capacity',
-    'capacity_remittance'
+    'capacity_remittance',
+    'lob_defaults'
   ]
   loop
-    execute format('grant select on public.%I to authenticated', t);
+    -- Read + write for the authenticated role. The app now performs multi-table
+    -- writes (New Business, invoicing, payments) via the lifecycle functions and
+    -- direct inserts; this is a single-tenant internal MGA tool, so the policies
+    -- are permissive. Per-underwriter/agency scoping (assigned_to*, agent_id)
+    -- would be added here later.
+    execute format('grant select, insert, update, delete on public.%I to authenticated', t);
     execute format(
       'create policy "authenticated read" on public.%I for select to authenticated using (true)',
+      t
+    );
+    execute format(
+      'create policy "authenticated write" on public.%I for all to authenticated using (true) with check (true)',
       t
     );
   end loop;
@@ -49,3 +59,5 @@ grant select on public.binder_part_computed          to authenticated;
 grant select on public.license_computed              to authenticated;
 grant select on public.capacity_computed             to authenticated;
 grant select on public.net_com_uep                   to authenticated;
+grant select on public.policies_computed             to authenticated;
+grant select on public.renewals_computed             to authenticated;

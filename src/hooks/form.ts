@@ -9,18 +9,20 @@ import { fieldContext, formContext } from './formContext';
 
 const TextField = lazy(() => import('../components/forms/TextField.tsx'));
 // const DatePicker = lazy(() => import('../components/forms/DatePicker.tsx'));
-// const Autocomplete = lazy(() => import('../components/forms/Autocomplete.tsx'));
+const Autocomplete = lazy(() => import('../components/forms/Autocomplete.tsx'));
+const EntitySelect = lazy(() => import('../components/forms/EntitySelect.tsx'));
 
 // TODO: create other reusable input types (number input, select, masked fields etc.)
 
 // useAppForm is similar to useForm, but provides reusable custom UI components (<field.TextField>, <form.SubmitButton>, etc.)
-const { useAppForm, withForm } = createFormHook({
+const { useAppForm, withForm, withFieldGroup } = createFormHook({
   fieldComponents: {
     TextField,
     // Checkbox,
     // Select,
     // DatePicker,
-    // Autocomplete,
+    Autocomplete,
+    EntitySelect,
     // MaskInput,
   },
   formComponents: {
@@ -31,4 +33,4 @@ const { useAppForm, withForm } = createFormHook({
   formContext,
 });
 
-export { useAppForm, withForm };
+export { useAppForm, withFieldGroup, withForm };

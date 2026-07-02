@@ -37,6 +37,7 @@ export type Database = {
       accounts_receivable: {
         Row: {
           agent_id: number
+          ar_ref: string | null
           ar_status: string
           client_id: number
           collection_notes: string | null
@@ -47,11 +48,13 @@ export type Database = {
           invoice_date: string
           invoice_total: number
           policy_id: number
+          ref_year: number
           updated_at: string
           write_off_amt: number | null
         }
         Insert: {
           agent_id: number
+          ar_ref?: string | null
           ar_status?: string
           client_id: number
           collection_notes?: string | null
@@ -62,11 +65,13 @@ export type Database = {
           invoice_date: string
           invoice_total: number
           policy_id: number
+          ref_year?: number
           updated_at?: string
           write_off_amt?: number | null
         }
         Update: {
           agent_id?: number
+          ar_ref?: string | null
           ar_status?: string
           client_id?: number
           collection_notes?: string | null
@@ -77,6 +82,7 @@ export type Database = {
           invoice_date?: string
           invoice_total?: number
           policy_id?: number
+          ref_year?: number
           updated_at?: string
           write_off_amt?: number | null
         }
@@ -116,11 +122,19 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "accounts_receivable_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       accounts_receivable_payments: {
         Row: {
           ar_id: number
+          arpm_ref: string | null
           created_at: string
           created_by: string | null
           id: number
@@ -128,10 +142,12 @@ export type Database = {
           payment_amount: number
           payment_date: string
           payment_method: string | null
+          ref_year: number
           reference_number: string | null
         }
         Insert: {
           ar_id: number
+          arpm_ref?: string | null
           created_at?: string
           created_by?: string | null
           id?: never
@@ -139,10 +155,12 @@ export type Database = {
           payment_amount: number
           payment_date: string
           payment_method?: string | null
+          ref_year?: number
           reference_number?: string | null
         }
         Update: {
           ar_id?: number
+          arpm_ref?: string | null
           created_at?: string
           created_by?: string | null
           id?: never
@@ -150,6 +168,7 @@ export type Database = {
           payment_amount?: number
           payment_date?: string
           payment_method?: string | null
+          ref_year?: number
           reference_number?: string | null
         }
         Relationships: [
@@ -174,6 +193,7 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           agency_level: string
+          agt_ref: string | null
           billing_entity: string
           billing_id: number | null
           city: string | null
@@ -191,6 +211,7 @@ export type Database = {
           licensee_type: string
           parent_id: number | null
           phone: string | null
+          ref_year: number
           state: string | null
           status: string
           updated_at: string
@@ -200,6 +221,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agency_level: string
+          agt_ref?: string | null
           billing_entity: string
           billing_id?: number | null
           city?: string | null
@@ -217,6 +239,7 @@ export type Database = {
           licensee_type: string
           parent_id?: number | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           status?: string
           updated_at?: string
@@ -226,6 +249,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agency_level?: string
+          agt_ref?: string | null
           billing_entity?: string
           billing_id?: number | null
           city?: string | null
@@ -243,6 +267,7 @@ export type Database = {
           licensee_type?: string
           parent_id?: number | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           status?: string
           updated_at?: string
@@ -281,6 +306,7 @@ export type Database = {
       }
       binder: {
         Row: {
+          bdr_ref: string | null
           binder_number: string
           carrier_id: number
           created_at: string
@@ -289,10 +315,12 @@ export type Database = {
           gross_com_pct: number
           id: number
           notes: string | null
+          ref_year: number
           updated_at: string
           yoa: number | null
         }
         Insert: {
+          bdr_ref?: string | null
           binder_number: string
           carrier_id: number
           created_at?: string
@@ -301,10 +329,12 @@ export type Database = {
           gross_com_pct: number
           id?: never
           notes?: string | null
+          ref_year?: number
           updated_at?: string
           yoa?: number | null
         }
         Update: {
+          bdr_ref?: string | null
           binder_number?: string
           carrier_id?: number
           created_at?: string
@@ -313,6 +343,7 @@ export type Database = {
           gross_com_pct?: number
           id?: never
           notes?: string | null
+          ref_year?: number
           updated_at?: string
           yoa?: number | null
         }
@@ -331,9 +362,11 @@ export type Database = {
           created_at: string
           id: number
           notes: string | null
+          part_ref: string | null
           participant_name: string
           participant_type: string
           participation_pct: number
+          ref_year: number
           sect_id: number
           status: string
           syndicate_entity_number: string | null
@@ -342,9 +375,11 @@ export type Database = {
           created_at?: string
           id?: never
           notes?: string | null
+          part_ref?: string | null
           participant_name: string
           participant_type: string
           participation_pct: number
+          ref_year?: number
           sect_id: number
           status?: string
           syndicate_entity_number?: string | null
@@ -353,9 +388,11 @@ export type Database = {
           created_at?: string
           id?: never
           notes?: string | null
+          part_ref?: string | null
           participant_name?: string
           participant_type?: string
           participation_pct?: number
+          ref_year?: number
           sect_id?: number
           status?: string
           syndicate_entity_number?: string | null
@@ -379,6 +416,8 @@ export type Database = {
           notes: string | null
           participation_amt: number | null
           participation_pct: number
+          ref_year: number
+          sect_ref: string | null
           section_attachment: number | null
           section_display_name: string | null
           section_limit: number | null
@@ -393,6 +432,8 @@ export type Database = {
           notes?: string | null
           participation_amt?: number | null
           participation_pct: number
+          ref_year?: number
+          sect_ref?: string | null
           section_attachment?: number | null
           section_display_name?: string | null
           section_limit?: number | null
@@ -407,6 +448,8 @@ export type Database = {
           notes?: string | null
           participation_amt?: number | null
           participation_pct?: number
+          ref_year?: number
+          sect_ref?: string | null
           section_attachment?: number | null
           section_display_name?: string | null
           section_limit?: number | null
@@ -427,6 +470,7 @@ export type Database = {
         Row: {
           ap_status: string
           ar_id: number
+          cap_ref: string | null
           carrier_id: number
           client_id: number
           commission_pct: number | null
@@ -437,12 +481,14 @@ export type Database = {
           net_premium_due_carrier: number | null
           notes: string | null
           policy_id: number
+          ref_year: number
           term_premium: number | null
           updated_at: string
         }
         Insert: {
           ap_status?: string
           ar_id: number
+          cap_ref?: string | null
           carrier_id: number
           client_id: number
           commission_pct?: number | null
@@ -453,12 +499,14 @@ export type Database = {
           net_premium_due_carrier?: number | null
           notes?: string | null
           policy_id: number
+          ref_year?: number
           term_premium?: number | null
           updated_at?: string
         }
         Update: {
           ap_status?: string
           ar_id?: number
+          cap_ref?: string | null
           carrier_id?: number
           client_id?: number
           commission_pct?: number | null
@@ -469,6 +517,7 @@ export type Database = {
           net_premium_due_carrier?: number | null
           notes?: string | null
           policy_id?: number
+          ref_year?: number
           term_premium?: number | null
           updated_at?: string
         }
@@ -515,27 +564,40 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "capacity_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       capacity_remittance: {
         Row: {
           cap_id: number
+          cprm_ref: string | null
           created_at: string
           id: number
+          ref_year: number
           remit_amount: number
           remit_date: string
         }
         Insert: {
           cap_id: number
+          cprm_ref?: string | null
           created_at?: string
           id?: never
+          ref_year?: number
           remit_amount: number
           remit_date: string
         }
         Update: {
           cap_id?: number
+          cprm_ref?: string | null
           created_at?: string
           id?: never
+          ref_year?: number
           remit_amount?: number
           remit_date?: string
         }
@@ -561,6 +623,7 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           am_best_rating: string | null
+          car_ref: string | null
           carrier_name: string
           carrier_type: string | null
           city: string | null
@@ -574,6 +637,7 @@ export type Database = {
           lines_of_business: string | null
           naic_number: string | null
           phone: string | null
+          ref_year: number
           state: string | null
           state_admitted: string | null
           status: string
@@ -584,6 +648,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           am_best_rating?: string | null
+          car_ref?: string | null
           carrier_name: string
           carrier_type?: string | null
           city?: string | null
@@ -597,6 +662,7 @@ export type Database = {
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           state_admitted?: string | null
           status?: string
@@ -607,6 +673,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           am_best_rating?: string | null
+          car_ref?: string | null
           carrier_name?: string
           carrier_type?: string | null
           city?: string | null
@@ -620,6 +687,7 @@ export type Database = {
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           state_admitted?: string | null
           status?: string
@@ -633,6 +701,7 @@ export type Database = {
           adjuster: string | null
           carrier_id: number
           client_id: number
+          clm_ref: string | null
           created_at: string
           date_of_loss: string
           date_reported: string
@@ -641,6 +710,7 @@ export type Database = {
           loss_type: string | null
           paid_amt: number | null
           policy_id: number
+          ref_year: number
           reserve_amt: number | null
           status: string
           updated_at: string
@@ -649,6 +719,7 @@ export type Database = {
           adjuster?: string | null
           carrier_id: number
           client_id: number
+          clm_ref?: string | null
           created_at?: string
           date_of_loss: string
           date_reported: string
@@ -657,6 +728,7 @@ export type Database = {
           loss_type?: string | null
           paid_amt?: number | null
           policy_id: number
+          ref_year?: number
           reserve_amt?: number | null
           status?: string
           updated_at?: string
@@ -665,6 +737,7 @@ export type Database = {
           adjuster?: string | null
           carrier_id?: number
           client_id?: number
+          clm_ref?: string | null
           created_at?: string
           date_of_loss?: string
           date_reported?: string
@@ -673,6 +746,7 @@ export type Database = {
           loss_type?: string | null
           paid_amt?: number | null
           policy_id?: number
+          ref_year?: number
           reserve_amt?: number | null
           status?: string
           updated_at?: string
@@ -699,6 +773,13 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "claims_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       clients: {
@@ -707,6 +788,7 @@ export type Database = {
           address_line2: string | null
           city: string | null
           client_type: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref: string | null
           company_name: string | null
           country: string | null
           created_at: string
@@ -717,6 +799,7 @@ export type Database = {
           industry: string
           last_name: string | null
           phone: string | null
+          ref_year: number
           state: string | null
           status: Database["public"]["Enums"]["clientstatus"]
           updated_at: string
@@ -727,6 +810,7 @@ export type Database = {
           address_line2?: string | null
           city?: string | null
           client_type?: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref?: string | null
           company_name?: string | null
           country?: string | null
           created_at?: string
@@ -737,6 +821,7 @@ export type Database = {
           industry: string
           last_name?: string | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           status?: Database["public"]["Enums"]["clientstatus"]
           updated_at?: string
@@ -747,6 +832,7 @@ export type Database = {
           address_line2?: string | null
           city?: string | null
           client_type?: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref?: string | null
           company_name?: string | null
           country?: string | null
           created_at?: string
@@ -757,6 +843,7 @@ export type Database = {
           industry?: string
           last_name?: string | null
           phone?: string | null
+          ref_year?: number
           state?: string | null
           status?: Database["public"]["Enums"]["clientstatus"]
           updated_at?: string
@@ -773,6 +860,7 @@ export type Database = {
           due_date: string | null
           id: number
           inspection_fee: number | null
+          inv_ref: string | null
           invoice_date: string | null
           invoice_status: string
           mga_net_com_amt: number | null
@@ -784,6 +872,7 @@ export type Database = {
           policy_exp_date: string | null
           policy_fee: number | null
           policy_id: number
+          ref_year: number
           term_premium: number | null
           term_terrorism_premium: number | null
           total_term_prem_fees: number | null
@@ -801,6 +890,7 @@ export type Database = {
           due_date?: string | null
           id?: never
           inspection_fee?: number | null
+          inv_ref?: string | null
           invoice_date?: string | null
           invoice_status?: string
           mga_net_com_amt?: number | null
@@ -812,6 +902,7 @@ export type Database = {
           policy_exp_date?: string | null
           policy_fee?: number | null
           policy_id: number
+          ref_year?: number
           term_premium?: number | null
           term_terrorism_premium?: number | null
           total_term_prem_fees?: number | null
@@ -829,6 +920,7 @@ export type Database = {
           due_date?: string | null
           id?: never
           inspection_fee?: number | null
+          inv_ref?: string | null
           invoice_date?: string | null
           invoice_status?: string
           mga_net_com_amt?: number | null
@@ -840,6 +932,7 @@ export type Database = {
           policy_exp_date?: string | null
           policy_fee?: number | null
           policy_id?: number
+          ref_year?: number
           term_premium?: number | null
           term_terrorism_premium?: number | null
           total_term_prem_fees?: number | null
@@ -885,6 +978,13 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invoices_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       license: {
@@ -895,9 +995,11 @@ export type Database = {
           eff_date: string
           exp_date: string
           id: number
+          lic_ref: string | null
           license_number: string
           license_type: string
           notes: string | null
+          ref_year: number
           state: string
         }
         Insert: {
@@ -907,9 +1009,11 @@ export type Database = {
           eff_date: string
           exp_date: string
           id?: never
+          lic_ref?: string | null
           license_number: string
           license_type: string
           notes?: string | null
+          ref_year?: number
           state: string
         }
         Update: {
@@ -919,9 +1023,11 @@ export type Database = {
           eff_date?: string
           exp_date?: string
           id?: never
+          lic_ref?: string | null
           license_number?: string
           license_type?: string
           notes?: string | null
+          ref_year?: number
           state?: string
         }
         Relationships: [
@@ -940,6 +1046,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lob_defaults: {
+        Row: {
+          created_at: string
+          default_renew_prob_pct: number
+          line_of_business: string
+        }
+        Insert: {
+          created_at?: string
+          default_renew_prob_pct: number
+          line_of_business: string
+        }
+        Update: {
+          created_at?: string
+          default_renew_prob_pct?: number
+          line_of_business?: string
+        }
+        Relationships: []
       }
       new_business_submissions: {
         Row: {
@@ -970,6 +1094,7 @@ export type Database = {
           line_of_business: string | null
           lloyds_umr: string | null
           min_earned_prem_pct: number | null
+          nbs_ref: string | null
           notes: string | null
           other_fee_description: string | null
           other_fees: number | null
@@ -981,6 +1106,7 @@ export type Database = {
           priority: string | null
           quote_due_date: string | null
           quote_received: string | null
+          ref_year: number
           section_number: string | null
           sl_licensee_override_agent_id: number | null
           stage: string
@@ -1018,6 +1144,7 @@ export type Database = {
           line_of_business?: string | null
           lloyds_umr?: string | null
           min_earned_prem_pct?: number | null
+          nbs_ref?: string | null
           notes?: string | null
           other_fee_description?: string | null
           other_fees?: number | null
@@ -1029,6 +1156,7 @@ export type Database = {
           priority?: string | null
           quote_due_date?: string | null
           quote_received?: string | null
+          ref_year?: number
           section_number?: string | null
           sl_licensee_override_agent_id?: number | null
           stage?: string
@@ -1066,6 +1194,7 @@ export type Database = {
           line_of_business?: string | null
           lloyds_umr?: string | null
           min_earned_prem_pct?: number | null
+          nbs_ref?: string | null
           notes?: string | null
           other_fee_description?: string | null
           other_fees?: number | null
@@ -1077,6 +1206,7 @@ export type Database = {
           priority?: string | null
           quote_due_date?: string | null
           quote_received?: string | null
+          ref_year?: number
           section_number?: string | null
           sl_licensee_override_agent_id?: number | null
           stage?: string
@@ -1136,6 +1266,13 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "new_business_submissions_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       payments: {
@@ -1150,7 +1287,9 @@ export type Database = {
           invoice_number: string | null
           payment_date: string | null
           payment_method: string | null
+          pmt_ref: string | null
           policy_id: number
+          ref_year: number
           status: string
         }
         Insert: {
@@ -1164,7 +1303,9 @@ export type Database = {
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
+          pmt_ref?: string | null
           policy_id: number
+          ref_year?: number
           status?: string
         }
         Update: {
@@ -1178,7 +1319,9 @@ export type Database = {
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
+          pmt_ref?: string | null
           policy_id?: number
+          ref_year?: number
           status?: string
         }
         Relationships: [
@@ -1194,6 +1337,13 @@ export type Database = {
             columns: ["policy_id"]
             isOneToOne: false
             referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
             referencedColumns: ["id"]
           },
         ]
@@ -1232,10 +1382,12 @@ export type Database = {
           other_fees: number | null
           parent_policy_id: number | null
           placement_type: string
+          pol_ref: string | null
           policy_eff_date: string
           policy_exp_date: string
           policy_fee: number | null
           policy_number: string | null
+          ref_year: number
           section_number: string | null
           sl_licensee_override_agent_id: number | null
           status: string
@@ -1281,10 +1433,12 @@ export type Database = {
           other_fees?: number | null
           parent_policy_id?: number | null
           placement_type?: string
+          pol_ref?: string | null
           policy_eff_date: string
           policy_exp_date: string
           policy_fee?: number | null
           policy_number?: string | null
+          ref_year?: number
           section_number?: string | null
           sl_licensee_override_agent_id?: number | null
           status?: string
@@ -1330,10 +1484,12 @@ export type Database = {
           other_fees?: number | null
           parent_policy_id?: number | null
           placement_type?: string
+          pol_ref?: string | null
           policy_eff_date?: string
           policy_exp_date?: string
           policy_fee?: number | null
           policy_number?: string | null
+          ref_year?: number
           section_number?: string | null
           sl_licensee_override_agent_id?: number | null
           status?: string
@@ -1397,6 +1553,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "policies_parent_policy_id_fkey"
+            columns: ["parent_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "policies_sl_licensee_override_agent_id_fkey"
             columns: ["sl_licensee_override_agent_id"]
             isOneToOne: false
@@ -1433,8 +1596,10 @@ export type Database = {
           notes: string | null
           other_fees: number | null
           policy_id: number
+          ref_year: number
           renew_prob_pct_override: number | null
           renewal_status: string
+          rnw_ref: string | null
           sl_licensee_override_agent_id: number | null
           txn_type: string | null
           updated_at: string
@@ -1460,8 +1625,10 @@ export type Database = {
           notes?: string | null
           other_fees?: number | null
           policy_id: number
+          ref_year?: number
           renew_prob_pct_override?: number | null
           renewal_status?: string
+          rnw_ref?: string | null
           sl_licensee_override_agent_id?: number | null
           txn_type?: string | null
           updated_at?: string
@@ -1487,8 +1654,10 @@ export type Database = {
           notes?: string | null
           other_fees?: number | null
           policy_id?: number
+          ref_year?: number
           renew_prob_pct_override?: number | null
           renewal_status?: string
+          rnw_ref?: string | null
           sl_licensee_override_agent_id?: number | null
           txn_type?: string | null
           updated_at?: string
@@ -1510,10 +1679,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "renewals_new_policy_id_fkey"
+            columns: ["new_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "renewals_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
             referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
             referencedColumns: ["id"]
           },
           {
@@ -1574,9 +1757,11 @@ export type Database = {
           id: number
           last_name: string
           phone: string | null
+          ref_year: number
           status: string
           title_role: string | null
           updated_at: string
+          uw_ref: string | null
         }
         Insert: {
           created_at?: string
@@ -1586,9 +1771,11 @@ export type Database = {
           id?: never
           last_name: string
           phone?: string | null
+          ref_year?: number
           status?: string
           title_role?: string | null
           updated_at?: string
+          uw_ref?: string | null
         }
         Update: {
           created_at?: string
@@ -1598,9 +1785,11 @@ export type Database = {
           id?: never
           last_name?: string
           phone?: string | null
+          ref_year?: number
           status?: string
           title_role?: string | null
           updated_at?: string
+          uw_ref?: string | null
         }
         Relationships: []
       }
@@ -1609,6 +1798,7 @@ export type Database = {
       accounts_receivable_computed: {
         Row: {
           agent_id: number | null
+          ar_ref: string | null
           ar_status: string | null
           balance_due: number | null
           client_id: number | null
@@ -1622,6 +1812,7 @@ export type Database = {
           invoice_total: number | null
           last_payment_date: string | null
           policy_id: number | null
+          ref_year: number | null
           total_paid: number | null
           updated_at: string | null
           write_off_amt: number | null
@@ -1662,6 +1853,13 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "accounts_receivable_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       agencies_with_status: {
@@ -1669,6 +1867,7 @@ export type Database = {
           address_line1: string | null
           address_line2: string | null
           agency_level: string | null
+          agt_ref: string | null
           billing_entity: string | null
           billing_id: number | null
           city: string | null
@@ -1687,6 +1886,7 @@ export type Database = {
           licensee_type: string | null
           parent_id: number | null
           phone: string | null
+          ref_year: number | null
           state: string | null
           status: string | null
           updated_at: string | null
@@ -1696,6 +1896,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agency_level?: string | null
+          agt_ref?: string | null
           billing_entity?: string | null
           billing_id?: number | null
           city?: string | null
@@ -1714,6 +1915,7 @@ export type Database = {
           licensee_type?: string | null
           parent_id?: number | null
           phone?: string | null
+          ref_year?: number | null
           state?: string | null
           status?: string | null
           updated_at?: string | null
@@ -1723,6 +1925,7 @@ export type Database = {
           address_line1?: string | null
           address_line2?: string | null
           agency_level?: string | null
+          agt_ref?: string | null
           billing_entity?: string | null
           billing_id?: number | null
           city?: string | null
@@ -1741,6 +1944,7 @@ export type Database = {
           licensee_type?: string | null
           parent_id?: number | null
           phone?: string | null
+          ref_year?: number | null
           state?: string | null
           status?: string | null
           updated_at?: string | null
@@ -1782,10 +1986,12 @@ export type Database = {
           created_at: string | null
           id: number | null
           notes: string | null
+          part_ref: string | null
           participant_name: string | null
           participant_type: string | null
           participation_amt: number | null
           participation_pct: number | null
+          ref_year: number | null
           sect_id: number | null
           section_total_pct: number | null
           status: string | null
@@ -1809,6 +2015,7 @@ export type Database = {
           ar_total_collected: number | null
           available_for_payment: number | null
           balance_owing: number | null
+          cap_ref: string | null
           carrier_id: number | null
           client_id: number | null
           commission_pct: number | null
@@ -1822,6 +2029,7 @@ export type Database = {
           notes: string | null
           policy_id: number | null
           previously_paid_carrier: number | null
+          ref_year: number | null
           term_premium: number | null
           total_remitted: number | null
           updated_at: string | null
@@ -1869,6 +2077,13 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "capacity_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
         ]
       }
       license_computed: {
@@ -1881,9 +2096,11 @@ export type Database = {
           entity_license_accepted: boolean | null
           exp_date: string | null
           id: number | null
+          lic_ref: string | null
           license_number: string | null
           license_type: string | null
           notes: string | null
+          ref_year: number | null
           state: string | null
           status: string | null
         }
@@ -1931,8 +2148,238 @@ export type Database = {
         }
         Relationships: []
       }
+      policies_computed: {
+        Row: {
+          accounting_date: string | null
+          agency_com_amt: number | null
+          agency_com_pct: number | null
+          agency_name_sl_key: string | null
+          agent_id: number | null
+          annual_premium: number | null
+          assigned_to_uw_id: number | null
+          binder_id: number | null
+          binder_number: string | null
+          carrier_id: number | null
+          carrier_net_amt: number | null
+          carrier_net_pct: number | null
+          client_id: number | null
+          common_named_insured: string | null
+          common_policy_prefix: string | null
+          cov_a_limit: number | null
+          cov_b_limit: number | null
+          cov_c_limit: number | null
+          cov_d_limit: number | null
+          created_at: string | null
+          current_policy_exp_date: string | null
+          deductible_amt: number | null
+          deductible_base: string | null
+          gross_com_amt: number | null
+          gross_com_pct: number | null
+          gross_com_pct_override: number | null
+          home_state: string | null
+          id: number | null
+          inspection_fee: number | null
+          jurisdiction: string | null
+          line_of_business: string | null
+          lloyds_umr: string | null
+          mga_net_com_amt: number | null
+          mga_net_com_pct: number | null
+          min_earned_prem_pct: number | null
+          notes: string | null
+          other_fee_description: string | null
+          other_fees: number | null
+          parent_policy_id: number | null
+          placement_type: string | null
+          pol_ref: string | null
+          policy_eff_date: string | null
+          policy_exp_date: string | null
+          policy_fee: number | null
+          policy_number: string | null
+          ref_year: number | null
+          section_number: string | null
+          sl_eligible_licensees: number | null
+          sl_licensee_name: string | null
+          sl_licensee_override_agent_id: number | null
+          status: string | null
+          subscription_id: number | null
+          term_days: number | null
+          term_premium: number | null
+          term_terrorism_premium: number | null
+          total_term_prem_fees: number | null
+          total_term_premium: number | null
+          transaction_type: string | null
+          txn_date: string | null
+          txn_eff_date: string | null
+          txn_exp_date: string | null
+          updated_at: string | null
+          yoa: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policies_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies_with_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_assigned_to_uw_id_fkey"
+            columns: ["assigned_to_uw_id"]
+            isOneToOne: false
+            referencedRelation: "underwriters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_binder_id_fkey"
+            columns: ["binder_id"]
+            isOneToOne: false
+            referencedRelation: "binder"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_parent_policy_id_fkey"
+            columns: ["parent_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_parent_policy_id_fkey"
+            columns: ["parent_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_sl_licensee_override_agent_id_fkey"
+            columns: ["sl_licensee_override_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_sl_licensee_override_agent_id_fkey"
+            columns: ["sl_licensee_override_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies_with_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      renewals_computed: {
+        Row: {
+          agency_com_pct: number | null
+          annual_premium: number | null
+          annualized_premium: number | null
+          assigned_to: number | null
+          bind_order_date: string | null
+          bound_date: string | null
+          common_named_insured: string | null
+          common_policy_prefix: string | null
+          created_at: string | null
+          current_renewal_date: string | null
+          days_to_renewal: number | null
+          ev_rnw_gwp: number | null
+          gross_com_pct_override: number | null
+          id: number | null
+          inspection_fee: number | null
+          min_earned_prem_pct: number | null
+          new_policy_eff_date: string | null
+          new_policy_exp_date: string | null
+          new_policy_id: number | null
+          new_policy_number: string | null
+          notes: string | null
+          other_fees: number | null
+          policy_id: number | null
+          ref_year: number | null
+          renew_prob_pct: number | null
+          renew_prob_pct_override: number | null
+          renewal_status: string | null
+          rnw_ref: string | null
+          sl_licensee_override_agent_id: number | null
+          term_premium: number | null
+          txn_type: string | null
+          updated_at: string | null
+          yoa: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewals_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "underwriters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_new_policy_id_fkey"
+            columns: ["new_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_new_policy_id_fkey"
+            columns: ["new_policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_sl_licensee_override_agent_id_fkey"
+            columns: ["sl_licensee_override_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewals_sl_licensee_override_agent_id_fkey"
+            columns: ["sl_licensee_override_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agencies_with_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      bind_new_business: { Args: { p_nbs_id: number }; Returns: number }
+      bind_renewal: { Args: { p_renewal_id: number }; Returns: number }
+      generate_invoice: { Args: { p_policy_id: number }; Returns: number }
       net_com_uep_asof: {
         Args: { p_report_date?: string }
         Returns: {
@@ -1960,6 +2407,23 @@ export type Database = {
           uep_pct_required: number
         }[]
       }
+      record_ar_payment: {
+        Args: {
+          p_amount: number
+          p_ar_id: number
+          p_created_by?: string
+          p_date?: string
+          p_method?: string
+          p_notes?: string
+          p_reference?: string
+        }
+        Returns: number
+      }
+      record_cap_remittance: {
+        Args: { p_amount: number; p_cap_id: number; p_date?: string }
+        Returns: number
+      }
+      seed_renewals: { Args: { p_days_ahead?: number }; Returns: number }
     }
     Enums: {
       clientstatus: "active" | "inactive" | "prospect"

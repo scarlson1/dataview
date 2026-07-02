@@ -1,7 +1,8 @@
-import { withForm } from '#/hooks/form';
+import { withFieldGroup } from '#/hooks/form';
 import { Grid } from '@mui/material';
 
-export const AddressForm = withForm({
+export const AddressFieldGroup = withFieldGroup({
+  // withForm({
   defaultValues: {
     addressLine1: '',
     addressLine2: '',
@@ -14,7 +15,7 @@ export const AddressForm = withForm({
     rowSpacing: undefined as number | undefined,
     columnSpacing: undefined as number | undefined,
   },
-  render: function Render({ form, spacing, rowSpacing, columnSpacing }) {
+  render: function Render({ group, spacing, rowSpacing, columnSpacing }) {
     return (
       <Grid
         container
@@ -23,33 +24,33 @@ export const AddressForm = withForm({
         columnSpacing={columnSpacing}
       >
         <Grid size={8}>
-          <form.AppField
+          <group.AppField
             name='addressLine1'
-            children={(field) => <field.TextField label='Address Line 1' />}
+            children={(field) => <field.TextField label='Address line 1' />}
           />
         </Grid>
         <Grid size={4}>
-          <form.AppField
+          <group.AppField
             name='addressLine2'
-            children={(field) => <field.TextField label='Address Line 2' />}
+            children={(field) => <field.TextField label='Address line 2' />}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <form.AppField
+          <group.AppField
             name='city'
             children={(field) => <field.TextField label='City' />}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <form.AppField
+          <group.AppField
             name='state'
-            children={(field) => <field.TextField label='Last Name' />}
+            children={(field) => <field.TextField label='State' />}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <form.AppField
+          <group.AppField
             name='postal'
-            children={(field) => <field.TextField label='Last Name' />}
+            children={(field) => <field.TextField label='Postal' />}
           />
         </Grid>
       </Grid>

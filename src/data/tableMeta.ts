@@ -78,6 +78,7 @@ export const TABLE_META: Record<string, TableOverlay> = {
   },
   renewals: {
     icon: 'renewals',
+    source: 'renewals_computed',
     description: 'Renewal transactions with retention probability and expected GWP.',
   },
   binder_section: {
@@ -115,6 +116,17 @@ export const TABLE_META: Record<string, TableOverlay> = {
     icon: 'rules',
     label: 'surplus_lines_state_rules',
     description: 'Per-state surplus-lines rules and entity-license acceptance.',
+  },
+  capacity: {
+    icon: 'receivable',
+    source: 'capacity_computed',
+    description:
+      'Carrier payable / fiduciary funds held, with live funding status and available-for-remittance math.',
+  },
+  lob_defaults: {
+    icon: 'rules',
+    label: 'lob_defaults',
+    description: 'Per-line-of-business default renewal probability used by the renewal pipeline.',
   },
 };
 

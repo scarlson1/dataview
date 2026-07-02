@@ -3,8 +3,13 @@
 create table public.new_business_submissions (
   -- identity
   id                          bigint       generated always as identity primary key,
+  -- string cast of id for clients that can't cast bigint in a query (e.g. supabase-js)
+  id_str                      text         generated always as (id::text) stored,
   submission_number           varchar(20)  not null unique,   -- external ref (app-generated, e.g. SUB-YYYY-NNN)
   policy_id                      bigint       references public.policies (id),   -- NULL until bound
+  -- human-readable reference id (e.g. NBS-2026-0001); see agencies migration for rationale.
+  ref_year                    smallint     not null default extract(year from now())::smallint,
+  nbs_ref                     varchar(24)  generated always as ('NBS-' || ref_year || '-' || lpad(id::text, 5, '0')) stored unique,
 
   -- pipeline status
   stage                       varchar(30)  not null default 'prospect'

@@ -3,6 +3,7 @@ import {
   newBusinessFormOpts,
   type NewBusinessValues,
 } from '#/constants/newBusinessForm';
+import type { Database } from '#/data/database.types';
 import { useAppForm } from '#/hooks/form';
 import { queryClient } from '#/queryClient';
 import { supabase } from '#/supabaseClient';
@@ -24,28 +25,43 @@ function RouteComponent() {
 
   const mutation = useMutation({
     mutationFn: async (values: NewBusinessValues) => {
-      // may need edge function if table updates are complex ??
-      // return supabase
-      // .curationSets(resolvedSetName)
-      // .items(resolvedItemId)
-      // .upsert({ id: resolvedItemId, ...params } as CurationObjectSchema);
-      // return supabase.from('policies').insert(values);
-      alert(`TODO: HANDLE SUBMISSION ${JSON.stringify(values, null, 2)}`);
+      // The intake form captures the insured (client). Persist a prospect client
+      // record; downstream NBS pipeline / policy binding is driven from the
+      // Workflow board (see routes/_dashboard.workflow.tsx).
+      const { data, error } = await supabase
+        .from('clients')
+        .insert({
+          company_name: values.companyName || null,
+          first_name: values.firstName || null,
+          last_name: values.lastName || null,
+          client_type:
+            (values.clientType ||
+              null) as Database['public']['Enums']['clienttype'] | null,
+          industry: 'Unspecified',
+          address_line1: values.addressLine1 || null,
+          address_line2: values.addressLine2 || null,
+          city: values.city || null,
+          state: values.state || null,
+          zip: values.postal || null,
+          status: 'prospect',
+        })
+        .select('id, company_name')
+        .single();
+      if (error) throw error;
+      return data;
     },
     onMutate: (vars) => {
       toast.loading(`saving ${vars.companyName}...`, { id: 'new-business' });
     },
-    onSuccess: (data, vars) => {
+    onSuccess: (_data, vars) => {
       toast.success(`${vars.companyName} saved`, { id: 'new-business' });
     },
-    onError: (err, vars) => {
+    onError: (err) => {
       const msg = err.message || `error saving new business`;
       toast.error(msg, { id: 'new-business' });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['clients'], // collectionQueryKeys.curationSets(clusterId),
-      });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
     },
   });
 

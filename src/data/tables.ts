@@ -138,7 +138,7 @@ const GROUP_DEFS: TableGroup[] = [
   {
     id: 'administrative',
     label: 'Administrative',
-    tables: ['license', 'surplus_lines_state_rules', 'capacity'],
+    tables: ['license', 'surplus_lines_state_rules', 'capacity', 'lob_defaults'],
   },
 ];
 

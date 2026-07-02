@@ -14,6 +14,8 @@ import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as PoliciesNewRouteImport } from './routes/policies.new'
+import { Route as AuthPasswordResetRouteImport } from './routes/auth.password-reset'
+import { Route as DashboardWorkflowRouteImport } from './routes/_dashboard.workflow'
 import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 
@@ -41,6 +43,16 @@ const PoliciesNewRoute = PoliciesNewRouteImport.update({
   path: '/policies/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthPasswordResetRoute = AuthPasswordResetRouteImport.update({
+  id: '/auth/password-reset',
+  path: '/auth/password-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardWorkflowRoute = DashboardWorkflowRouteImport.update({
+  id: '/workflow',
+  path: '/workflow',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardUsersRoute = DashboardUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -58,6 +70,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRoute
   '/users': typeof DashboardUsersRoute
+  '/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +79,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRoute
   '/users': typeof DashboardUsersRoute
+  '/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/': typeof DashboardIndexRoute
 }
@@ -75,15 +91,32 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRoute
   '/_dashboard/users': typeof DashboardUsersRoute
+  '/_dashboard/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/_dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/accept-invite' | '/login' | '/$table' | '/users' | '/policies/new'
+    | '/'
+    | '/accept-invite'
+    | '/login'
+    | '/$table'
+    | '/users'
+    | '/workflow'
+    | '/auth/password-reset'
+    | '/policies/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/accept-invite' | '/login' | '/$table' | '/users' | '/policies/new' | '/'
+  to:
+    | '/accept-invite'
+    | '/login'
+    | '/$table'
+    | '/users'
+    | '/workflow'
+    | '/auth/password-reset'
+    | '/policies/new'
+    | '/'
   id:
     | '__root__'
     | '/_dashboard'
@@ -91,6 +124,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/_dashboard/$table'
     | '/_dashboard/users'
+    | '/_dashboard/workflow'
+    | '/auth/password-reset'
     | '/policies/new'
     | '/_dashboard/'
   fileRoutesById: FileRoutesById
@@ -99,6 +134,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   AcceptInviteRoute: typeof AcceptInviteRoute
   LoginRoute: typeof LoginRoute
+  AuthPasswordResetRoute: typeof AuthPasswordResetRoute
   PoliciesNewRoute: typeof PoliciesNewRoute
 }
 
@@ -139,6 +175,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PoliciesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/password-reset': {
+      id: '/auth/password-reset'
+      path: '/auth/password-reset'
+      fullPath: '/auth/password-reset'
+      preLoaderRoute: typeof AuthPasswordResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/workflow': {
+      id: '/_dashboard/workflow'
+      path: '/workflow'
+      fullPath: '/workflow'
+      preLoaderRoute: typeof DashboardWorkflowRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/users': {
       id: '/_dashboard/users'
       path: '/users'
@@ -159,12 +209,14 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRoute
   DashboardUsersRoute: typeof DashboardUsersRoute
+  DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRoute,
   DashboardUsersRoute: DashboardUsersRoute,
+  DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
@@ -176,6 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   AcceptInviteRoute: AcceptInviteRoute,
   LoginRoute: LoginRoute,
+  AuthPasswordResetRoute: AuthPasswordResetRoute,
   PoliciesNewRoute: PoliciesNewRoute,
 }
 export const routeTree = rootRouteImport
