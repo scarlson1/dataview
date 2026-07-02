@@ -286,6 +286,262 @@ export type Database = {
           },
         ]
       }
+      air_equipment: {
+        Row: {
+          cooling_type: string | null
+          created_at: string
+          eqp_ref: string | null
+          equipment_category: string | null
+          exposure_id: number
+          fire_suppression_system: string | null
+          gpu_count: number
+          gpu_manufacturer: string | null
+          gpu_model: string | null
+          gpu_purchase_date: string | null
+          gpu_unit_age: number | null
+          gpu_unit_replacement_cost: number
+          id: number
+          notes: string | null
+          power_draw_kw: number | null
+          ref_year: number
+          server_rack_count: number
+          server_replacement_cost: number
+          supporting_infra_value: number
+          total_ai_equipment_tiv: number | null
+          total_gpu_value: number | null
+          total_server_value: number | null
+        }
+        Insert: {
+          cooling_type?: string | null
+          created_at?: string
+          eqp_ref?: string | null
+          equipment_category?: string | null
+          exposure_id: number
+          fire_suppression_system?: string | null
+          gpu_count?: number
+          gpu_manufacturer?: string | null
+          gpu_model?: string | null
+          gpu_purchase_date?: string | null
+          gpu_unit_age?: number | null
+          gpu_unit_replacement_cost?: number
+          id?: never
+          notes?: string | null
+          power_draw_kw?: number | null
+          ref_year?: number
+          server_rack_count?: number
+          server_replacement_cost?: number
+          supporting_infra_value?: number
+          total_ai_equipment_tiv?: number | null
+          total_gpu_value?: number | null
+          total_server_value?: number | null
+        }
+        Update: {
+          cooling_type?: string | null
+          created_at?: string
+          eqp_ref?: string | null
+          equipment_category?: string | null
+          exposure_id?: number
+          fire_suppression_system?: string | null
+          gpu_count?: number
+          gpu_manufacturer?: string | null
+          gpu_model?: string | null
+          gpu_purchase_date?: string | null
+          gpu_unit_age?: number | null
+          gpu_unit_replacement_cost?: number
+          id?: never
+          notes?: string | null
+          power_draw_kw?: number | null
+          ref_year?: number
+          server_rack_count?: number
+          server_replacement_cost?: number
+          supporting_infra_value?: number
+          total_ai_equipment_tiv?: number | null
+          total_gpu_value?: number | null
+          total_server_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_equipment_exposure_id_fkey"
+            columns: ["exposure_id"]
+            isOneToOne: false
+            referencedRelation: "air_exposure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_equipment_exposure_id_fkey"
+            columns: ["exposure_id"]
+            isOneToOne: false
+            referencedRelation: "air_exposure_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      air_exposure: {
+        Row: {
+          air_ref: string | null
+          building_id: string | null
+          building_replacement_value: number
+          business_interruption_value: number
+          certificate_ref: string | null
+          city: string | null
+          client_id: number | null
+          construction_code: string | null
+          contents_value: number
+          county: string | null
+          created_at: string
+          deductible_amount: number | null
+          deductible_type: string | null
+          fire_protection_class: number | null
+          foundation_type: string | null
+          geocode_quality: number | null
+          gross_floor_area: number | null
+          id: number
+          latitude: number | null
+          location_id: string | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          num_storeys: number | null
+          number_of_buildings: number | null
+          occupancy_code: string | null
+          policy_id: number | null
+          policy_limit: number | null
+          primary_construction_class: string | null
+          ref_year: number
+          roof_shape: string | null
+          roof_type: string | null
+          seismic_design_level: string | null
+          sprinkler: boolean
+          state: string | null
+          status: string
+          street_address: string | null
+          tiv: number | null
+          unit_floor_level: string | null
+          unit_gross_area: number | null
+          unit_occupancy_desc: string | null
+          unit_ref: string | null
+          wind_speed_design: string | null
+          year_built: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          air_ref?: string | null
+          building_id?: string | null
+          building_replacement_value?: number
+          business_interruption_value?: number
+          certificate_ref?: string | null
+          city?: string | null
+          client_id?: number | null
+          construction_code?: string | null
+          contents_value?: number
+          county?: string | null
+          created_at?: string
+          deductible_amount?: number | null
+          deductible_type?: string | null
+          fire_protection_class?: number | null
+          foundation_type?: string | null
+          geocode_quality?: number | null
+          gross_floor_area?: number | null
+          id?: never
+          latitude?: number | null
+          location_id?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          num_storeys?: number | null
+          number_of_buildings?: number | null
+          occupancy_code?: string | null
+          policy_id?: number | null
+          policy_limit?: number | null
+          primary_construction_class?: string | null
+          ref_year?: number
+          roof_shape?: string | null
+          roof_type?: string | null
+          seismic_design_level?: string | null
+          sprinkler?: boolean
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          tiv?: number | null
+          unit_floor_level?: string | null
+          unit_gross_area?: number | null
+          unit_occupancy_desc?: string | null
+          unit_ref?: string | null
+          wind_speed_design?: string | null
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          air_ref?: string | null
+          building_id?: string | null
+          building_replacement_value?: number
+          business_interruption_value?: number
+          certificate_ref?: string | null
+          city?: string | null
+          client_id?: number | null
+          construction_code?: string | null
+          contents_value?: number
+          county?: string | null
+          created_at?: string
+          deductible_amount?: number | null
+          deductible_type?: string | null
+          fire_protection_class?: number | null
+          foundation_type?: string | null
+          geocode_quality?: number | null
+          gross_floor_area?: number | null
+          id?: never
+          latitude?: number | null
+          location_id?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          num_storeys?: number | null
+          number_of_buildings?: number | null
+          occupancy_code?: string | null
+          policy_id?: number | null
+          policy_limit?: number | null
+          primary_construction_class?: string | null
+          ref_year?: number
+          roof_shape?: string | null
+          roof_type?: string | null
+          seismic_design_level?: string | null
+          sprinkler?: boolean
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          tiv?: number | null
+          unit_floor_level?: string | null
+          unit_gross_area?: number | null
+          unit_occupancy_desc?: string | null
+          unit_ref?: string | null
+          wind_speed_design?: string | null
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       binder: {
         Row: {
           bdr_ref: string | null
@@ -2180,6 +2436,81 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "agencies_with_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      air_exposure_computed: {
+        Row: {
+          air_ref: string | null
+          building_id: string | null
+          building_replacement_value: number | null
+          business_interruption_value: number | null
+          certificate_ref: string | null
+          city: string | null
+          client_id: number | null
+          construction_code: string | null
+          contents_value: number | null
+          county: string | null
+          created_at: string | null
+          deductible_amount: number | null
+          deductible_type: string | null
+          equipment_count: number | null
+          equipment_tiv: number | null
+          fire_protection_class: number | null
+          foundation_type: string | null
+          geocode_quality: number | null
+          gross_floor_area: number | null
+          id: number | null
+          latitude: number | null
+          location_id: string | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          num_storeys: number | null
+          number_of_buildings: number | null
+          occupancy_code: string | null
+          policy_id: number | null
+          policy_limit: number | null
+          primary_construction_class: string | null
+          ref_year: number | null
+          roof_shape: string | null
+          roof_type: string | null
+          seismic_design_level: string | null
+          sprinkler: boolean | null
+          state: string | null
+          status: string | null
+          street_address: string | null
+          tiv: number | null
+          total_exposure_tiv: number | null
+          unit_floor_level: string | null
+          unit_gross_area: number | null
+          unit_occupancy_desc: string | null
+          unit_ref: string | null
+          wind_speed_design: string | null
+          year_built: number | null
+          zip_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
             referencedColumns: ["id"]
           },
         ]

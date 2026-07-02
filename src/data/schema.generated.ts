@@ -846,6 +846,853 @@ export const SCHEMA = {
       }
     ]
   },
+  "air_equipment": {
+    "name": "air_equipment",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "exposure_id",
+        "label": "Exposure ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "FK",
+        "references": "air_exposure",
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "eqp_ref",
+        "label": "Eqp Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "equipment_category",
+        "label": "Equipment Category",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "gpu_manufacturer",
+        "label": "Gpu Manufacturer",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "gpu_model",
+        "label": "Gpu Model",
+        "type": "varchar(80)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "gpu_count",
+        "label": "Gpu Count",
+        "type": "integer",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "gpu_unit_age",
+        "label": "Gpu Unit Age",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "gpu_purchase_date",
+        "label": "Gpu Purchase Date",
+        "type": "date",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "gpu_unit_replacement_cost",
+        "label": "Gpu Unit Replacement Cost",
+        "type": "numeric(14,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "total_gpu_value",
+        "label": "Total Gpu Value",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "server_rack_count",
+        "label": "Server Rack Count",
+        "type": "integer",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "server_replacement_cost",
+        "label": "Server Replacement Cost",
+        "type": "numeric(14,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "total_server_value",
+        "label": "Total Server Value",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "supporting_infra_value",
+        "label": "Supporting Infra Value",
+        "type": "numeric(16,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "total_ai_equipment_tiv",
+        "label": "Total Ai Equipment Tiv",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "power_draw_kw",
+        "label": "Power Draw Kw",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "cooling_type",
+        "label": "Cooling Type",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "fire_suppression_system",
+        "label": "Fire Suppression System",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
+  "air_exposure": {
+    "name": "air_exposure",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "policy_id",
+        "label": "Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "key": "FK",
+        "references": "policies",
+        "kind": "mono"
+      },
+      {
+        "field": "client_id",
+        "label": "Client ID",
+        "type": "bigint",
+        "nullable": true,
+        "key": "FK",
+        "references": "clients",
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "air_ref",
+        "label": "Air Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "certificate_ref",
+        "label": "Certificate Ref",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "location_id",
+        "label": "Location ID",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "location_name",
+        "label": "Location Name",
+        "type": "varchar(150)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "street_address",
+        "label": "Street Address",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "city",
+        "label": "City",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "state",
+        "label": "State",
+        "type": "varchar(2)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "zip_code",
+        "label": "Zip Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "county",
+        "label": "County",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "latitude",
+        "label": "Latitude",
+        "type": "numeric(9,6)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "longitude",
+        "label": "Longitude",
+        "type": "numeric(9,6)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "geocode_quality",
+        "label": "Geocode Quality",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "number_of_buildings",
+        "label": "Number Of Buildings",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "occupancy_code",
+        "label": "Occupancy Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "construction_code",
+        "label": "Construction Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "building_id",
+        "label": "Building ID",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "year_built",
+        "label": "Year Built",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "num_storeys",
+        "label": "Num Storeys",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "gross_floor_area",
+        "label": "Gross Floor Area",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "primary_construction_class",
+        "label": "Primary Construction Class",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "roof_type",
+        "label": "Roof Type",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "roof_shape",
+        "label": "Roof Shape",
+        "type": "varchar(40)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "foundation_type",
+        "label": "Foundation Type",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "seismic_design_level",
+        "label": "Seismic Design Level",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "wind_speed_design",
+        "label": "Wind Speed Design",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "fire_protection_class",
+        "label": "Fire Protection Class",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "sprinkler",
+        "label": "Sprinkler",
+        "type": "boolean",
+        "nullable": false,
+        "def": "false",
+        "kind": "bool"
+      },
+      {
+        "field": "unit_ref",
+        "label": "Unit Ref",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "unit_floor_level",
+        "label": "Unit Floor Level",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "unit_gross_area",
+        "label": "Unit Gross Area",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "unit_occupancy_desc",
+        "label": "Unit Occupancy Desc",
+        "type": "varchar(120)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "building_replacement_value",
+        "label": "Building Replacement Value",
+        "type": "numeric(16,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "contents_value",
+        "label": "Contents Value",
+        "type": "numeric(16,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "business_interruption_value",
+        "label": "Business Interruption Value",
+        "type": "numeric(16,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "tiv",
+        "label": "Tiv",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_amount",
+        "label": "Deductible Amount",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_type",
+        "label": "Deductible Type",
+        "type": "varchar(40)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "policy_limit",
+        "label": "Policy Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "varchar(20)",
+        "nullable": false,
+        "def": "'active'::character varying",
+        "kind": "chip"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
+  "air_exposure_computed": {
+    "name": "air_exposure_computed",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "policy_id",
+        "label": "Policy ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "client_id",
+        "label": "Client ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "air_ref",
+        "label": "Air Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "certificate_ref",
+        "label": "Certificate Ref",
+        "type": "varchar(50)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "location_id",
+        "label": "Location ID",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "location_name",
+        "label": "Location Name",
+        "type": "varchar(150)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "street_address",
+        "label": "Street Address",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "city",
+        "label": "City",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "state",
+        "label": "State",
+        "type": "varchar(2)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "zip_code",
+        "label": "Zip Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "county",
+        "label": "County",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "latitude",
+        "label": "Latitude",
+        "type": "numeric(9,6)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "longitude",
+        "label": "Longitude",
+        "type": "numeric(9,6)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "geocode_quality",
+        "label": "Geocode Quality",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "number_of_buildings",
+        "label": "Number Of Buildings",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "occupancy_code",
+        "label": "Occupancy Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "construction_code",
+        "label": "Construction Code",
+        "type": "varchar(10)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "building_id",
+        "label": "Building ID",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "year_built",
+        "label": "Year Built",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "num_storeys",
+        "label": "Num Storeys",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "gross_floor_area",
+        "label": "Gross Floor Area",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "primary_construction_class",
+        "label": "Primary Construction Class",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "roof_type",
+        "label": "Roof Type",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "roof_shape",
+        "label": "Roof Shape",
+        "type": "varchar(40)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "foundation_type",
+        "label": "Foundation Type",
+        "type": "varchar(60)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "seismic_design_level",
+        "label": "Seismic Design Level",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "wind_speed_design",
+        "label": "Wind Speed Design",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "fire_protection_class",
+        "label": "Fire Protection Class",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "sprinkler",
+        "label": "Sprinkler",
+        "type": "boolean",
+        "nullable": true,
+        "kind": "bool"
+      },
+      {
+        "field": "unit_ref",
+        "label": "Unit Ref",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "unit_floor_level",
+        "label": "Unit Floor Level",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "unit_gross_area",
+        "label": "Unit Gross Area",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "unit_occupancy_desc",
+        "label": "Unit Occupancy Desc",
+        "type": "varchar(120)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "building_replacement_value",
+        "label": "Building Replacement Value",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "contents_value",
+        "label": "Contents Value",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "business_interruption_value",
+        "label": "Business Interruption Value",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "tiv",
+        "label": "Tiv",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_amount",
+        "label": "Deductible Amount",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "deductible_type",
+        "label": "Deductible Type",
+        "type": "varchar(40)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "policy_limit",
+        "label": "Policy Limit",
+        "type": "numeric(16,2)",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "varchar(20)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "equipment_count",
+        "label": "Equipment Count",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "equipment_tiv",
+        "label": "Equipment Tiv",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "total_exposure_tiv",
+        "label": "Total Exposure Tiv",
+        "type": "numeric",
+        "nullable": true,
+        "kind": "number"
+      }
+    ]
+  },
   "binder": {
     "name": "binder",
     "kind": "table",
