@@ -448,6 +448,42 @@ export type Database = {
           },
         ]
       }
+      budget_targets: {
+        Row: {
+          bud_ref: string | null
+          created_at: string
+          gwp_target: number
+          id: number
+          line_of_business: string
+          month: number
+          notes: string | null
+          ref_year: number
+          year: number
+        }
+        Insert: {
+          bud_ref?: string | null
+          created_at?: string
+          gwp_target?: number
+          id?: never
+          line_of_business: string
+          month: number
+          notes?: string | null
+          ref_year?: number
+          year: number
+        }
+        Update: {
+          bud_ref?: string | null
+          created_at?: string
+          gwp_target?: number
+          id?: never
+          line_of_business?: string
+          month?: number
+          notes?: string | null
+          ref_year?: number
+          year?: number
+        }
+        Relationships: []
+      }
       capacity: {
         Row: {
           ap_status: string

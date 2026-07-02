@@ -21,6 +21,7 @@ import { Route as DashboardUepRouteImport } from './routes/_dashboard.uep'
 import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
 import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
+import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
@@ -84,6 +85,11 @@ const DashboardExportsRoute = DashboardExportsRouteImport.update({
   path: '/exports',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardBudgetRoute = DashboardBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableRoute = DashboardTableRouteImport.update({
   id: '/$table',
   path: '/$table',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRouteWithChildren
+  '/budget': typeof DashboardBudgetRoute
   '/exports': typeof DashboardExportsRoute
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/budget': typeof DashboardBudgetRoute
   '/exports': typeof DashboardExportsRoute
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRouteWithChildren
+  '/_dashboard/budget': typeof DashboardBudgetRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
   '/_dashboard/stamp': typeof DashboardStampRoute
   '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/$table'
+    | '/budget'
     | '/exports'
     | '/stamp'
     | '/subscriptions'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
   to:
     | '/accept-invite'
     | '/login'
+    | '/budget'
     | '/exports'
     | '/stamp'
     | '/subscriptions'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/_dashboard/$table'
+    | '/_dashboard/budget'
     | '/_dashboard/exports'
     | '/_dashboard/stamp'
     | '/_dashboard/subscriptions'
@@ -294,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardExportsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/budget': {
+      id: '/_dashboard/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof DashboardBudgetRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table': {
       id: '/_dashboard/$table'
       path: '/$table'
@@ -334,6 +353,7 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
 
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
+  DashboardBudgetRoute: typeof DashboardBudgetRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
   DashboardStampRoute: typeof DashboardStampRoute
   DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
@@ -345,6 +365,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRouteWithChildren,
+  DashboardBudgetRoute: DashboardBudgetRoute,
   DashboardExportsRoute: DashboardExportsRoute,
   DashboardStampRoute: DashboardStampRoute,
   DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,

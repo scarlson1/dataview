@@ -1235,6 +1235,83 @@ export const SCHEMA = {
       }
     ]
   },
+  "budget_targets": {
+    "name": "budget_targets",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": false,
+        "def": "(EXTRACT(year FROM now()))::smallint",
+        "kind": "number"
+      },
+      {
+        "field": "bud_ref",
+        "label": "Bud Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "year",
+        "label": "Year",
+        "type": "smallint",
+        "nullable": false,
+        "key": "UNIQUE",
+        "kind": "number"
+      },
+      {
+        "field": "month",
+        "label": "Month",
+        "type": "smallint",
+        "nullable": false,
+        "key": "UNIQUE",
+        "kind": "chip"
+      },
+      {
+        "field": "line_of_business",
+        "label": "Line Of Business",
+        "type": "varchar(50)",
+        "nullable": false,
+        "key": "UNIQUE",
+        "kind": "text"
+      },
+      {
+        "field": "gwp_target",
+        "label": "GWP Target",
+        "type": "numeric(14,2)",
+        "nullable": false,
+        "def": "0",
+        "kind": "number"
+      },
+      {
+        "field": "notes",
+        "label": "Notes",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
   "capacity": {
     "name": "capacity",
     "kind": "table",

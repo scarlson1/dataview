@@ -17,6 +17,7 @@ import {
   PiggyBank,
   Settings,
   Stamp,
+  TrendingUp,
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -311,6 +312,12 @@ export const Sidebar = ({
           label='UEP Reserve'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/uep' })}
+        />
+        <FooterItem
+          icon={<TrendingUp size={20} />}
+          label='Budget'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/budget' })}
         />
         <FooterItem
           icon={<Stamp size={20} />}

@@ -19,3 +19,11 @@ body {
   height: 20px;
   /*stroke-width: 2px; */
 }
+
+/* Print: hide anything opted out via .no-print (e.g. the stamp generator's
+   header + section picker) so only the printable content reaches the page. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
