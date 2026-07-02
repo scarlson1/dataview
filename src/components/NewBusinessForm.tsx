@@ -5,7 +5,7 @@ import {
   newBusinessStage,
   priority,
 } from '#/constants/newBusinessForm';
-import { US_STATES } from '#/constants/usStates';
+import { stateOptions } from '#/constants/usStates';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
@@ -29,8 +29,6 @@ type NewBusinessSubmissionInsert = TablesInsert<'new_business_submissions'>;
 type NewBusinessSubmission = Tables<'new_business_submissions'>;
 
 type UwStatus = 'active' | 'inactive' | 'on_leave';
-
-const stateOptions = US_STATES.map((s) => ({ value: s.code, label: s.name }));
 
 // interface NewBusinessFormProps {
 //   onSuccess: (row: NewBusinessSubmission) => void;
@@ -352,12 +350,16 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <form.AppField name='policy.lineOfBusiness'>
-                {(field) => <field.TextField label='Line of business' size='small' />}
+                {(field) => (
+                  <field.TextField label='Line of business' size='small' />
+                )}
               </form.AppField>
             </Grid>
             <Grid size={{ xs: 8, sm: 3 }}>
               <form.AppField name='policy.jurisdiction'>
-                {(field) => <field.TextField label='Jurisdiction' size='small' />}
+                {(field) => (
+                  <field.TextField label='Jurisdiction' size='small' />
+                )}
               </form.AppField>
             </Grid>
             <Grid size={{ xs: 4, sm: 3 }}>
@@ -373,7 +375,9 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <form.AppField name='policy.policyNumber'>
-                {(field) => <field.TextField label='Policy number' size='small' />}
+                {(field) => (
+                  <field.TextField label='Policy number' size='small' />
+                )}
               </form.AppField>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
@@ -510,10 +514,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
             <Grid size={12}>
               <form.AppField name='policy.otherFeeDescription'>
                 {(field) => (
-                  <field.TextField
-                    label='Other fee description'
-                    size='small'
-                  />
+                  <field.TextField label='Other fee description' size='small' />
                 )}
               </form.AppField>
             </Grid>
@@ -560,7 +561,6 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
                 )}
               </form.AppField>
             </Grid>
-
           </Grid>
         </Box>
 

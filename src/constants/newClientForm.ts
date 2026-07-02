@@ -38,21 +38,44 @@ export const addressValues = z.object({
 });
 
 export const newClientValues = //addressValues.and(
-  z.object({
-    companyName: z.string().min(1),
-    clientType: z.string().min(1),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    email: z.email(),
-    phone: z.string().regex(phoneRegex, 'Invalid Number!'),
-    address: addressValues,
-  });
+  z
+    .object({
+      companyName: z.string(),
+      clientType: clientType,
+      firstName: z.string(),
+      lastName: z.string(),
+      email: z.email(),
+      phone: z.string().regex(phoneRegex, 'Invalid Number!'),
+      address: addressValues,
+    })
+    .refine(
+      (data) => data.clientType === 'individual' && data.firstName.length >= 1,
+      {
+        message: 'name required',
+        path: ['firstName'],
+      },
+    )
+    .refine(
+      (data) => data.clientType === 'individual' && data.lastName.length >= 1,
+      {
+        message: 'name required',
+        path: ['lastName'],
+      },
+    )
+    .refine(
+      (data) =>
+        data.clientType !== 'individual' && data.companyName.length >= 1,
+      {
+        message: 'company name required',
+        path: ['companyName'],
+      },
+    );
 // );
 export type NewClientValues = z.infer<typeof newClientValues>;
 
 export const defaultClientValues: NewClientValues = {
   companyName: '',
-  clientType: '',
+  clientType: '' as unknown as NewClientValues['clientType'],
   firstName: '',
   lastName: '',
   phone: '',

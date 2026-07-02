@@ -1,8 +1,6 @@
-import { US_STATES } from '#/constants/usStates';
+import { stateOptions } from '#/constants/usStates';
 import { withFieldGroup } from '#/hooks/form';
 import { Grid } from '@mui/material';
-
-const stateOptions = US_STATES.map((s) => ({ value: s.code, label: s.name }));
 
 export const AddressFieldGroup = withFieldGroup({
   // withForm({

@@ -1,16 +1,24 @@
 import { NewAgencyForm } from '#/components/NewAgencyForm';
 import {
   licenseType,
-  type NewLicenseValues,
   newLicenseFormOpts,
+  type NewLicenseValues,
 } from '#/constants/newLicenseForm';
-import { US_STATES } from '#/constants/usStates';
+import { stateOptions } from '#/constants/usStates';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull, toDateStr } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
-import { Alert, Box, Button, Collapse, Grid, Skeleton, Stack } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Collapse,
+  Grid,
+  Skeleton,
+  Stack,
+} from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Suspense } from 'react';
@@ -19,7 +27,6 @@ import { toast } from 'sonner';
 type LicenseRow = Tables<'license'>;
 type LicenseInsert = TablesInsert<'license'>;
 
-const stateOptions = US_STATES.map((s) => ({ value: s.code, label: s.name }));
 const licenseTypeOptions = licenseType.options.map((v) => ({
   value: v,
   label: v,
@@ -123,7 +130,10 @@ export const NewLicenseForm = ({
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='licenseType'>
               {(field) => (
-                <field.Select label='License type' options={licenseTypeOptions} />
+                <field.Select
+                  label='License type'
+                  options={licenseTypeOptions}
+                />
               )}
             </form.AppField>
           </Grid>
@@ -176,7 +186,9 @@ export const NewLicenseForm = ({
         </form.AppField>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -185,7 +197,9 @@ export const NewLicenseForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save license' : 'Create license'} />
+          <form.SubmitButton
+            label={editing ? 'Save license' : 'Create license'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>
