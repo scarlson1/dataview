@@ -97,7 +97,7 @@ begin
   -- ==========================================================================
   insert into public.agencies
     (parent_id, agency_level, licensee_type, billing_entity, entity_name,
-     phone, email, address_line1, city, state, zip, country,
+     phone, email, address_line1, city, state, postal, country,
      do_policy_number, do_carrier, do_expiration_date, status)
   values
     (null, 'mga', 'entity', 'self', 'Evertas Underwriting Managers',
@@ -107,7 +107,7 @@ begin
 
   insert into public.agencies
     (parent_id, agency_level, licensee_type, billing_entity, entity_name,
-     phone, email, address_line1, city, state, zip, country, status)
+     phone, email, address_line1, city, state, postal, country, status)
   values
     (v_mga, 'wholesale', 'entity', 'self', 'Pacific Wholesale Brokers',
      '415-555-0110', 'submissions@pacificwholesale.example', '55 Market St', 'San Francisco', 'CA', '94103', 'USA', 'active')
@@ -115,7 +115,7 @@ begin
 
   insert into public.agencies
     (parent_id, agency_level, licensee_type, billing_entity, entity_name,
-     phone, email, address_line1, city, state, zip, country, status)
+     phone, email, address_line1, city, state, postal, country, status)
   values
     (v_wholesale, 'retail', 'entity', 'parent', 'Main Street Insurance Agency',
      '214-555-0120', 'info@mainstreetins.example', '900 Elm St', 'Dallas', 'TX', '75201', 'USA', 'active')
@@ -123,7 +123,7 @@ begin
 
   insert into public.agencies
     (parent_id, agency_level, licensee_type, billing_entity, first_name, last_name,
-     phone, email, address_line1, city, state, zip, country, status)
+     phone, email, address_line1, city, state, postal, country, status)
   values
     (v_retail, 'sub-producer', 'individual', 'parent', 'Jane', 'Doe',
      '212-555-0130', 'jane.doe@mainstreetins.example', '900 Elm St', 'New York', 'NY', '10001', 'USA', 'active')
@@ -150,7 +150,7 @@ begin
   insert into public.carriers
     (carrier_name, naic_number, am_best_rating, lines_of_business, carrier_type,
      state_admitted, domicile_state, contact_name, phone, email, claims_phone,
-     address_line1, city, state, zip, country, status)
+     address_line1, city, state, postal, country, status)
   values
     ('Nationwide Mutual Insurance Company', '23787', 'A+', 'GL,Property,WC', 'admitted',
      'ALL', 'OH', 'Tom Baker', '800-555-0300', 'submissions@nationwide.example', '800-555-0399',
@@ -160,7 +160,7 @@ begin
   insert into public.carriers
     (carrier_name, naic_number, am_best_rating, lines_of_business, carrier_type,
      state_admitted, domicile_state, contact_name, phone, email, claims_phone,
-     address_line1, city, state, zip, country, status)
+     address_line1, city, state, postal, country, status)
   values
     ('Lexington Insurance Company', '19437', 'A', 'GL,Excess,Cyber', 'E&S',
      'E&S', 'DE', 'Nina Patel', '800-555-0310', 'submissions@lexington.example', '800-555-0319',
@@ -170,7 +170,7 @@ begin
   insert into public.carriers
     (carrier_name, naic_number, am_best_rating, lines_of_business, carrier_type,
      state_admitted, domicile_state, contact_name, phone, email, claims_phone,
-     address_line1, city, state, zip, country, status)
+     address_line1, city, state, postal, country, status)
   values
     ('Lloyd''s Syndicate 2003 (XYZ)', null, 'A', 'Property,Cyber,Marine', 'lloyds_syndicate',
      'E&S', null, 'James Whitfield', '+44-20-5550-0320', 'box@syndicate2003.example', '+44-20-5550-0329',
@@ -180,7 +180,7 @@ begin
   insert into public.carriers
     (carrier_name, naic_number, am_best_rating, lines_of_business, carrier_type,
      state_admitted, domicile_state, contact_name, phone, email, claims_phone,
-     address_line1, city, state, zip, country, status)
+     address_line1, city, state, postal, country, status)
   values
     ('Chubb', '10052', 'A++', 'Property,GL,D&O', 'admitted',
      'ALL', 'NJ', 'Laura Kim', '800-555-0330', 'submissions@chubb.example', '800-555-0339',
@@ -192,35 +192,35 @@ begin
   -- ==========================================================================
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, zip, country, date_added)
+     phone, email, address_line1, city, state, postal, country, date_added)
   values ('Acme Manufacturing Inc', null, null, 'commercial', 'Manufacturing', 'active',
      '312-555-0400', 'ap@acme-mfg.example', '1400 Industrial Blvd', 'Chicago', 'IL', '60632', 'USA', date '2025-11-01')
   returning id into v_cli_acme;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, zip, country, date_added)
+     phone, email, address_line1, city, state, postal, country, date_added)
   values ('Bayside Restaurants LLC', null, null, 'commercial', 'Hospitality', 'active',
      '214-555-0410', 'finance@bayside.example', '78 Harbor Way', 'Dallas', 'TX', '75204', 'USA', date '2025-12-10')
   returning id into v_cli_bayside;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, zip, country, date_added)
+     phone, email, address_line1, city, state, postal, country, date_added)
   values (null, 'Robert', 'Smith', 'individual', 'Personal Lines', 'active',
      '212-555-0420', 'robert.smith@example.com', '15 Riverside Dr', 'New York', 'NY', '10023', 'USA', date '2026-01-05')
   returning id into v_cli_smith;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, zip, country, date_added)
+     phone, email, address_line1, city, state, postal, country, date_added)
   values ('Community Health Foundation', null, null, 'non_profit', 'Healthcare', 'prospect',
      '415-555-0430', 'admin@chf.example', '500 Wellness Ave', 'San Francisco', 'CA', '94110', 'USA', date '2026-06-01')
   returning id into v_cli_chf;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, zip, country, date_added)
+     phone, email, address_line1, city, state, postal, country, date_added)
   values ('TechFlow Solutions', null, null, 'commercial', 'Technology', 'active',
      '650-555-0440', 'ops@techflow.example', '2200 Mission College Blvd', 'Santa Clara', 'CA', '95054', 'USA', date '2026-02-20')
   returning id into v_cli_techflow;

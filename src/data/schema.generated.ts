@@ -43,6 +43,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "inv_id",
         "label": "Inv ID",
         "type": "bigint",
@@ -166,6 +173,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -308,6 +322,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "ar_id",
         "label": "AR ID",
         "type": "bigint",
@@ -397,6 +418,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "parent_id",
         "label": "Parent ID",
         "type": "bigint",
@@ -522,8 +550,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip",
-        "label": "Zip",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(10)",
         "nullable": true,
         "kind": "text"
@@ -592,6 +620,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "parent_id",
@@ -713,8 +748,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip",
-        "label": "Zip",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(10)",
         "nullable": true,
         "kind": "text"
@@ -788,6 +823,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "carrier_id",
@@ -888,6 +930,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "sect_id",
         "label": "Sect ID",
         "type": "bigint",
@@ -975,6 +1024,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "sect_id",
@@ -1073,6 +1129,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "binder_id",
@@ -1184,6 +1247,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -1317,6 +1387,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "inv_id",
@@ -1494,6 +1571,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "cap_id",
         "label": "Cap ID",
         "type": "bigint",
@@ -1553,6 +1637,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "ref_year",
@@ -1678,8 +1769,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip",
-        "label": "Zip",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(10)",
         "nullable": true,
         "kind": "text"
@@ -1728,6 +1819,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -1862,6 +1960,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "created_at",
         "label": "Created At",
         "type": "timestamptz",
@@ -1971,8 +2076,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip",
-        "label": "Zip",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(12)",
         "nullable": true,
         "kind": "text"
@@ -2012,6 +2117,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -2228,6 +2340,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "agent_id",
         "label": "Agent ID",
         "type": "bigint",
@@ -2322,6 +2441,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "agent_id",
@@ -2623,6 +2749,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "submission_number",
@@ -2986,6 +3119,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -3098,6 +3238,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "parent_policy_id",
@@ -3471,6 +3618,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "parent_policy_id",
@@ -3921,6 +4075,13 @@ export const SCHEMA = {
         "kind": "mono"
       },
       {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
         "field": "policy_id",
         "label": "Policy ID",
         "type": "bigint",
@@ -4130,6 +4291,13 @@ export const SCHEMA = {
         "type": "bigint",
         "nullable": true,
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "policy_id",
@@ -4431,6 +4599,13 @@ export const SCHEMA = {
         "nullable": false,
         "key": "PK",
         "kind": "mono"
+      },
+      {
+        "field": "id_str",
+        "label": "ID Str",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
       },
       {
         "field": "ref_year",

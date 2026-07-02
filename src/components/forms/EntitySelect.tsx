@@ -183,7 +183,12 @@ export function EntitySelect({
           <Button
             fullWidth
             startIcon={<Plus size={16} />}
-            sx={{ justifyContent: 'flex-start', px: 2, py: 1, textTransform: 'none' }}
+            sx={{
+              justifyContent: 'flex-start',
+              px: 2,
+              py: 1,
+              textTransform: 'none',
+            }}
             // preventDefault keeps the input focused so the click registers
             // before the Autocomplete's blur/close.
             onMouseDown={(e) => e.preventDefault()}
@@ -212,6 +217,7 @@ export function EntitySelect({
           if (reason === 'clear') setInputValue('');
         }}
         blurOnSelect
+        fullWidth
         slots={{ paper: CreatePaper }}
         renderInput={(params) => {
           const inputSlot = (params.slotProps?.input ?? {}) as {
@@ -235,7 +241,7 @@ export function EntitySelect({
                   endAdornment: (
                     <>
                       {optionsQuery.isFetching ? (
-                        <CircularProgress color="inherit" size={16} />
+                        <CircularProgress color='inherit' size={16} />
                       ) : null}
                       {inputSlot.endAdornment}
                     </>
@@ -251,7 +257,7 @@ export function EntitySelect({
         <Dialog
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
-          maxWidth="sm"
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>{createTitle ?? `New ${label}`}</DialogTitle>

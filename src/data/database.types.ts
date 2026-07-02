@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           due_date: string
           id: number
+          id_str: string | null
           inv_id: number
           invoice_date: string
           invoice_total: number
@@ -36,6 +37,7 @@ export type Database = {
           created_at?: string
           due_date: string
           id?: never
+          id_str?: string | null
           inv_id: number
           invoice_date: string
           invoice_total: number
@@ -53,6 +55,7 @@ export type Database = {
           created_at?: string
           due_date?: string
           id?: never
+          id_str?: string | null
           inv_id?: number
           invoice_date?: string
           invoice_total?: number
@@ -113,6 +116,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: number
+          id_str: string | null
           notes: string | null
           payment_amount: number
           payment_date: string
@@ -126,6 +130,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: never
+          id_str?: string | null
           notes?: string | null
           payment_amount: number
           payment_date: string
@@ -139,6 +144,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: never
+          id_str?: string | null
           notes?: string | null
           payment_amount?: number
           payment_date?: string
@@ -182,15 +188,16 @@ export type Database = {
           entity_name: string | null
           first_name: string | null
           id: number
+          id_str: string | null
           last_name: string | null
           licensee_type: string
           parent_id: number | null
           phone: string | null
+          postal: string | null
           ref_year: number
           state: string | null
           status: string
           updated_at: string
-          zip: string | null
         }
         Insert: {
           address_line1?: string | null
@@ -210,15 +217,16 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: never
+          id_str?: string | null
           last_name?: string | null
           licensee_type: string
           parent_id?: number | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           status?: string
           updated_at?: string
-          zip?: string | null
         }
         Update: {
           address_line1?: string | null
@@ -238,15 +246,16 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: never
+          id_str?: string | null
           last_name?: string | null
           licensee_type?: string
           parent_id?: number | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           status?: string
           updated_at?: string
-          zip?: string | null
         }
         Relationships: [
           {
@@ -289,6 +298,7 @@ export type Database = {
           exp_date: string
           gross_com_pct: number
           id: number
+          id_str: string | null
           notes: string | null
           ref_year: number
           updated_at: string
@@ -303,6 +313,7 @@ export type Database = {
           exp_date: string
           gross_com_pct: number
           id?: never
+          id_str?: string | null
           notes?: string | null
           ref_year?: number
           updated_at?: string
@@ -317,6 +328,7 @@ export type Database = {
           exp_date?: string
           gross_com_pct?: number
           id?: never
+          id_str?: string | null
           notes?: string | null
           ref_year?: number
           updated_at?: string
@@ -336,6 +348,7 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          id_str: string | null
           notes: string | null
           part_ref: string | null
           participant_name: string
@@ -349,6 +362,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: never
+          id_str?: string | null
           notes?: string | null
           part_ref?: string | null
           participant_name: string
@@ -362,6 +376,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: never
+          id_str?: string | null
           notes?: string | null
           part_ref?: string | null
           participant_name?: string
@@ -387,6 +402,7 @@ export type Database = {
           binder_id: number
           created_at: string
           id: number
+          id_str: string | null
           lob_codes: string | null
           notes: string | null
           participation_amt: number | null
@@ -403,6 +419,7 @@ export type Database = {
           binder_id: number
           created_at?: string
           id?: never
+          id_str?: string | null
           lob_codes?: string | null
           notes?: string | null
           participation_amt?: number | null
@@ -419,6 +436,7 @@ export type Database = {
           binder_id?: number
           created_at?: string
           id?: never
+          id_str?: string | null
           lob_codes?: string | null
           notes?: string | null
           participation_amt?: number | null
@@ -452,6 +470,7 @@ export type Database = {
           created_at: string
           gross_commission_amt: number | null
           id: number
+          id_str: string | null
           inv_id: number
           net_premium_due_carrier: number | null
           notes: string | null
@@ -470,6 +489,7 @@ export type Database = {
           created_at?: string
           gross_commission_amt?: number | null
           id?: never
+          id_str?: string | null
           inv_id: number
           net_premium_due_carrier?: number | null
           notes?: string | null
@@ -488,6 +508,7 @@ export type Database = {
           created_at?: string
           gross_commission_amt?: number | null
           id?: never
+          id_str?: string | null
           inv_id?: number
           net_premium_due_carrier?: number | null
           notes?: string | null
@@ -554,6 +575,7 @@ export type Database = {
           cprm_ref: string | null
           created_at: string
           id: number
+          id_str: string | null
           ref_year: number
           remit_amount: number
           remit_date: string
@@ -563,6 +585,7 @@ export type Database = {
           cprm_ref?: string | null
           created_at?: string
           id?: never
+          id_str?: string | null
           ref_year?: number
           remit_amount: number
           remit_date: string
@@ -572,6 +595,7 @@ export type Database = {
           cprm_ref?: string | null
           created_at?: string
           id?: never
+          id_str?: string | null
           ref_year?: number
           remit_amount?: number
           remit_date?: string
@@ -609,15 +633,16 @@ export type Database = {
           domicile_state: string | null
           email: string | null
           id: number
+          id_str: string | null
           lines_of_business: string | null
           naic_number: string | null
           phone: string | null
+          postal: string | null
           ref_year: number
           state: string | null
           state_admitted: string | null
           status: string
           updated_at: string
-          zip: string | null
         }
         Insert: {
           address_line1?: string | null
@@ -634,15 +659,16 @@ export type Database = {
           domicile_state?: string | null
           email?: string | null
           id?: never
+          id_str?: string | null
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           state_admitted?: string | null
           status?: string
           updated_at?: string
-          zip?: string | null
         }
         Update: {
           address_line1?: string | null
@@ -659,15 +685,16 @@ export type Database = {
           domicile_state?: string | null
           email?: string | null
           id?: never
+          id_str?: string | null
           lines_of_business?: string | null
           naic_number?: string | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           state_admitted?: string | null
           status?: string
           updated_at?: string
-          zip?: string | null
         }
         Relationships: []
       }
@@ -682,6 +709,7 @@ export type Database = {
           date_reported: string
           description: string | null
           id: number
+          id_str: string | null
           loss_type: string | null
           paid_amt: number | null
           policy_id: number
@@ -700,6 +728,7 @@ export type Database = {
           date_reported: string
           description?: string | null
           id?: never
+          id_str?: string | null
           loss_type?: string | null
           paid_amt?: number | null
           policy_id: number
@@ -718,6 +747,7 @@ export type Database = {
           date_reported?: string
           description?: string | null
           id?: never
+          id_str?: string | null
           loss_type?: string | null
           paid_amt?: number | null
           policy_id?: number
@@ -771,14 +801,15 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: number
+          id_str: string | null
           industry: string
           last_name: string | null
           phone: string | null
+          postal: string | null
           ref_year: number
           state: string | null
           status: Database["public"]["Enums"]["clientstatus"]
           updated_at: string
-          zip: string | null
         }
         Insert: {
           address_line1?: string | null
@@ -793,14 +824,15 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: number
+          id_str?: string | null
           industry: string
           last_name?: string | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           status?: Database["public"]["Enums"]["clientstatus"]
           updated_at?: string
-          zip?: string | null
         }
         Update: {
           address_line1?: string | null
@@ -815,14 +847,15 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: number
+          id_str?: string | null
           industry?: string
           last_name?: string | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number
           state?: string | null
           status?: Database["public"]["Enums"]["clientstatus"]
           updated_at?: string
-          zip?: string | null
         }
         Relationships: []
       }
@@ -834,6 +867,7 @@ export type Database = {
           created_at: string
           due_date: string | null
           id: number
+          id_str: string | null
           inspection_fee: number | null
           inv_ref: string | null
           invoice_date: string | null
@@ -864,6 +898,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           inv_ref?: string | null
           invoice_date?: string | null
@@ -894,6 +929,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           inv_ref?: string | null
           invoice_date?: string | null
@@ -970,6 +1006,7 @@ export type Database = {
           eff_date: string
           exp_date: string
           id: number
+          id_str: string | null
           lic_ref: string | null
           license_number: string
           license_type: string
@@ -984,6 +1021,7 @@ export type Database = {
           eff_date: string
           exp_date: string
           id?: never
+          id_str?: string | null
           lic_ref?: string | null
           license_number: string
           license_type: string
@@ -998,6 +1036,7 @@ export type Database = {
           eff_date?: string
           exp_date?: string
           id?: never
+          id_str?: string | null
           lic_ref?: string | null
           license_number?: string
           license_type?: string
@@ -1064,6 +1103,7 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number
+          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string | null
@@ -1114,6 +1154,7 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string | null
@@ -1164,6 +1205,7 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string | null
@@ -1259,6 +1301,7 @@ export type Database = {
           created_at: string
           due_date: string
           id: number
+          id_str: string | null
           invoice_number: string | null
           payment_date: string | null
           payment_method: string | null
@@ -1275,6 +1318,7 @@ export type Database = {
           created_at?: string
           due_date: string
           id?: never
+          id_str?: string | null
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
@@ -1291,6 +1335,7 @@ export type Database = {
           created_at?: string
           due_date?: string
           id?: never
+          id_str?: string | null
           invoice_number?: string | null
           payment_date?: string | null
           payment_method?: string | null
@@ -1347,6 +1392,7 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number
+          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string
@@ -1398,6 +1444,7 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business: string
@@ -1449,6 +1496,7 @@ export type Database = {
           gross_com_pct_override?: number | null
           home_state?: string | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           jurisdiction?: string | null
           line_of_business?: string
@@ -1562,6 +1610,7 @@ export type Database = {
           created_at: string
           gross_com_pct_override: number | null
           id: number
+          id_str: string | null
           inspection_fee: number | null
           min_earned_prem_pct: number | null
           new_policy_eff_date: string | null
@@ -1591,6 +1640,7 @@ export type Database = {
           created_at?: string
           gross_com_pct_override?: number | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           min_earned_prem_pct?: number | null
           new_policy_eff_date?: string | null
@@ -1620,6 +1670,7 @@ export type Database = {
           created_at?: string
           gross_com_pct_override?: number | null
           id?: never
+          id_str?: string | null
           inspection_fee?: number | null
           min_earned_prem_pct?: number | null
           new_policy_eff_date?: string | null
@@ -1730,6 +1781,7 @@ export type Database = {
           email: string | null
           first_name: string
           id: number
+          id_str: string | null
           last_name: string
           phone: string | null
           ref_year: number
@@ -1744,6 +1796,7 @@ export type Database = {
           email?: string | null
           first_name: string
           id?: never
+          id_str?: string | null
           last_name: string
           phone?: string | null
           ref_year?: number
@@ -1758,6 +1811,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           id?: never
+          id_str?: string | null
           last_name?: string
           phone?: string | null
           ref_year?: number
@@ -1782,6 +1836,7 @@ export type Database = {
           days_outstanding: number | null
           due_date: string | null
           id: number | null
+          id_str: string | null
           inv_id: number | null
           invoice_date: string | null
           invoice_total: number | null
@@ -1857,15 +1912,16 @@ export type Database = {
           entity_name: string | null
           first_name: string | null
           id: number | null
+          id_str: string | null
           last_name: string | null
           licensee_type: string | null
           parent_id: number | null
           phone: string | null
+          postal: string | null
           ref_year: number | null
           state: string | null
           status: string | null
           updated_at: string | null
-          zip: string | null
         }
         Insert: {
           address_line1?: string | null
@@ -1886,15 +1942,16 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: number | null
+          id_str?: string | null
           last_name?: string | null
           licensee_type?: string | null
           parent_id?: number | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number | null
           state?: string | null
           status?: string | null
           updated_at?: string | null
-          zip?: string | null
         }
         Update: {
           address_line1?: string | null
@@ -1915,15 +1972,16 @@ export type Database = {
           entity_name?: string | null
           first_name?: string | null
           id?: number | null
+          id_str?: string | null
           last_name?: string | null
           licensee_type?: string | null
           parent_id?: number | null
           phone?: string | null
+          postal?: string | null
           ref_year?: number | null
           state?: string | null
           status?: string | null
           updated_at?: string | null
-          zip?: string | null
         }
         Relationships: [
           {
@@ -1960,6 +2018,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: number | null
+          id_str: string | null
           notes: string | null
           part_ref: string | null
           participant_name: string | null
@@ -1999,6 +2058,7 @@ export type Database = {
           funding_status: string | null
           gross_commission_amt: number | null
           id: number | null
+          id_str: string | null
           inv_id: number | null
           net_premium_due_carrier: number | null
           notes: string | null
@@ -2071,6 +2131,7 @@ export type Database = {
           entity_license_accepted: boolean | null
           exp_date: string | null
           id: number | null
+          id_str: string | null
           lic_ref: string | null
           license_number: string | null
           license_type: string | null
@@ -2153,6 +2214,7 @@ export type Database = {
           gross_com_pct_override: number | null
           home_state: string | null
           id: number | null
+          id_str: string | null
           inspection_fee: number | null
           jurisdiction: string | null
           line_of_business: string | null
@@ -2278,6 +2340,7 @@ export type Database = {
           ev_rnw_gwp: number | null
           gross_com_pct_override: number | null
           id: number | null
+          id_str: string | null
           inspection_fee: number | null
           min_earned_prem_pct: number | null
           new_policy_eff_date: string | null

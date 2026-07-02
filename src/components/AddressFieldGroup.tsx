@@ -1,5 +1,8 @@
+import { US_STATES } from '#/constants/usStates';
 import { withFieldGroup } from '#/hooks/form';
 import { Grid } from '@mui/material';
+
+const stateOptions = US_STATES.map((s) => ({ value: s.code, label: s.name }));
 
 export const AddressFieldGroup = withFieldGroup({
   // withForm({
@@ -44,7 +47,9 @@ export const AddressFieldGroup = withFieldGroup({
         <Grid size={{ xs: 12, sm: 6 }}>
           <group.AppField
             name='state'
-            children={(field) => <field.TextField label='State' />}
+            children={(field) => (
+              <field.Select label='State' options={stateOptions} />
+            )}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>

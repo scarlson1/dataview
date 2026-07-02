@@ -25,7 +25,7 @@ CREATE TABLE public.clients (
     address_line2 varchar(200),
     city varchar(100),
     state varchar(2),
-    zip varchar(12),
+    postal varchar(12),
     country varchar(100),
     
     updated_at timestamptz DEFAULT now() NOT NULL, 

@@ -1,11 +1,71 @@
 import { AddressFieldGroup } from '#/components/AddressFieldGroup';
-import { clientType, newClientFormOpts } from '#/constants/newClientForm';
+import {
+  clientType,
+  newClientFormOpts,
+  type NewClientValues,
+} from '#/constants/newClientForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
 import { useAppForm } from '#/hooks/form';
-import { Grid, MenuItem, Stack } from '@mui/material';
+import { supabase } from '#/supabaseClient';
+import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 
-export const NewClientForm = () => {
+type ClientRowInsert = TablesInsert<'clients'>;
+type ClientRow = Tables<'clients'>;
+
+interface NewClientFormProps {
+  defaultValues?: Partial<NewClientValues>;
+  onCreated?: (data: ClientRow) => void;
+  onCancel?: () => void;
+}
+
+export const NewClientForm = ({
+  defaultValues = {},
+  onCreated,
+  onCancel,
+}: NewClientFormProps) => {
+  const { mutateAsync, isPending, error, isError } = useMutation({
+    mutationFn: async (values: ClientRowInsert) => {
+      const { data, error } = await supabase
+        .from('clients')
+        .upsert(values)
+        .select();
+      if (error) throw new Error(error.message);
+      return data[0] as ClientRow;
+    },
+    onSuccess: (data) => {
+      if (onCreated) onCreated(data);
+    },
+    // onError: () => {},
+  });
+
   const form = useAppForm({
     ...newClientFormOpts,
+    defaultValues: {
+      ...newClientFormOpts.defaultValues,
+      ...defaultValues,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const row: ClientRowInsert = {
+          company_name: value.companyName,
+          client_type: value.clientType as ClientRowInsert['client_type'],
+          first_name: value.firstName,
+          last_name: value.lastName,
+          email: value.email,
+          phone: value.phone,
+          address_line1: value.address.addressLine1,
+          address_line2: value.address.addressLine2,
+          city: value.address.city,
+          state: value.address.state,
+          postal: value.address.postal,
+          industry: '',
+        };
+        await mutateAsync(row);
+      } catch (err) {
+        console.log(err);
+      }
+    },
   });
 
   return (
@@ -53,7 +113,24 @@ export const NewClientForm = () => {
           rowSpacing={undefined}
           columnSpacing={undefined}
         />
-        <form.SubmitButton label='Create client' />
+
+        <Collapse in={isError}>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
+        </Collapse>
+
+        <Stack direction='row' spacing={2}>
+          <Button
+            disabled={isPending}
+            onClick={() => {
+              if (onCancel) onCancel();
+            }}
+          >
+            Cancel
+          </Button>
+          <form.SubmitButton label='Create client' />
+        </Stack>
       </Stack>
     </form.AppForm>
   );

@@ -13,7 +13,10 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { NewBusinessDrawer } from '../components/NewBusinessDrawer';
 import { StatusChip } from '../components/StatusChip';
 import { valueTone } from '../theme/tokens';
 
@@ -68,6 +71,7 @@ interface ArRow {
 
 function WorkflowPage() {
   const qc = useQueryClient();
+  const [newBusinessOpen, setNewBusinessOpen] = useState(false);
 
   const nbsQuery = useQuery({
     queryKey: ['wf', 'nbs'],
@@ -232,6 +236,16 @@ function WorkflowPage() {
         title="New Business — ready to bind"
         empty={unboundNbs.length === 0}
         emptyText="No unbound submissions."
+        action={
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<Plus size={16} />}
+            onClick={() => setNewBusinessOpen(true)}
+          >
+            New submission
+          </Button>
+        }
       >
         {unboundNbs.map((n) => (
           <Row key={n.id}>
@@ -300,6 +314,12 @@ function WorkflowPage() {
           </Row>
         ))}
       </Section>
+
+      <NewBusinessDrawer
+        open={newBusinessOpen}
+        onClose={() => setNewBusinessOpen(false)}
+        onCreated={() => qc.invalidateQueries({ queryKey: ['wf', 'nbs'] })}
+      />
     </Box>
   );
 }
@@ -320,16 +340,22 @@ const Section = ({
   title,
   empty,
   emptyText,
+  action,
   children,
 }: {
   title: string;
   empty: boolean;
   emptyText: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) => (
   <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
     <Box
       sx={(t) => ({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 2,
         px: 2,
         py: 1.5,
         borderBottom: `1px solid ${t.palette.divider}`,
@@ -338,6 +364,7 @@ const Section = ({
       })}
     >
       {title}
+      {action}
     </Box>
     {empty ? (
       <Box sx={{ px: 2, py: 3, color: 'text.disabled', fontSize: 13.5 }}>{emptyText}</Box>

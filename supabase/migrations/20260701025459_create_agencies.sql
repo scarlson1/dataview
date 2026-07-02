@@ -42,7 +42,7 @@ create table public.agencies (
   address_line2      varchar(200),
   city               varchar(100),
   state              char(2),
-  zip                varchar(10),
+  postal                varchar(10),
   country            varchar(50),
 
   -- E&O / D&O coverage

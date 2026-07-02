@@ -17,9 +17,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import {
+  formatTableLabel,
   TABLE_GROUPS,
   TABLES,
-  formatTableLabel,
   type TableName,
 } from '../../data/tables';
 import { TableIcon } from '../TableIcon';
@@ -145,7 +145,7 @@ export const Sidebar = ({
 }: SidebarProps) => {
   const navigate = useNavigate();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, true])),
+    Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, false])),
   );
 
   const toggleGroup = (id: string) =>
