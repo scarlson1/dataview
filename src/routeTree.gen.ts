@@ -25,6 +25,7 @@ import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
+import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -106,6 +107,11 @@ const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardTableRoute,
 } as any)
+const DashboardBinderIdRoute = DashboardBinderIdRouteImport.update({
+  id: '/binder/$id',
+  path: '/binder/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableIdRoute = DashboardTableIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/$table/$id': typeof DashboardTableIdRoute
+  '/binder/$id': typeof DashboardBinderIdRoute
   '/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesByTo {
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/policies/new': typeof PoliciesNewRoute
   '/': typeof DashboardIndexRoute
   '/$table/$id': typeof DashboardTableIdRoute
+  '/binder/$id': typeof DashboardBinderIdRoute
   '/$table': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesById {
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/policies/new': typeof PoliciesNewRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/$table/$id': typeof DashboardTableIdRoute
+  '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRouteTypes {
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/auth/password-reset'
     | '/policies/new'
     | '/$table/$id'
+    | '/binder/$id'
     | '/$table/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/policies/new'
     | '/'
     | '/$table/$id'
+    | '/binder/$id'
     | '/$table'
   id:
     | '__root__'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/policies/new'
     | '/_dashboard/'
     | '/_dashboard/$table/$id'
+    | '/_dashboard/binder/$id'
     | '/_dashboard/$table/'
   fileRoutesById: FileRoutesById
 }
@@ -346,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableIndexRouteImport
       parentRoute: typeof DashboardTableRoute
     }
+    '/_dashboard/binder/$id': {
+      id: '/_dashboard/binder/$id'
+      path: '/binder/$id'
+      fullPath: '/binder/$id'
+      preLoaderRoute: typeof DashboardBinderIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table/$id': {
       id: '/_dashboard/$table/$id'
       path: '/$id'
@@ -381,6 +400,7 @@ interface DashboardRouteChildren {
   DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardBinderIdRoute: typeof DashboardBinderIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -394,6 +414,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardUsersRoute: DashboardUsersRoute,
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardBinderIdRoute: DashboardBinderIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
