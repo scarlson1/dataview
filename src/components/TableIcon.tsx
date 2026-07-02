@@ -45,6 +45,8 @@ const ICONS: Record<string, LucideIcon> = {
   license: BadgeCheck,
   rules: Landmark,
   carriers: FileCheck2,
+  exposure: Building2,
+  equipment: Package,
 };
 
 interface TableIconProps {

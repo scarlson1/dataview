@@ -28,6 +28,7 @@ import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
 import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
 import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
+import { Route as DashboardAir_exposureIdRouteImport } from './routes/_dashboard.air_exposure.$id'
 import { Route as DashboardAccounts_receivableIdRouteImport } from './routes/_dashboard.accounts_receivable.$id'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
 
@@ -125,6 +126,11 @@ const DashboardBinderIdRoute = DashboardBinderIdRouteImport.update({
   path: '/binder/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAir_exposureIdRoute = DashboardAir_exposureIdRouteImport.update({
+  id: '/air_exposure/$id',
+  path: '/air_exposure/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAccounts_receivableIdRoute =
   DashboardAccounts_receivableIdRouteImport.update({
     id: '/accounts_receivable/$id',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/policies/new': typeof PoliciesNewRoute
   '/$table/$id': typeof DashboardTableIdRoute
   '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/$table/': typeof DashboardTableIndexRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/$table/$id': typeof DashboardTableIdRoute
   '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/$table': typeof DashboardTableIndexRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/$table/$id': typeof DashboardTableIdRoute
   '/_dashboard/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/_dashboard/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
   '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/policies/new'
     | '/$table/$id'
     | '/accounts_receivable/$id'
+    | '/air_exposure/$id'
     | '/binder/$id'
     | '/invoices/$id'
     | '/$table/'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$table/$id'
     | '/accounts_receivable/$id'
+    | '/air_exposure/$id'
     | '/binder/$id'
     | '/invoices/$id'
     | '/$table'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/_dashboard/'
     | '/_dashboard/$table/$id'
     | '/_dashboard/accounts_receivable/$id'
+    | '/_dashboard/air_exposure/$id'
     | '/_dashboard/binder/$id'
     | '/_dashboard/invoices/$id'
     | '/_dashboard/$table/'
@@ -416,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBinderIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/air_exposure/$id': {
+      id: '/_dashboard/air_exposure/$id'
+      path: '/air_exposure/$id'
+      fullPath: '/air_exposure/$id'
+      preLoaderRoute: typeof DashboardAir_exposureIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/accounts_receivable/$id': {
       id: '/_dashboard/accounts_receivable/$id'
       path: '/accounts_receivable/$id'
@@ -460,6 +479,7 @@ interface DashboardRouteChildren {
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAccounts_receivableIdRoute: typeof DashboardAccounts_receivableIdRoute
+  DashboardAir_exposureIdRoute: typeof DashboardAir_exposureIdRoute
   DashboardBinderIdRoute: typeof DashboardBinderIdRoute
   DashboardInvoicesIdRoute: typeof DashboardInvoicesIdRoute
 }
@@ -477,6 +497,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAccounts_receivableIdRoute: DashboardAccounts_receivableIdRoute,
+  DashboardAir_exposureIdRoute: DashboardAir_exposureIdRoute,
   DashboardBinderIdRoute: DashboardBinderIdRoute,
   DashboardInvoicesIdRoute: DashboardInvoicesIdRoute,
 }

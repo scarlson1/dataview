@@ -104,6 +104,18 @@ export const ENTITY_FORMS: Record<string, EntityFormEntry> = {
     editTitle: 'Edit Budget Target',
     component: lazyForm(() => import('#/components/NewBudgetTargetForm')),
   },
+  air_exposure: {
+    relation: 'air_exposure',
+    createTitle: 'New AIR Exposure',
+    editTitle: 'Edit AIR Exposure',
+    component: lazyForm(() => import('#/components/NewAirExposureForm')),
+  },
+  air_equipment: {
+    relation: 'air_equipment',
+    createTitle: 'New Equipment Item',
+    editTitle: 'Edit Equipment Item',
+    component: lazyForm(() => import('#/components/NewAirEquipmentForm')),
+  },
 };
 
 export const getEntityForm = (relation: string): EntityFormEntry | undefined =>

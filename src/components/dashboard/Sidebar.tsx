@@ -14,10 +14,8 @@ import {
   FileDown,
   Layers,
   LogOut,
-  Network,
   PiggyBank,
   Receipt,
-  Settings,
   Stamp,
   TrendingUp,
   Workflow,
@@ -299,7 +297,7 @@ export const Sidebar = ({
       >
         <FooterItem
           icon={<Workflow size={20} />}
-          label='Workflow'
+          label='Workflows'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/workflow' })}
         />
@@ -345,7 +343,7 @@ export const Sidebar = ({
           collapsed={collapsed}
           onClick={() => navigate({ to: '/exports' })}
         />
-        <FooterItem
+        {/* <FooterItem
           icon={<Network size={20} />}
           label='Connections'
           collapsed={collapsed}
@@ -354,7 +352,7 @@ export const Sidebar = ({
           icon={<Settings size={20} />}
           label='Settings'
           collapsed={collapsed}
-        />
+        /> */}
         <Divider sx={{ m: '8px 4px' }} />
         <Box
           sx={{

@@ -188,9 +188,10 @@ export const NewAirExposureForm = ({
                 <field.EntitySelect
                   label='Policy'
                   table='policies'
-                  searchColumns={['pol_ref', 'policy_number', 'insured_name']}
+                  searchColumns={['pol_ref', 'policy_number']}
                   getOptionLabel={(r) =>
-                    [r.pol_ref, r.insured_name].filter(Boolean).join(' · ') || `Policy #${r.id}`
+                    [r.pol_ref, r.policy_number].filter(Boolean).join(' · ') ||
+                    `Policy #${r.id}`
                   }
                 />
               )}
@@ -204,7 +205,9 @@ export const NewAirExposureForm = ({
                   table='clients'
                   searchColumns={['company_name', 'first_name', 'last_name']}
                   getOptionLabel={(r) =>
-                    r.company_name || [r.first_name, r.last_name].filter(Boolean).join(' ') || `Client #${r.id}`
+                    (r.company_name as string) ||
+                    [r.first_name, r.last_name].filter(Boolean).join(' ') ||
+                    `Client #${r.id}`
                   }
                 />
               )}

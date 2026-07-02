@@ -80,6 +80,14 @@ const EXPORTS: ExportDef[] = [
       'Premium & commission by carrier, combining single-carrier and subscription participation shares.',
     group: 'Reports',
   },
+  {
+    relation: 'air_exposure_computed',
+    filename: 'air-exposure-extract',
+    title: 'AIR Exposure Extract',
+    description:
+      'Location/building/TIV exposure records with rolled-up equipment TIV for cat modeling.',
+    group: 'Reports',
+  },
 ];
 
 function ExportCenter() {

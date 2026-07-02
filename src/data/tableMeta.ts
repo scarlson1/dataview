@@ -139,6 +139,17 @@ export const TABLE_META: Record<string, TableOverlay> = {
     description:
       'Per-carrier participation shares with participation $ and the 100% balance check.',
   },
+  air_exposure: {
+    icon: 'exposure',
+    source: 'air_exposure_computed',
+    description:
+      'AIR cat-modeling exposure records: location/building/unit detail, TIV, and rolled-up equipment TIV.',
+  },
+  air_equipment: {
+    icon: 'equipment',
+    description:
+      'AI/GPU & server equipment schedule per exposure, with computed GPU / server / total equipment TIV.',
+  },
 };
 
 /** Relations that are companion computed views — hidden from the sidebar. */
