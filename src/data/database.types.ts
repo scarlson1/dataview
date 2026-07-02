@@ -158,6 +158,13 @@ export type Database = {
             foreignKeyName: "accounts_receivable_payments_ar_id_fkey"
             columns: ["ar_id"]
             isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_receivable_payments_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
             referencedRelation: "accounts_receivable_computed"
             referencedColumns: ["id"]
           },
@@ -545,6 +552,13 @@ export type Database = {
             columns: ["ar_id"]
             isOneToOne: false
             referencedRelation: "accounts_receivable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
             referencedColumns: ["id"]
           },
           {
@@ -994,6 +1008,13 @@ export type Database = {
             columns: ["ar_id"]
             isOneToOne: true
             referencedRelation: "accounts_receivable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: true
+            referencedRelation: "accounts_receivable_aging"
             referencedColumns: ["id"]
           },
           {
@@ -1972,6 +1993,7 @@ export type Database = {
           client_name: string | null
           days_outstanding: number | null
           due_date: string | null
+          id: number | null
           invoice_total: number | null
         }
         Relationships: []
@@ -2221,6 +2243,13 @@ export type Database = {
             columns: ["ar_id"]
             isOneToOne: false
             referencedRelation: "accounts_receivable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
             referencedColumns: ["id"]
           },
           {

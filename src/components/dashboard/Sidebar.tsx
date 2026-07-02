@@ -16,6 +16,7 @@ import {
   LogOut,
   Network,
   PiggyBank,
+  Receipt,
   Settings,
   Stamp,
   TrendingUp,
@@ -325,6 +326,12 @@ export const Sidebar = ({
           label='Carrier Prem/Com'
           collapsed={collapsed}
           onClick={() => navigate({ to: '/carrier-prem-com' })}
+        />
+        <FooterItem
+          icon={<Receipt size={20} />}
+          label='Aged Receivables'
+          collapsed={collapsed}
+          onClick={() => navigate({ to: '/agd' })}
         />
         <FooterItem
           icon={<Stamp size={20} />}

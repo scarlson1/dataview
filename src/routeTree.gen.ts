@@ -23,9 +23,12 @@ import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
 import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard.carrier-prem-com'
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
+import { Route as DashboardAgdRouteImport } from './routes/_dashboard.agd'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
+import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
 import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
+import { Route as DashboardAccounts_receivableIdRouteImport } from './routes/_dashboard.accounts_receivable.$id'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -97,6 +100,11 @@ const DashboardBudgetRoute = DashboardBudgetRouteImport.update({
   path: '/budget',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAgdRoute = DashboardAgdRouteImport.update({
+  id: '/agd',
+  path: '/agd',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableRoute = DashboardTableRouteImport.update({
   id: '/$table',
   path: '/$table',
@@ -107,11 +115,22 @@ const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardTableRoute,
 } as any)
+const DashboardInvoicesIdRoute = DashboardInvoicesIdRouteImport.update({
+  id: '/invoices/$id',
+  path: '/invoices/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardBinderIdRoute = DashboardBinderIdRouteImport.update({
   id: '/binder/$id',
   path: '/binder/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAccounts_receivableIdRoute =
+  DashboardAccounts_receivableIdRouteImport.update({
+    id: '/accounts_receivable/$id',
+    path: '/accounts_receivable/$id',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardTableIdRoute = DashboardTableIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -123,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/$table': typeof DashboardTableRouteWithChildren
+  '/agd': typeof DashboardAgdRoute
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
@@ -134,12 +154,15 @@ export interface FileRoutesByFullPath {
   '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
   '/$table/$id': typeof DashboardTableIdRoute
+  '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
+  '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/agd': typeof DashboardAgdRoute
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
@@ -152,7 +175,9 @@ export interface FileRoutesByTo {
   '/policies/new': typeof PoliciesNewRoute
   '/': typeof DashboardIndexRoute
   '/$table/$id': typeof DashboardTableIdRoute
+  '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
+  '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/$table': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesById {
@@ -161,6 +186,7 @@ export interface FileRoutesById {
   '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
   '/_dashboard/$table': typeof DashboardTableRouteWithChildren
+  '/_dashboard/agd': typeof DashboardAgdRoute
   '/_dashboard/budget': typeof DashboardBudgetRoute
   '/_dashboard/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
@@ -173,7 +199,9 @@ export interface FileRoutesById {
   '/policies/new': typeof PoliciesNewRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/$table/$id': typeof DashboardTableIdRoute
+  '/_dashboard/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
   '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
+  '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRouteTypes {
@@ -183,6 +211,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/$table'
+    | '/agd'
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
@@ -194,12 +223,15 @@ export interface FileRouteTypes {
     | '/auth/password-reset'
     | '/policies/new'
     | '/$table/$id'
+    | '/accounts_receivable/$id'
     | '/binder/$id'
+    | '/invoices/$id'
     | '/$table/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
     | '/login'
+    | '/agd'
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
@@ -212,7 +244,9 @@ export interface FileRouteTypes {
     | '/policies/new'
     | '/'
     | '/$table/$id'
+    | '/accounts_receivable/$id'
     | '/binder/$id'
+    | '/invoices/$id'
     | '/$table'
   id:
     | '__root__'
@@ -220,6 +254,7 @@ export interface FileRouteTypes {
     | '/accept-invite'
     | '/login'
     | '/_dashboard/$table'
+    | '/_dashboard/agd'
     | '/_dashboard/budget'
     | '/_dashboard/carrier-prem-com'
     | '/_dashboard/exports'
@@ -232,7 +267,9 @@ export interface FileRouteTypes {
     | '/policies/new'
     | '/_dashboard/'
     | '/_dashboard/$table/$id'
+    | '/_dashboard/accounts_receivable/$id'
     | '/_dashboard/binder/$id'
+    | '/_dashboard/invoices/$id'
     | '/_dashboard/$table/'
   fileRoutesById: FileRoutesById
 }
@@ -344,6 +381,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBudgetRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/agd': {
+      id: '/_dashboard/agd'
+      path: '/agd'
+      fullPath: '/agd'
+      preLoaderRoute: typeof DashboardAgdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table': {
       id: '/_dashboard/$table'
       path: '/$table'
@@ -358,11 +402,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableIndexRouteImport
       parentRoute: typeof DashboardTableRoute
     }
+    '/_dashboard/invoices/$id': {
+      id: '/_dashboard/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof DashboardInvoicesIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/binder/$id': {
       id: '/_dashboard/binder/$id'
       path: '/binder/$id'
       fullPath: '/binder/$id'
       preLoaderRoute: typeof DashboardBinderIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/accounts_receivable/$id': {
+      id: '/_dashboard/accounts_receivable/$id'
+      path: '/accounts_receivable/$id'
+      fullPath: '/accounts_receivable/$id'
+      preLoaderRoute: typeof DashboardAccounts_receivableIdRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/$table/$id': {
@@ -391,6 +449,7 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
 
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
+  DashboardAgdRoute: typeof DashboardAgdRoute
   DashboardBudgetRoute: typeof DashboardBudgetRoute
   DashboardCarrierPremComRoute: typeof DashboardCarrierPremComRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
@@ -400,11 +459,14 @@ interface DashboardRouteChildren {
   DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardAccounts_receivableIdRoute: typeof DashboardAccounts_receivableIdRoute
   DashboardBinderIdRoute: typeof DashboardBinderIdRoute
+  DashboardInvoicesIdRoute: typeof DashboardInvoicesIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTableRoute: DashboardTableRouteWithChildren,
+  DashboardAgdRoute: DashboardAgdRoute,
   DashboardBudgetRoute: DashboardBudgetRoute,
   DashboardCarrierPremComRoute: DashboardCarrierPremComRoute,
   DashboardExportsRoute: DashboardExportsRoute,
@@ -414,7 +476,9 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardUsersRoute: DashboardUsersRoute,
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardAccounts_receivableIdRoute: DashboardAccounts_receivableIdRoute,
   DashboardBinderIdRoute: DashboardBinderIdRoute,
+  DashboardInvoicesIdRoute: DashboardInvoicesIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

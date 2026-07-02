@@ -161,6 +161,13 @@ export const SCHEMA = {
     "kind": "view",
     "columns": [
       {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
         "field": "ar_ref",
         "label": "AR Ref",
         "type": "varchar(24)",
