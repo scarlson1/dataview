@@ -96,7 +96,16 @@ function CarrierPremComReport() {
         </Button>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr 1fr',
+            md: 'repeat(4, 1fr)',
+          },
+          gap: 2,
+        }}
+      >
         <Kpi label='Total premium' value={money(totals.premium)} />
         <Kpi label='Gross commission' value={money(totals.gross)} />
         <Kpi label='MGA net commission' value={money(totals.mga)} />

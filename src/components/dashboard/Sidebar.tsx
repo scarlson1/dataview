@@ -39,6 +39,10 @@ interface SidebarProps {
   activeTable: TableName;
   onSelectTable: (name: TableName) => void;
   onSignOut: () => void;
+  /** When rendered inside the mobile bottom-sheet Drawer. */
+  inDrawer?: boolean;
+  /** Called after any navigation so the mobile Drawer can close itself. */
+  onNavigate?: () => void;
 }
 
 const FooterItem = ({
@@ -151,6 +155,8 @@ export const Sidebar = ({
   activeTable,
   onSelectTable,
   onSignOut,
+  inDrawer = false,
+  onNavigate,
 }: SidebarProps) => {
   const navigate = useNavigate();
   const { role } = useAuth();
@@ -161,14 +167,21 @@ export const Sidebar = ({
   const toggleGroup = (id: string) =>
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  // Run a navigation and then let the mobile Drawer close itself.
+  const go = (fn: () => void) => {
+    fn();
+    onNavigate?.();
+  };
+
   return (
     <Box
       component='aside'
       sx={(theme) => ({
-        width: collapsed ? SIDEBAR_CLOSED : SIDEBAR_OPEN,
+        width: inDrawer ? '100%' : collapsed ? SIDEBAR_CLOSED : SIDEBAR_OPEN,
+        height: inDrawer ? '100%' : undefined,
         flexShrink: 0,
         backgroundColor: 'background.paper',
-        borderRight: `1px solid ${theme.palette.divider}`,
+        borderRight: inDrawer ? 'none' : `1px solid ${theme.palette.divider}`,
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.2s ease',
@@ -177,7 +190,7 @@ export const Sidebar = ({
     >
       {/* brand */}
       <Box
-        onClick={() => navigate({ to: '/' })}
+        onClick={() => go(() => navigate({ to: '/' }))}
         sx={(theme) => ({
           height: 64,
           flexShrink: 0,
@@ -237,7 +250,7 @@ export const Sidebar = ({
                 name={name}
                 active={name === activeTable}
                 collapsed
-                onSelect={onSelectTable}
+                onSelect={(name) => go(() => onSelectTable(name))}
               />
             ))
           : TABLE_GROUPS.map((group) => {
@@ -285,7 +298,7 @@ export const Sidebar = ({
                           name={name}
                           active={name === activeTable}
                           collapsed={false}
-                          onSelect={onSelectTable}
+                          onSelect={(name) => go(() => onSelectTable(name))}
                         />
                       ))}
                     </Box>
@@ -307,56 +320,56 @@ export const Sidebar = ({
           icon={<Workflow size={20} />}
           label='Workflows'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/workflow' })}
+          onClick={() => go(() => navigate({ to: '/workflow' }))}
         />
         <FooterItem
           icon={<Layers size={20} />}
           label='Subscriptions'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/subscriptions' })}
+          onClick={() => go(() => navigate({ to: '/subscriptions' }))}
         />
         <FooterItem
           icon={<PiggyBank size={20} />}
           label='UEP Reserve'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/uep' })}
+          onClick={() => go(() => navigate({ to: '/uep' }))}
         />
         <FooterItem
           icon={<TrendingUp size={20} />}
           label='Budget'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/budget' })}
+          onClick={() => go(() => navigate({ to: '/budget' }))}
         />
         <FooterItem
           icon={<Coins size={20} />}
           label='Carrier Prem/Com'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/carrier-prem-com' })}
+          onClick={() => go(() => navigate({ to: '/carrier-prem-com' }))}
         />
         <FooterItem
           icon={<Receipt size={20} />}
           label='Aged Receivables'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/agd' })}
+          onClick={() => go(() => navigate({ to: '/agd' }))}
         />
         <FooterItem
           icon={<Stamp size={20} />}
           label='Stamp'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/stamp' })}
+          onClick={() => go(() => navigate({ to: '/stamp' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}
           label='Exports'
           collapsed={collapsed}
-          onClick={() => navigate({ to: '/exports' })}
+          onClick={() => go(() => navigate({ to: '/exports' }))}
         />
         {role === 'admin' && (
           <FooterItem
             icon={<Users size={20} />}
             label='Team'
             collapsed={collapsed}
-            onClick={() => navigate({ to: '/users' })}
+            onClick={() => go(() => navigate({ to: '/users' }))}
           />
         )}
         {/* <FooterItem

@@ -2,7 +2,13 @@ import { InviteUserForm } from '#/components/auth/InviteUserForm';
 import { ToggleDarkMode } from '#/components/ToggleDarkMode';
 import { useAuth } from '#/context/AuthContext';
 import { MONO_FONT } from '#/theme/tokens';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -48,10 +54,21 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: '8px', ml: '6px' }}
         >
-          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Typography
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontSize: 14,
+              color: 'text.secondary',
+            }}
+          >
             Tables
           </Typography>
-          <Box sx={{ display: 'flex', color: 'text.disabled' }}>
+          <Box
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              color: 'text.disabled',
+            }}
+          >
             <ChevronRight size={18} />
           </Box>
           <Typography
@@ -106,6 +123,8 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
 function AddUser() {
   const { role } = useAuth();
   const [open, setOpen] = useState(false);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (role != 'admin') return null;
 
@@ -119,6 +138,7 @@ function AddUser() {
         onClose={() => setOpen(false)}
         maxWidth='xs'
         fullWidth
+        fullScreen={fullScreen}
       >
         <DialogTitle>Add User</DialogTitle>
         <DialogContent>

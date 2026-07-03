@@ -74,7 +74,7 @@ export const DataTab = ({ table }: DataTabProps) => {
         disableRowSelectionOnClick
         sx={(theme) => ({
           border: 0,
-          height: 'calc(100vh - 300px)',
+          height: { xs: 'calc(100vh - 220px)', md: 'calc(100vh - 300px)' },
           minHeight: 420,
           '--DataGrid-containerBackground': 'transparent',
           '& .MuiDataGrid-columnHeaders': {

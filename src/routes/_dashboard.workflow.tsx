@@ -290,7 +290,11 @@ function WorkflowPage() {
 
       {/* KPIs */}
       <Box
-        sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+          gap: 2,
+        }}
       >
         <Kpi
           label='Pipeline Expected GWP'
@@ -544,6 +548,7 @@ const Row = ({ children }: { children: React.ReactNode }) => (
   <Box
     sx={(t) => ({
       display: 'flex',
+      flexWrap: { xs: 'wrap', sm: 'nowrap' },
       alignItems: 'center',
       gap: 2,
       px: 2,
@@ -571,7 +576,13 @@ const Cell = ({
 );
 
 const Mono = ({ children }: { children: React.ReactNode }) => (
-  <Box sx={{ fontFamily: 'monospace', fontSize: 13, minWidth: 120 }}>
+  <Box
+    sx={{
+      fontFamily: 'monospace',
+      fontSize: 13,
+      minWidth: { xs: 'auto', sm: 120 },
+    }}
+  >
     {children}
   </Box>
 );

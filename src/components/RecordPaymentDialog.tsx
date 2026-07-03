@@ -15,6 +15,8 @@ import {
   MenuItem,
   Stack,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -47,6 +49,8 @@ export const RecordPaymentDialog = ({
   const [method, setMethod] = useState('ach');
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const suggested = Math.max(Number(ar?.balance_due) || 0, 0);
 
@@ -78,7 +82,13 @@ export const RecordPaymentDialog = ({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='xs'
+      fullWidth
+      fullScreen={fullScreen}
+    >
       <DialogTitle>
         Record payment {ar ? `— ${ar.ar_ref}` : ''}
       </DialogTitle>

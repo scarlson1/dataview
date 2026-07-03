@@ -139,7 +139,7 @@ export const NewBinderForm = ({
               )}
             </form.AppField>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='effDate'>
                 {({ DatePicker }) => (
@@ -151,7 +151,7 @@ export const NewBinderForm = ({
               </form.AppField>
             </Suspense>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='expDate'>
                 {({ DatePicker }) => (

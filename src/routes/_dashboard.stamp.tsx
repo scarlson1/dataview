@@ -124,7 +124,7 @@ function StampGenerator() {
       />
 
       {section && (
-        <Paper variant='outlined' sx={{ p: 4, borderRadius: 2 }}>
+        <Paper variant='outlined' sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
             Participation Schedule
           </Typography>
@@ -133,6 +133,7 @@ function StampGenerator() {
           >
             {section.label}
           </Typography>
+          <Box sx={{ overflowX: 'auto' }}>
           <Table size='small'>
             <TableHead>
               <TableRow>
@@ -160,6 +161,7 @@ function StampGenerator() {
               )}
             </TableBody>
           </Table>
+          </Box>
           <Box
             sx={{
               mt: 2,

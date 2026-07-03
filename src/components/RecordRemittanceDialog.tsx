@@ -13,6 +13,8 @@ import {
   InputAdornment,
   Stack,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -41,6 +43,8 @@ export const RecordRemittanceDialog = ({
 }: RecordRemittanceDialogProps) => {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const available = Math.max(Number(cap?.available_for_payment) || 0, 0);
 
@@ -67,7 +71,13 @@ export const RecordRemittanceDialog = ({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='xs'
+      fullWidth
+      fullScreen={fullScreen}
+    >
       <DialogTitle>
         Record remittance {cap ? `— ${cap.cap_ref}` : ''}
       </DialogTitle>

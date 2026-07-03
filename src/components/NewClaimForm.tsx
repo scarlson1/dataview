@@ -160,7 +160,7 @@ export const NewClaimForm = ({
             </form.AppField>
           </Grid>
 
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='dateOfLoss'>
                 {({ DatePicker }) => (
@@ -172,7 +172,7 @@ export const NewClaimForm = ({
               </form.AppField>
             </Suspense>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='dateReported'>
                 {({ DatePicker }) => (

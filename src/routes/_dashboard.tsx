@@ -1,6 +1,6 @@
 import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import {
   createFileRoute,
@@ -27,10 +27,20 @@ export const Route = createFileRoute('/_dashboard')({
 function DashboardLayout() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { table: tableName } = useParams({ strict: false });
   const activeTable = (tableName ?? '') as TableName;
   const table = getTable(activeTable);
+
+  const handleSelectTable = (name: TableName) =>
+    navigate({ to: '/$table', params: { table: name } });
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: '/login' });
+  };
 
   return (
     <Box
@@ -42,26 +52,56 @@ function DashboardLayout() {
         backgroundColor: 'background.default',
       }}
     >
-      <Sidebar
-        collapsed={collapsed}
-        activeTable={activeTable}
-        onSelectTable={(name) =>
-          navigate({ to: '/$table', params: { table: name } })
-        }
-        onSignOut={async () => {
-          await signOut();
-          navigate({ to: '/login' });
-        }}
-      />
+      {isMobile ? (
+        <Drawer
+          anchor='bottom'
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          slotProps={{
+            paper: {
+              sx: {
+                height: '85vh',
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                overflow: 'hidden',
+              },
+            },
+          }}
+        >
+          <Sidebar
+            collapsed={false}
+            inDrawer
+            onNavigate={() => setMobileOpen(false)}
+            activeTable={activeTable}
+            onSelectTable={handleSelectTable}
+            onSignOut={handleSignOut}
+          />
+        </Drawer>
+      ) : (
+        <Sidebar
+          collapsed={collapsed}
+          activeTable={activeTable}
+          onSelectTable={handleSelectTable}
+          onSignOut={handleSignOut}
+        />
+      )}
 
       <Box
         sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}
       >
         <TopBar
           activeName={table?.label ?? ''}
-          onToggleSidebar={() => setCollapsed((c) => !c)}
+          onToggleSidebar={() =>
+            isMobile ? setMobileOpen((o) => !o) : setCollapsed((c) => !c)
+          }
         />
-        <Box sx={{ flex: 1, overflow: 'auto', p: '24px 28px 40px' }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            p: { xs: '16px 14px 32px', md: '24px 28px 40px' },
+          }}
+        >
           <Suspense
             fallback={
               <Box

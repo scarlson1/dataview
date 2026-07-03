@@ -133,7 +133,7 @@ export const NewAgencyForm = ({
     <form.AppForm>
       <Stack direction='column' spacing={2}>
         <Grid container spacing={2}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField
               name='agentLevel'
               children={(field) => (
@@ -150,7 +150,7 @@ export const NewAgencyForm = ({
               )}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField
               name='licenseeType'
               children={(field) => (
