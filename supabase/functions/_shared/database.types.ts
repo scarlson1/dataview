@@ -183,6 +183,13 @@ export type Database = {
             foreignKeyName: "accounts_receivable_payments_ar_id_fkey"
             columns: ["ar_id"]
             isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_receivable_payments_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
             referencedRelation: "accounts_receivable_computed"
             referencedColumns: ["id"]
           },
@@ -304,6 +311,262 @@ export type Database = {
           },
         ]
       }
+      air_equipment: {
+        Row: {
+          cooling_type: string | null
+          created_at: string
+          eqp_ref: string | null
+          equipment_category: string | null
+          exposure_id: number
+          fire_suppression_system: string | null
+          gpu_count: number
+          gpu_manufacturer: string | null
+          gpu_model: string | null
+          gpu_purchase_date: string | null
+          gpu_unit_age: number | null
+          gpu_unit_replacement_cost: number
+          id: number
+          notes: string | null
+          power_draw_kw: number | null
+          ref_year: number
+          server_rack_count: number
+          server_replacement_cost: number
+          supporting_infra_value: number
+          total_ai_equipment_tiv: number | null
+          total_gpu_value: number | null
+          total_server_value: number | null
+        }
+        Insert: {
+          cooling_type?: string | null
+          created_at?: string
+          eqp_ref?: string | null
+          equipment_category?: string | null
+          exposure_id: number
+          fire_suppression_system?: string | null
+          gpu_count?: number
+          gpu_manufacturer?: string | null
+          gpu_model?: string | null
+          gpu_purchase_date?: string | null
+          gpu_unit_age?: number | null
+          gpu_unit_replacement_cost?: number
+          id?: never
+          notes?: string | null
+          power_draw_kw?: number | null
+          ref_year?: number
+          server_rack_count?: number
+          server_replacement_cost?: number
+          supporting_infra_value?: number
+          total_ai_equipment_tiv?: number | null
+          total_gpu_value?: number | null
+          total_server_value?: number | null
+        }
+        Update: {
+          cooling_type?: string | null
+          created_at?: string
+          eqp_ref?: string | null
+          equipment_category?: string | null
+          exposure_id?: number
+          fire_suppression_system?: string | null
+          gpu_count?: number
+          gpu_manufacturer?: string | null
+          gpu_model?: string | null
+          gpu_purchase_date?: string | null
+          gpu_unit_age?: number | null
+          gpu_unit_replacement_cost?: number
+          id?: never
+          notes?: string | null
+          power_draw_kw?: number | null
+          ref_year?: number
+          server_rack_count?: number
+          server_replacement_cost?: number
+          supporting_infra_value?: number
+          total_ai_equipment_tiv?: number | null
+          total_gpu_value?: number | null
+          total_server_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_equipment_exposure_id_fkey"
+            columns: ["exposure_id"]
+            isOneToOne: false
+            referencedRelation: "air_exposure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_equipment_exposure_id_fkey"
+            columns: ["exposure_id"]
+            isOneToOne: false
+            referencedRelation: "air_exposure_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      air_exposure: {
+        Row: {
+          air_ref: string | null
+          building_id: string | null
+          building_replacement_value: number
+          business_interruption_value: number
+          certificate_ref: string | null
+          city: string | null
+          client_id: number | null
+          construction_code: string | null
+          contents_value: number
+          county: string | null
+          created_at: string
+          deductible_amount: number | null
+          deductible_type: string | null
+          fire_protection_class: number | null
+          foundation_type: string | null
+          geocode_quality: number | null
+          gross_floor_area: number | null
+          id: number
+          latitude: number | null
+          location_id: string | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          num_storeys: number | null
+          number_of_buildings: number | null
+          occupancy_code: string | null
+          policy_id: number | null
+          policy_limit: number | null
+          primary_construction_class: string | null
+          ref_year: number
+          roof_shape: string | null
+          roof_type: string | null
+          seismic_design_level: string | null
+          sprinkler: boolean
+          state: string | null
+          status: string
+          street_address: string | null
+          tiv: number | null
+          unit_floor_level: string | null
+          unit_gross_area: number | null
+          unit_occupancy_desc: string | null
+          unit_ref: string | null
+          wind_speed_design: string | null
+          year_built: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          air_ref?: string | null
+          building_id?: string | null
+          building_replacement_value?: number
+          business_interruption_value?: number
+          certificate_ref?: string | null
+          city?: string | null
+          client_id?: number | null
+          construction_code?: string | null
+          contents_value?: number
+          county?: string | null
+          created_at?: string
+          deductible_amount?: number | null
+          deductible_type?: string | null
+          fire_protection_class?: number | null
+          foundation_type?: string | null
+          geocode_quality?: number | null
+          gross_floor_area?: number | null
+          id?: never
+          latitude?: number | null
+          location_id?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          num_storeys?: number | null
+          number_of_buildings?: number | null
+          occupancy_code?: string | null
+          policy_id?: number | null
+          policy_limit?: number | null
+          primary_construction_class?: string | null
+          ref_year?: number
+          roof_shape?: string | null
+          roof_type?: string | null
+          seismic_design_level?: string | null
+          sprinkler?: boolean
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          tiv?: number | null
+          unit_floor_level?: string | null
+          unit_gross_area?: number | null
+          unit_occupancy_desc?: string | null
+          unit_ref?: string | null
+          wind_speed_design?: string | null
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          air_ref?: string | null
+          building_id?: string | null
+          building_replacement_value?: number
+          business_interruption_value?: number
+          certificate_ref?: string | null
+          city?: string | null
+          client_id?: number | null
+          construction_code?: string | null
+          contents_value?: number
+          county?: string | null
+          created_at?: string
+          deductible_amount?: number | null
+          deductible_type?: string | null
+          fire_protection_class?: number | null
+          foundation_type?: string | null
+          geocode_quality?: number | null
+          gross_floor_area?: number | null
+          id?: never
+          latitude?: number | null
+          location_id?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          num_storeys?: number | null
+          number_of_buildings?: number | null
+          occupancy_code?: string | null
+          policy_id?: number | null
+          policy_limit?: number | null
+          primary_construction_class?: string | null
+          ref_year?: number
+          roof_shape?: string | null
+          roof_type?: string | null
+          seismic_design_level?: string | null
+          sprinkler?: boolean
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          tiv?: number | null
+          unit_floor_level?: string | null
+          unit_gross_area?: number | null
+          unit_occupancy_desc?: string | null
+          unit_ref?: string | null
+          wind_speed_design?: string | null
+          year_built?: number | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       binder: {
         Row: {
           bdr_ref: string | null
@@ -348,6 +611,13 @@ export type Database = {
           yoa?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "binder_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
           {
             foreignKeyName: "binder_carrier_id_fkey"
             columns: ["carrier_id"]
@@ -466,6 +736,42 @@ export type Database = {
           },
         ]
       }
+      budget_targets: {
+        Row: {
+          bud_ref: string | null
+          created_at: string
+          gwp_target: number
+          id: number
+          line_of_business: string
+          month: number
+          notes: string | null
+          ref_year: number
+          year: number
+        }
+        Insert: {
+          bud_ref?: string | null
+          created_at?: string
+          gwp_target?: number
+          id?: never
+          line_of_business: string
+          month: number
+          notes?: string | null
+          ref_year?: number
+          year: number
+        }
+        Update: {
+          bud_ref?: string | null
+          created_at?: string
+          gwp_target?: number
+          id?: never
+          line_of_business?: string
+          month?: number
+          notes?: string | null
+          ref_year?: number
+          year?: number
+        }
+        Relationships: []
+      }
       capacity: {
         Row: {
           ap_status: string
@@ -533,8 +839,22 @@ export type Database = {
             foreignKeyName: "capacity_ar_id_fkey"
             columns: ["ar_id"]
             isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
             referencedRelation: "accounts_receivable_computed"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
           },
           {
             foreignKeyName: "capacity_carrier_id_fkey"
@@ -756,6 +1076,13 @@ export type Database = {
             foreignKeyName: "claims_carrier_id_fkey"
             columns: ["carrier_id"]
             isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
+          {
+            foreignKeyName: "claims_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
             referencedRelation: "carriers"
             referencedColumns: ["id"]
           },
@@ -962,6 +1289,13 @@ export type Database = {
             columns: ["ar_id"]
             isOneToOne: true
             referencedRelation: "accounts_receivable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: true
+            referencedRelation: "accounts_receivable_aging"
             referencedColumns: ["id"]
           },
           {
@@ -1244,6 +1578,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "binder"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "new_business_submissions_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
           },
           {
             foreignKeyName: "new_business_submissions_carrier_id_fkey"
@@ -1535,6 +1876,13 @@ export type Database = {
             foreignKeyName: "policies_carrier_id_fkey"
             columns: ["carrier_id"]
             isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
+          {
+            foreignKeyName: "policies_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
             referencedRelation: "carriers"
             referencedColumns: ["id"]
           },
@@ -1818,6 +2166,13 @@ export type Database = {
             foreignKeyName: "subscription_participant_carrier_id_fkey"
             columns: ["carrier_id"]
             isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
+          {
+            foreignKeyName: "subscription_participant_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
             referencedRelation: "carriers"
             referencedColumns: ["id"]
           },
@@ -1910,6 +2265,20 @@ export type Database = {
       }
     }
     Views: {
+      accounts_receivable_aging: {
+        Row: {
+          aging_bucket: string | null
+          ar_ref: string | null
+          ar_status: string | null
+          balance_due: number | null
+          client_name: string | null
+          days_outstanding: number | null
+          due_date: string | null
+          id: number | null
+          invoice_total: number | null
+        }
+        Relationships: []
+      }
       accounts_receivable_computed: {
         Row: {
           agent_id: number | null
@@ -2096,6 +2465,81 @@ export type Database = {
           },
         ]
       }
+      air_exposure_computed: {
+        Row: {
+          air_ref: string | null
+          building_id: string | null
+          building_replacement_value: number | null
+          business_interruption_value: number | null
+          certificate_ref: string | null
+          city: string | null
+          client_id: number | null
+          construction_code: string | null
+          contents_value: number | null
+          county: string | null
+          created_at: string | null
+          deductible_amount: number | null
+          deductible_type: string | null
+          equipment_count: number | null
+          equipment_tiv: number | null
+          fire_protection_class: number | null
+          foundation_type: string | null
+          geocode_quality: number | null
+          gross_floor_area: number | null
+          id: number | null
+          latitude: number | null
+          location_id: string | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          num_storeys: number | null
+          number_of_buildings: number | null
+          occupancy_code: string | null
+          policy_id: number | null
+          policy_limit: number | null
+          primary_construction_class: string | null
+          ref_year: number | null
+          roof_shape: string | null
+          roof_type: string | null
+          seismic_design_level: string | null
+          sprinkler: boolean | null
+          state: string | null
+          status: string | null
+          street_address: string | null
+          tiv: number | null
+          total_exposure_tiv: number | null
+          unit_floor_level: string | null
+          unit_gross_area: number | null
+          unit_occupancy_desc: string | null
+          unit_ref: string | null
+          wind_speed_design: string | null
+          year_built: number | null
+          zip_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "air_exposure_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies_computed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       binder_part_computed: {
         Row: {
           created_at: string | null
@@ -2161,8 +2605,22 @@ export type Database = {
             foreignKeyName: "capacity_ar_id_fkey"
             columns: ["ar_id"]
             isOneToOne: false
+            referencedRelation: "accounts_receivable_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_ar_id_fkey"
+            columns: ["ar_id"]
+            isOneToOne: false
             referencedRelation: "accounts_receivable_computed"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capacity_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
           },
           {
             foreignKeyName: "capacity_carrier_id_fkey"
@@ -2201,6 +2659,18 @@ export type Database = {
           },
         ]
       }
+      carrier_prem_com_report: {
+        Row: {
+          carrier_id: number | null
+          carrier_name: string | null
+          total_carrier_net: number | null
+          total_gross_com: number | null
+          total_mga_net_com: number | null
+          total_premium: number | null
+          transaction_count: number | null
+        }
+        Relationships: []
+      }
       license_computed: {
         Row: {
           agent_id: number | null
@@ -2235,6 +2705,43 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lly_a_premium: {
+        Row: {
+          certificate_ref: string | null
+          class_of_business: string | null
+          commission_amount: number | null
+          commission_pct: number | null
+          effective_date_of_transaction: string | null
+          gross_written_premium: number | null
+          insured_name: string | null
+          risk_expiry_date: string | null
+          risk_inception_date: string | null
+          risk_location_state: string | null
+          section_no: string | null
+          transaction_type: string | null
+          umr: string | null
+          year_of_account: number | null
+        }
+        Relationships: []
+      }
+      lly_b_claims: {
+        Row: {
+          cause_of_loss: string | null
+          certificate_ref: string | null
+          claim_reference: string | null
+          claim_status: string | null
+          class_of_business: string | null
+          date_of_loss: string | null
+          date_reported: string | null
+          insured_name: string | null
+          paid_indemnity: number | null
+          reserve_indemnity: number | null
+          total_incurred: number | null
+          umr: string | null
+          year_of_account: number | null
+        }
+        Relationships: []
       }
       net_com_uep: {
         Row: {
@@ -2362,6 +2869,13 @@ export type Database = {
             foreignKeyName: "policies_carrier_id_fkey"
             columns: ["carrier_id"]
             isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
+          {
+            foreignKeyName: "policies_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
             referencedRelation: "carriers"
             referencedColumns: ["id"]
           },
@@ -2408,6 +2922,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      qbo_ap_bills: {
+        Row: {
+          bill_date: string | null
+          bill_no: string | null
+          currency: string | null
+          due_date: string | null
+          line_account: string | null
+          line_amount: number | null
+          vendor: string | null
+        }
+        Relationships: []
+      }
+      qbo_ar_invoices: {
+        Row: {
+          currency: string | null
+          customer: string | null
+          due_date: string | null
+          invoice_date: string | null
+          invoice_no: string | null
+          item: string | null
+          item_amount: number | null
+          item_quantity: number | null
+          item_rate: number | null
+        }
+        Relationships: []
+      }
+      qbo_je_commission: {
+        Row: {
+          account: string | null
+          credit: number | null
+          debit: number | null
+          journal_date: string | null
+          journal_no: string | null
+        }
+        Relationships: []
       }
       renewals_computed: {
         Row: {
@@ -2515,6 +3065,13 @@ export type Database = {
           subscription_total_pct: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscription_participant_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carrier_prem_com_report"
+            referencedColumns: ["carrier_id"]
+          },
           {
             foreignKeyName: "subscription_participant_carrier_id_fkey"
             columns: ["carrier_id"]

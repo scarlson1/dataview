@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { Bell, ChevronRight, CircleHelp, PanelLeft } from 'lucide-react';
+import { ChevronRight, PanelLeft } from 'lucide-react';
 
 interface TopBarProps {
   activeName: string;
@@ -70,7 +70,8 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
           </IconButton>
         </Tooltip> */}
         <ToggleDarkMode />
-        <Tooltip title='Notifications'>
+        {/* TODO: implement notifications ?? */}
+        {/* <Tooltip title='Notifications'>
           <IconButton sx={{ width: 40, height: 40 }}>
             <Bell size={22} />
           </IconButton>
@@ -79,7 +80,7 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
           <IconButton sx={{ width: 40, height: 40 }}>
             <CircleHelp size={22} />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
         <Avatar
           sx={(theme) => ({
             width: 36,

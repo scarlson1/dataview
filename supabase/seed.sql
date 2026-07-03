@@ -12,6 +12,11 @@
 -- ============================================================================
 
 truncate table
+  public.air_equipment,
+  public.air_exposure,
+  public.budget_targets,
+  public.subscription_participant,
+  public.subscription,
   public.capacity_remittance,
   public.capacity,
   public.accounts_receivable_payments,
@@ -32,6 +37,65 @@ truncate table
   public.agencies,
   public.surplus_lines_state_rules
 restart identity cascade;
+
+-- ============================================================================
+-- Seed auth user for local development.
+--
+-- The app is auth-gated (email/password via supabase.auth.signInWithPassword)
+-- and local email confirmations are disabled (config.toml: enable_confirmations
+-- = false), so this pre-confirmed user can log straight in at
+-- http://127.0.0.1:3000 and exercise the dashboard/reporting pages.
+--
+--   email:    dev@evertas.example
+--   password: password123
+--
+-- The password is stored as a precomputed bcrypt hash literal (below) rather than
+-- calling pgcrypto's crypt()/gen_salt() at seed time — that avoids depending on
+-- the pgcrypto extension being on the search_path, which it isn't on the hosted
+-- Supabase DB (pgcrypto lives in the `extensions` schema there). GoTrue verifies
+-- the hash with its own bcrypt implementation, so no pgcrypto is needed here at
+-- all. To rotate the password, regenerate the hash once (any bcrypt tool works,
+-- e.g.):  htpasswd -bnBC 10 dev newpw | cut -d: -f2 | sed 's/^\$2y\$/\$2a\$/'
+-- ($2y$ and $2a$ are byte-compatible for ASCII passwords; the substitution
+-- just matches the prefix Postgres's own crypt-blowfish implementation
+-- expects, in case it's ever used to verify the hash again.)
+--
+-- Idempotent: the user (and its cascading identity) is removed and recreated on
+-- every run, matching the truncate-and-reseed pattern used for the app tables.
+-- ============================================================================
+delete from auth.users where email = 'dev@evertas.example';
+
+do $$
+declare
+  v_user_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data, is_super_admin,
+    confirmation_token, recovery_token, email_change_token_new, email_change
+  )
+  values (
+    '00000000-0000-0000-0000-000000000000', v_user_id, 'authenticated', 'authenticated',
+    'dev@evertas.example', '$2a$10$3PBJixUGmbM1wVPS4R.yjOysCebqgzy/scfMK7GfqPayVwuWT8s.y',
+    now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"Dev User"}'::jsonb, false,
+    '', '', '', ''
+  );
+
+  -- Matching identity row so signInWithPassword resolves the email provider.
+  insert into auth.identities (
+    id, provider_id, user_id, identity_data, provider,
+    last_sign_in_at, created_at, updated_at
+  )
+  values (
+    gen_random_uuid(), v_user_id, v_user_id,
+    jsonb_build_object('sub', v_user_id::text, 'email', 'dev@evertas.example',
+                       'email_verified', true),
+    'email', now(), now(), now()
+  );
+end $$;
 
 do $$
 declare
@@ -78,6 +142,14 @@ declare
 
   v_inv_bayside bigint;
   v_ar_bayside  bigint;
+
+  -- subscriptions (multi-carrier co-insurance)
+  v_subs_techflow bigint;
+
+  -- AIR catastrophe exposures
+  v_air_tf_dc   bigint;
+  v_air_tf_edge bigint;
+  v_air_acme    bigint;
 begin
   -- ==========================================================================
   -- Surplus lines state rules (state is the natural PK)
@@ -540,10 +612,137 @@ begin
 
   update public.invoices set ar_id = v_ar_bayside where id = v_inv_bayside;
 
-  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=% claims=%',
+  -- ==========================================================================
+  -- Subscription (multi-carrier co-insurance) for the TechFlow cyber policy.
+  -- The policy was inserted with placement_type='subscription' above; here we
+  -- create the backing subscription + participant rows (shares sum to 100%) and
+  -- wire policies.subscription_id so the placement is fully consistent.
+  -- ==========================================================================
+  insert into public.subscription (policy_id, market_lead_carrier, notes)
+  values (v_pol_techflow, 'Lloyd''s Syndicate 2003 (XYZ)',
+     'Quota-share cyber placement; three participating companies.')
+  returning id into v_subs_techflow;
+
+  insert into public.subscription_participant
+    (subscription_id, carrier_id, role, participation_pct, status, notes)
+  values
+    (v_subs_techflow, v_car_lloyds,    'lead',      0.50000, 'active', 'Market lead; set placement terms.'),
+    (v_subs_techflow, v_car_lexington, 'following', 0.30000, 'active', 'Following market.'),
+    (v_subs_techflow, v_car_chubb,     'following', 0.20000, 'active', 'Following market.');
+
+  update public.policies set subscription_id = v_subs_techflow where id = v_pol_techflow;
+
+  -- ==========================================================================
+  -- Budget targets (forward-looking GWP by line of business and month).
+  -- Full-year 2026 for the active lines, driving the /budget proforma page.
+  -- ==========================================================================
+  insert into public.budget_targets (year, month, line_of_business, gwp_target, notes)
+  select
+    2026, m.month, lob.name,
+    (lob.monthly_base * (1 + 0.02 * m.month))::decimal(14,2),
+    'FY2026 plan'
+  from (values
+    ('GL',       55000.00),
+    ('Property', 40000.00),
+    ('Cyber',    95000.00),
+    ('D&O',      35000.00),
+    ('Auto',     20000.00)
+  ) as lob(name, monthly_base)
+  cross join generate_series(1, 12) as m(month);
+
+  -- ==========================================================================
+  -- AIR catastrophe exposures (location-level TIV) + AI/GPU equipment schedules.
+  -- Two locations for the TechFlow cyber/datacenter risk plus one Acme site.
+  -- ==========================================================================
+  insert into public.air_exposure
+    (policy_id, client_id, certificate_ref, location_id, location_name,
+     street_address, city, state, zip_code, county, latitude, longitude,
+     geocode_quality, number_of_buildings, occupancy_code, construction_code,
+     building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
+     roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,
+     fire_protection_class, sprinkler, unit_ref, unit_floor_level, unit_gross_area,
+     unit_occupancy_desc, building_replacement_value, contents_value,
+     business_interruption_value, deductible_amount, deductible_type, policy_limit,
+     status, notes)
+  values
+    (v_pol_techflow, v_cli_techflow, 'CY-2026-000789', 'LOC-001', 'TechFlow — Santa Clara Data Center',
+     '2200 Mission College Blvd', 'Santa Clara', 'CA', '95054', 'Santa Clara', 37.389200, -121.985800,
+     1, 1, '241', '3',
+     'BLD-001', 2015, 3, 68000, 'Masonry Non-Combustible',
+     'Built-Up Membrane', 'Flat', 'Slab on Grade', 'High', 'N/A',
+     2, true, 'DC-100', '1', 40000,
+     'Data Center / Server Room', 22000000.00, 8500000.00,
+     6200000.00, 100000.00, 'Straight', 50000000.00,
+     'active', 'Primary AI training cluster; high seismic zone.')
+  returning id into v_air_tf_dc;
+
+  insert into public.air_exposure
+    (policy_id, client_id, certificate_ref, location_id, location_name,
+     street_address, city, state, zip_code, county, latitude, longitude,
+     geocode_quality, number_of_buildings, occupancy_code, construction_code,
+     building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
+     roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,
+     fire_protection_class, sprinkler, unit_ref, unit_floor_level, unit_gross_area,
+     unit_occupancy_desc, building_replacement_value, contents_value,
+     business_interruption_value, deductible_amount, deductible_type, policy_limit,
+     status, notes)
+  values
+    (v_pol_techflow, v_cli_techflow, 'CY-2026-000789', 'LOC-002', 'TechFlow — Reno Edge Site',
+     '4500 Vista Blvd', 'Reno', 'NV', '89506', 'Washoe', 39.606600, -119.816500,
+     1, 1, '241', '5',
+     'BLD-002', 2020, 1, 24000, 'Steel Frame',
+     'Metal Deck', 'Flat', 'Slab on Grade', 'Moderate', 'N/A',
+     3, true, 'EDGE-01', '1', 24000,
+     'Data Center / Server Room', 6800000.00, 3100000.00,
+     1400000.00, 50000.00, 'Straight', 50000000.00,
+     'active', 'Inference edge site; wildfire-exposed county.')
+  returning id into v_air_tf_edge;
+
+  insert into public.air_exposure
+    (policy_id, client_id, certificate_ref, location_id, location_name,
+     street_address, city, state, zip_code, county, latitude, longitude,
+     geocode_quality, number_of_buildings, occupancy_code, construction_code,
+     building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
+     roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,
+     fire_protection_class, sprinkler, unit_ref, unit_floor_level, unit_gross_area,
+     unit_occupancy_desc, building_replacement_value, contents_value,
+     business_interruption_value, deductible_amount, deductible_type, policy_limit,
+     status, notes)
+  values
+    (v_pol_acme_gl, v_cli_acme, 'GL-2026-000123', 'LOC-001', 'Acme Manufacturing — Main Plant',
+     '1400 Industrial Blvd', 'Chicago', 'IL', '60632', 'Cook', 41.809700, -87.702400,
+     1, 2, '323', '4',
+     'BLD-001', 1988, 2, 120000, 'Reinforced Concrete',
+     'Metal Deck', 'Flat', 'Slab on Grade', 'N/A', '90',
+     4, false, 'PLANT-A', '1', 120000,
+     'Light Manufacturing', 14500000.00, 6200000.00,
+     3800000.00, 25000.00, 'Straight', 30000000.00,
+     'active', 'Primary manufacturing facility.')
+  returning id into v_air_acme;
+
+  -- AI / GPU equipment schedules (child rows). TechFlow's DC carries the bulk of
+  -- the AI compute TIV; the edge site is smaller; Acme has no GPU compute.
+  insert into public.air_equipment
+    (exposure_id, equipment_category, gpu_manufacturer, gpu_model, gpu_count,
+     gpu_unit_age, gpu_purchase_date, gpu_unit_replacement_cost,
+     server_rack_count, server_replacement_cost, supporting_infra_value,
+     power_draw_kw, cooling_type, fire_suppression_system, notes)
+  values
+    (v_air_tf_dc,   'AI / GPU Compute', 'NVIDIA', 'H100 SXM5',   256, 1, date '2025-03-01', 30000.00,
+     32, 48000.00, 1200000.00, 5120, 'Liquid / Immersion', 'FM-200 Clean Agent', 'Primary training pods.'),
+    (v_air_tf_dc,   'AI / GPU Compute', 'NVIDIA', 'A100 80GB',   128, 3, date '2023-06-01', 15000.00,
+     16, 42000.00, 400000.00, 2048, 'Liquid / Immersion', 'FM-200 Clean Agent', 'Legacy training pool.'),
+    (v_air_tf_edge, 'AI / GPU Compute', 'NVIDIA', 'L40S',         48, 1, date '2025-01-15', 9000.00,
+     6, 40000.00, 180000.00, 720, 'Chilled Air', 'Pre-Action Sprinkler', 'Inference edge nodes.');
+
+  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=% claims=% subscriptions=% budget_rows=% air_exposures=% air_equipment=%',
     (select count(*) from public.agencies),
     (select count(*) from public.carriers),
     (select count(*) from public.clients),
     (select count(*) from public.policies),
-    (select count(*) from public.claims);
+    (select count(*) from public.claims),
+    (select count(*) from public.subscription),
+    (select count(*) from public.budget_targets),
+    (select count(*) from public.air_exposure),
+    (select count(*) from public.air_equipment);
 end $$;

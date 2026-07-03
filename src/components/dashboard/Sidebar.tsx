@@ -1,4 +1,5 @@
-import { useTheme } from '@mui/material';
+import { supabase } from '#/supabaseClient';
+import { Skeleton, useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -6,6 +7,7 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
@@ -20,7 +22,8 @@ import {
   TrendingUp,
   Workflow,
 } from 'lucide-react';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import {
   formatTableLabel,
   TABLE_GROUPS,
@@ -172,6 +175,7 @@ export const Sidebar = ({
     >
       {/* brand */}
       <Box
+        onClick={() => navigate({ to: '/' })}
         sx={(theme) => ({
           height: 64,
           flexShrink: 0,
@@ -179,7 +183,9 @@ export const Sidebar = ({
           alignItems: 'center',
           gap: '12px',
           px: '17px',
+          cursor: 'pointer',
           borderBottom: `1px solid ${theme.vars.palette.borderSoft}`,
+          '&:hover': { backgroundColor: theme.vars.palette.hover },
         })}
       >
         <Box
@@ -354,61 +360,116 @@ export const Sidebar = ({
           collapsed={collapsed}
         /> */}
         <Divider sx={{ m: '8px 4px' }} />
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '11px',
-            p: '6px 8px',
-            whiteSpace: 'nowrap',
-          }}
+        <ErrorBoundary
+          fallback={
+            <Tooltip title='Sign out' placement='top'>
+              <IconButton onClick={onSignOut} size='small' sx={{ m: 2 }}>
+                <LogOut size={19} />
+              </IconButton>
+            </Tooltip>
+          }
         >
-          <Avatar
-            sx={(theme) => ({
-              width: 32,
-              height: 32,
-              flexShrink: 0,
-              fontSize: 13,
-              fontWeight: 600,
-              backgroundColor: theme.vars.palette.primary.light,
-              color: 'primary.main',
-            })}
-          >
-            AL
-          </Avatar>
-          {!collapsed && (
-            <>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  sx={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  Ada Lovelace
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 11.5,
-                    color: 'text.secondary',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  ada@acme.io
-                </Typography>
+          <Suspense
+            fallback={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '11px',
+                  p: '6px 8px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <Skeleton variant='circular' width={32} height={32} />
+                {!collapsed && (
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Skeleton variant='text' sx={{ fontSize: 13, p: 1 }} />
+                    <Skeleton variant='text' sx={{ fontSize: 11, p: 1 }} />
+                  </Box>
+                )}
               </Box>
-              <Tooltip title='Sign out' placement='top'>
-                <IconButton onClick={onSignOut} size='small'>
-                  <LogOut size={19} />
-                </IconButton>
-              </Tooltip>
-            </>
-          )}
-        </Box>
+            }
+          >
+            <UserDetails collapsed={collapsed} onSignOut={onSignOut} />
+          </Suspense>
+        </ErrorBoundary>
       </Box>
     </Box>
   );
 };
+
+function UserDetails({
+  collapsed,
+  onSignOut,
+}: {
+  collapsed: boolean;
+  onSignOut: () => void;
+}) {
+  const { data: user } = useSuspenseQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      return user || null;
+    },
+  });
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '11px',
+        p: '6px 8px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <Avatar
+        sx={(theme) => ({
+          width: 32,
+          height: 32,
+          flexShrink: 0,
+          fontSize: 13,
+          fontWeight: 600,
+          backgroundColor: theme.vars.palette.primary.light,
+          color: 'primary.main',
+        })}
+      />
+      {/* AL */}
+      {/* </Avatar> */}
+      {!collapsed && (
+        <>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 500,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              John Doe
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: 11,
+                color: 'text.secondary',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {user?.email || ''}
+            </Typography>
+          </Box>
+          <Tooltip title='Sign out' placement='top'>
+            <IconButton onClick={onSignOut} size='small'>
+              <LogOut size={19} />
+            </IconButton>
+          </Tooltip>
+        </>
+      )}
+    </Box>
+  );
+}
