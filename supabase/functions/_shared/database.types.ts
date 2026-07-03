@@ -2070,6 +2070,27 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          can_read: boolean
+          can_write: boolean
+          resource: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          can_read?: boolean
+          can_write?: boolean
+          resource: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          can_read?: boolean
+          can_write?: boolean
+          resource?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       subscription: {
         Row: {
           basis_of_participation: string
@@ -2260,6 +2281,24 @@ export type Database = {
           title_role?: string | null
           updated_at?: string
           uw_ref?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: number
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: number
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -3104,6 +3143,10 @@ export type Database = {
       }
     }
     Functions: {
+      authorize: {
+        Args: { action: string; resource: string }
+        Returns: boolean
+      }
       bind_new_business: { Args: { p_nbs_id: number }; Returns: number }
       bind_renewal: { Args: { p_renewal_id: number }; Returns: number }
       cancel_policy: {
@@ -3137,6 +3180,7 @@ export type Database = {
         }
         Returns: number
       }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       generate_invoice: { Args: { p_policy_id: number }; Returns: number }
       net_com_uep_asof: {
         Args: { p_report_date?: string }
@@ -3192,6 +3236,7 @@ export type Database = {
       seed_renewals: { Args: { p_days_ahead?: number }; Returns: number }
     }
     Enums: {
+      app_role: "admin" | "underwriter" | "accounting" | "viewer"
       clientstatus: "active" | "inactive" | "prospect"
       clienttype: "commercial" | "individual" | "non_profit" | "government"
     }
@@ -3324,6 +3369,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      app_role: ["admin", "underwriter", "accounting", "viewer"],
       clientstatus: ["active", "inactive", "prospect"],
       clienttype: ["commercial", "individual", "non_profit", "government"],
     },

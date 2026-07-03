@@ -1,4 +1,4 @@
-import { supabase } from '#/supabaseClient';
+import { useAuth } from '#/context/AuthContext';
 import { Skeleton, useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -7,7 +7,6 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
@@ -20,10 +19,10 @@ import {
   Receipt,
   Stamp,
   TrendingUp,
+  Users,
   Workflow,
 } from 'lucide-react';
-import { Suspense, useState } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import { useState } from 'react';
 import {
   formatTableLabel,
   TABLE_GROUPS,
@@ -154,6 +153,7 @@ export const Sidebar = ({
   onSignOut,
 }: SidebarProps) => {
   const navigate = useNavigate();
+  const { role } = useAuth();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, false])),
   );
@@ -351,6 +351,14 @@ export const Sidebar = ({
           collapsed={collapsed}
           onClick={() => navigate({ to: '/exports' })}
         />
+        {role === 'admin' && (
+          <FooterItem
+            icon={<Users size={20} />}
+            label='Team'
+            collapsed={collapsed}
+            onClick={() => navigate({ to: '/users' })}
+          />
+        )}
         {/* <FooterItem
           icon={<Network size={20} />}
           label='Connections'
@@ -362,39 +370,7 @@ export const Sidebar = ({
           collapsed={collapsed}
         /> */}
         <Divider sx={{ m: '8px 4px' }} />
-        <ErrorBoundary
-          fallback={
-            <Tooltip title='Sign out' placement='top'>
-              <IconButton onClick={onSignOut} size='small' sx={{ m: 2 }}>
-                <LogOut size={19} />
-              </IconButton>
-            </Tooltip>
-          }
-        >
-          <Suspense
-            fallback={
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '11px',
-                  p: '6px 8px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <Skeleton variant='circular' width={32} height={32} />
-                {!collapsed && (
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Skeleton variant='text' sx={{ fontSize: 13, p: 1 }} />
-                    <Skeleton variant='text' sx={{ fontSize: 11, p: 1 }} />
-                  </Box>
-                )}
-              </Box>
-            }
-          >
-            <UserDetails collapsed={collapsed} onSignOut={onSignOut} />
-          </Suspense>
-        </ErrorBoundary>
+        <UserDetails collapsed={collapsed} onSignOut={onSignOut} />
       </Box>
     </Box>
   );
@@ -407,16 +383,29 @@ function UserDetails({
   collapsed: boolean;
   onSignOut: () => void;
 }) {
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['user'],
-    queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const { user, role, loading } = useAuth();
 
-      return user || null;
-    },
-  });
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '11px',
+          p: '6px 8px',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Skeleton variant='circular' width={32} height={32} />
+        {!collapsed && (
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Skeleton variant='text' sx={{ fontSize: 13, p: 1 }} />
+            <Skeleton variant='text' sx={{ fontSize: 11, p: 1 }} />
+          </Box>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -444,16 +433,38 @@ function UserDetails({
       {!collapsed && (
         <>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontSize: 13,
-                fontWeight: 500,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              John Doe
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                John Doe
+              </Typography>
+              {role && (
+                <Box
+                  component='span'
+                  sx={(theme) => ({
+                    flexShrink: 0,
+                    fontSize: 9.5,
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    lineHeight: 1,
+                    px: '6px',
+                    py: '3px',
+                    borderRadius: '4px',
+                    color: 'primary.main',
+                    backgroundColor: theme.vars.palette.primary.light,
+                  })}
+                >
+                  {role}
+                </Box>
+              )}
+            </Box>
             <Typography
               sx={{
                 fontSize: 11,

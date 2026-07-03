@@ -1,12 +1,16 @@
+import { InviteUserForm } from '#/components/auth/InviteUserForm';
 import { ToggleDarkMode } from '#/components/ToggleDarkMode';
+import { useAuth } from '#/context/AuthContext';
 import { MONO_FONT } from '#/theme/tokens';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { ChevronRight, PanelLeft } from 'lucide-react';
+import { ChevronRight, PanelLeft, UserRoundPlus } from 'lucide-react';
+import { useState } from 'react';
 
 interface TopBarProps {
   activeName: string;
@@ -63,6 +67,7 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
 
         <Box sx={{ flex: 1 }} />
 
+        <AddUser />
         {/* <Tooltip title='Toggle theme'>
           <IconButton onClick={toggleMode} sx={{ width: 40, height: 40 }}>
             {mode === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
@@ -97,3 +102,29 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
     </AppBar>
   );
 };
+
+function AddUser() {
+  const { role } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  if (role != 'admin') return null;
+
+  return (
+    <>
+      <IconButton>
+        <UserRoundPlus />
+      </IconButton>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth='xs'
+        fullWidth
+      >
+        <DialogTitle>Add User</DialogTitle>
+        <DialogContent>
+          <InviteUserForm />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

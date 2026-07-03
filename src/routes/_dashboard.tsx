@@ -1,3 +1,4 @@
+import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 import { CircularProgress } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -25,6 +26,7 @@ export const Route = createFileRoute('/_dashboard')({
 
 function DashboardLayout() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const { table: tableName } = useParams({ strict: false });
   const activeTable = (tableName ?? '') as TableName;
@@ -47,7 +49,7 @@ function DashboardLayout() {
           navigate({ to: '/$table', params: { table: name } })
         }
         onSignOut={async () => {
-          await supabase.auth.signOut();
+          await signOut();
           navigate({ to: '/login' });
         }}
       />

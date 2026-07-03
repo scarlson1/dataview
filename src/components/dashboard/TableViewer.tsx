@@ -1,4 +1,5 @@
 import { EntityDrawer } from '#/components/EntityDrawer';
+import { useAuth } from '#/context/AuthContext';
 import { getEntityForm } from '#/data/entityForms';
 import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
@@ -23,10 +24,13 @@ interface TableViewerProps {
 }
 
 export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
+  const { can } = useAuth();
   const [tab, setTab] = useState<ViewerTab>('data');
   const [createOpen, setCreateOpen] = useState(false);
   const entityForm = getEntityForm(table.name);
   const FormComponent = entityForm?.component;
+  // Hide create UI for roles that can't write this table (RLS enforces it too).
+  const canCreate = can(table.name, 'write');
 
   return (
     <>
@@ -119,7 +123,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
           >
             Export
           </Button>
-          {entityForm && (
+          {entityForm && canCreate && (
             <Button
               variant='contained'
               onClick={() => setCreateOpen(true)}
@@ -175,7 +179,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
         )}
       </Paper>
 
-      {entityForm && FormComponent && (
+      {entityForm && FormComponent && canCreate && (
         <EntityDrawer
           open={createOpen}
           title={entityForm.createTitle}

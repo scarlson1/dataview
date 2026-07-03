@@ -13,10 +13,14 @@ receivables, carrier payables), or reports on it (QBO exports, Lloyd's
 bordereaux, aging).
 
 - **Platform:** Supabase (Postgres 17), migrations in `supabase/migrations/`.
-- **Access:** single-tenant internal tool. The browser uses the `authenticated`
-  role; RLS policies are permissive (`using (true)`). Multi-table writes go
-  through `security definer` functions.
-- **Related docs:** [TABLE_IMPLEMENTATION_NOTES.md](TABLE_IMPLEMENTATION_NOTES.md)
+- **Access:** internal tool. The browser uses the `authenticated` role; RLS
+  policies are **role-based** — every table's read/write is gated by
+  `authorize(<table>, 'read'|'write')`, which checks the caller's `user_role`
+  JWT claim against the `role_permissions` table (see
+  [RBAC_PLAN.md](RBAC_PLAN.md)). Multi-table writes go through `security
+  definer` functions.
+- **Related docs:** [RBAC_PLAN.md](RBAC_PLAN.md) (role-based access control),
+  [TABLE_IMPLEMENTATION_NOTES.md](TABLE_IMPLEMENTATION_NOTES.md)
   (per-table deviations), [DB_TESTING_PLAN.md](DB_TESTING_PLAN.md),
   [SUPABASE_QUICKSTART.md](SUPABASE_QUICKSTART.md).
 
@@ -32,7 +36,7 @@ bordereaux, aging).
 | **`updated_at` trigger** | Shared `public.set_updated_at()` (defined in the agencies migration, reused everywhere). Fires `before update … for each row`. |
 | **Same-row math → stored generated columns** | e.g. `policies.accounting_date`, `payments.balance`, `capacity.gross_commission_amt`, `air_exposure.tiv`. |
 | **Cross-row / cross-table / date-dependent math → views** | Anything depending on `current_date`, an aggregate, or another table cannot be a stored generated column, so it lives in a `security_invoker` **`*_computed` view**. |
-| **RLS** | Enabled on every table. Base tables get a permissive `authenticated read` + `authenticated write` policy (added wholesale in the `grant_authenticated_read_access` migration, or inline for later tables). Views only need a `GRANT SELECT` — `security_invoker` makes them run under the caller's RLS. |
+| **RLS** | Enabled on every table. Base tables get role-based `rbac read` + `rbac write` policies that call `authorize(<table>, …)` (applied wholesale in `20260703040348_rbac_policies.sql`, replacing the earlier permissive `using (true)` policies). Views only need a `GRANT SELECT` — `security_invoker` makes them run under the caller's RLS. |
 
 > **Why `security_invoker` views?** They evaluate against base tables **as the
 > calling role**, so RLS is still enforced. `security definer` *functions*, by
@@ -414,20 +418,51 @@ policy row.
 
 ## 8. Security model & Auth
 
-- **RLS everywhere**, permissive `authenticated` read+write policies (single-tenant internal tool). Per-underwriter/agency scoping (`assigned_to*`, `agent_id`) is noted as a future refinement.
-- **Base tables:** need both a `GRANT` (object privilege) and an RLS policy. Both are applied in bulk in `20260701174102_grant_authenticated_read_access.sql` for the original tables, and inline for later ones (subscription, budget, AIR).
+- **RLS everywhere**, gated by **role-based access control** (RBAC — see
+  [RBAC_PLAN.md](RBAC_PLAN.md) for the full design). Four roles (`admin`,
+  `underwriter`, `accounting`, `viewer`) map to per-table read/write in
+  `role_permissions`; each table's `rbac read` / `rbac write` policy calls
+  `authorize(<table>, 'read'|'write')`, which reads the caller's `user_role`
+  JWT claim.
+- **Base tables:** need both a `GRANT` (object privilege) and an RLS policy. The
+  `GRANT`s are applied in bulk in `20260701174102_grant_authenticated_read_access.sql`
+  (and inline for later tables); the role-based policies replace the original
+  permissive ones in `20260703040348_rbac_policies.sql`.
 - **Views:** only need `GRANT SELECT`; `security_invoker` enforces RLS via the underlying tables.
 - **Functions:** `security definer` — bypass RLS internally, granted `EXECUTE` to `authenticated`. This is how the browser performs multi-table writes safely.
 - **`service_role`** bypasses RLS entirely (server-side / edge functions).
+- **Per-underwriter/agency row scoping** (`assigned_to*`, `agent_id`) is noted as a future refinement.
+
+### RBAC (roles, JWT claim, refresh)
+- **`user_roles`** (`user_id → app_role`, unique per user) is the source of
+  truth. **`role_permissions`** (`role × resource → can_read/can_write`) is the
+  policy matrix, seeded per role in `20260703040348_rbac_policies.sql`.
+- **JWT claim:** the Custom Access Token Hook
+  `public.custom_access_token_hook` (`20260703023018_auth-hook.sql`, wired via
+  `[auth.hook.custom_access_token]` in `config.toml`) stamps the user's role
+  into the `user_role` claim on every issued token, so RLS stays a cheap claim
+  read with no extra query.
+- **`authorize(resource, action)`** (`20260703021911_rbac.sql`) is a `stable
+  security definer` helper that resolves the claim → `role_permissions` lookup.
+- **Refresh model:** role changes are not instant because the claim is frozen
+  until `jwt_expiry` (1h). The frontend reads the role from the decoded token
+  (`src/context/AuthContext.tsx`); the intended near-instant path is a Realtime
+  subscription on the user's own `user_roles` row → `refreshSession()` (planned,
+  see RBAC_PLAN.md Phase 5).
+- **Bootstrap:** the seed dev user is granted `admin` (`supabase/seed.sql`) so
+  the first account is not locked out once RLS is in force.
 
 ### Edge function: `invite-user`
-`supabase/functions/invite-user/index.ts` — the only edge function. Authorization
-is "must have a valid session" (`auth: ["user"]`): every account exists because
-it was invited, so a valid session *is* the authorization check (no separate
-admin tier). It validates the email, then calls
-`ctx.supabaseAdmin.auth.admin.inviteUserByEmail(email, { redirectTo })` using the
-secret key. `redirectTo` must be on the `additional_redirect_urls` allow-list or
-Supabase silently falls back to `site_url`.
+`supabase/functions/invite-user/index.ts` — the only edge function. It is
+**admin-gated**: after requiring a valid session (`auth: ["user"]`), it looks
+up the caller's row in `user_roles` via the admin client (the source of truth,
+since the JWT claim can be up to `jwt_expiry` stale) and rejects non-admins
+with 403. It validates the email and a `role` (must be one of the `app_role`
+values), calls `ctx.supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+redirectTo })` using the secret key, then **upserts** `(user_id, role)` into
+`user_roles` (on-conflict `user_id`, so re-invites and delete-then-re-invite
+are idempotent). `redirectTo` must be on the `additional_redirect_urls`
+allow-list or Supabase silently falls back to `site_url`.
 
 ---
 
@@ -447,4 +482,6 @@ Supabase silently falls back to `site_url`.
 | `record_ar_payment(...)` | definer | payment_id | AR receipt + status refresh |
 | `record_cap_remittance(...)` | definer | remittance_id | carrier remittance (capped) + status |
 | `net_com_uep_asof(date)` | stable SQL | table | UEP reserve report |
+| `authorize(resource, action)` | stable definer | boolean | RBAC check: `user_role` claim × `role_permissions` |
+| `custom_access_token_hook(jsonb)` | stable | jsonb | auth hook: stamps `user_role` into the JWT |
 ```

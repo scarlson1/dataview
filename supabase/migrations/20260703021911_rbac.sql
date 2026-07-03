@@ -24,6 +24,23 @@ comment on table public.role_permissions is 'Application permissions for each ro
 alter table public.user_roles enable row level security;
 alter table public.role_permissions enable row level security;
 
+-- Each client subscribes (Realtime) to its own user_roles row and calls
+-- refreshSession() when its role changes (see src/context/AuthContext.tsx), so
+-- the table must be in the realtime publication. The "read own role" RLS policy
+-- (20260703023018_auth-hook.sql) scopes what each subscriber can see. REPLICA
+-- IDENTITY FULL is required so UPDATE events carry user_id in the WAL — Realtime
+-- needs it to evaluate the row filter / RLS against the changed row.
+alter table public.user_roles replica identity full;
+alter publication supabase_realtime add table public.user_roles;
+
+-- The frontend reads its own role's permission rows to drive UX (hide write
+-- actions the role can't perform). This is NOT a security boundary — RLS +
+-- authorize() are; the policy just scopes each user to their own role's rows.
+grant select on public.role_permissions to authenticated;
+create policy "read own role permissions" on public.role_permissions
+    for select to authenticated
+    using ( role = (auth.jwt() ->> 'user_role')::public.app_role );
+
 -- authorize with role-based access control (RBAC)
 create function public.authorize(resource text, action text)
 returns boolean

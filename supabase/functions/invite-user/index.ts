@@ -4,13 +4,36 @@ import { withSupabase } from "@supabase/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Keep in sync with the public.app_role enum (20260703021911_rbac.sql).
+const ROLES = ["admin", "underwriter", "accounting", "viewer"] as const;
+type Role = (typeof ROLES)[number];
+
 export default {
   // 'user' requires a signed-in caller's JWT (sent automatically by
-  // supabase.functions.invoke() from the browser). Every account exists
-  // because it was invited, so "has a valid session" IS the authorization
-  // check here — there's no separate admin tier to gate on.
+  // supabase.functions.invoke() from the browser). Inviting a user and
+  // assigning their role is an admin-only action, so we gate on the caller's
+  // role below.
   fetch: withSupabase({ auth: ["user"] }, async (req, ctx) => {
-    let body: { email?: unknown; redirectTo?: unknown };
+    // Authorize the caller as an admin. The JWT carries a `user_role` claim,
+    // but it can be up to jwt_expiry stale, so check user_roles (the source of
+    // truth) via the admin client for this privilege-escalation surface.
+    const callerId = ctx.jwtClaims?.sub;
+    if (!callerId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: caller, error: callerError } = await ctx.supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerId)
+      .maybeSingle();
+    if (callerError) {
+      return Response.json({ error: callerError.message }, { status: 500 });
+    }
+    if (caller?.role !== "admin") {
+      return Response.json({ error: "Admin role required" }, { status: 403 });
+    }
+
+    let body: { email?: unknown; role?: unknown; redirectTo?: unknown };
     try {
       body = await req.json();
     } catch {
@@ -22,6 +45,13 @@ export default {
       : "";
     if (!EMAIL_RE.test(email)) {
       return Response.json({ error: "A valid email is required" }, {
+        status: 400,
+      });
+    }
+
+    const role = body.role;
+    if (typeof role !== "string" || !ROLES.includes(role as Role)) {
+      return Response.json({ error: "A valid role is required" }, {
         status: 400,
       });
     }
@@ -47,6 +77,18 @@ export default {
         ? error.status
         : 500;
       return Response.json({ error: error.message }, { status });
+    }
+
+    // Persist the chosen role now that we have the invited user's id. Upsert on
+    // user_id handles re-invites and delete-then-re-invite cleanly.
+    const { error: roleError } = await ctx.supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: data.user.id, role }, { onConflict: "user_id" });
+    if (roleError) {
+      return Response.json(
+        { error: `User invited but role assignment failed: ${roleError.message}` },
+        { status: 500 },
+      );
     }
 
     return Response.json({ user: data.user });

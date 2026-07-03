@@ -50,6 +50,11 @@ revoke all
     on table public.user_roles
     from authenticated, anon, public;
 
+-- The invite-user edge function assigns/updates roles through the service_role
+-- client (bypasses RLS but still needs table privileges). The revoke above
+-- stripped its inherited DML, so grant it back explicitly.
+grant select, insert, update, delete on table public.user_roles to service_role;
+
 create policy "Allow auth admin to read user roles" ON public.user_roles
     as permissive for select
     to supabase_auth_admin

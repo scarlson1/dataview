@@ -4,6 +4,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import '../styles.css';
 
+import { AuthProvider } from '#/context/AuthContext';
 import { queryClient } from '#/queryClient';
 import { theme } from '#/theme/theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -21,41 +22,31 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    // <ColorModeProvider>
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
         <Toaster />
-        <QueryClientProvider client={queryClient}>
-          <Outlet />
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'TanStack Query',
-                render: <ReactQueryDevtoolsPanel />,
-              },
-              // {
-              //   name: 'TanStack Router',
-              //   render: <TanStackRouterDevtoolsPanel router={getRouter()} />,
-              // },
-            ]}
-          />
-        </QueryClientProvider>
-        {/* 
-        <TanStackDevtools
-          
-          plugins={[
-            {
-              name: 'TanStack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-          /> */}
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                // {
+                //   name: 'TanStack Router',
+                //   render: <TanStackRouterDevtoolsPanel router={getRouter()} />,
+                // },
+              ]}
+            />
+          </QueryClientProvider>
+        </AuthProvider>
       </ThemeProvider>
     </LocalizationProvider>
-    // </ColorModeProvider>
   );
 }

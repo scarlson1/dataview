@@ -3,6 +3,7 @@
  * Reinstate — driven by the create_endorsement / cancel_policy / reinstate_policy
  * RPCs. Each books a new POL row linked to the head of the chain.
  */
+import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 import {
   Button,
@@ -33,6 +34,7 @@ export const PolicyActions = ({
   polRef,
   onDone,
 }: PolicyActionsProps) => {
+  const { can } = useAuth();
   const [mode, setMode] = useState<Mode>(null);
   const [txnEff, setTxnEff] = useState(dayjs().format('YYYY-MM-DD'));
   const [txnExp, setTxnExp] = useState('');
@@ -105,6 +107,10 @@ export const PolicyActions = ({
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  // Endorse/cancel/reinstate all write policies — hide for non-writers (the
+  // underlying RPCs are RLS-protected regardless).
+  if (!can('policies', 'write')) return null;
 
   return (
     <>

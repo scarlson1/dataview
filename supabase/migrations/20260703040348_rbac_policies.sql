@@ -63,8 +63,8 @@ begin
     foreach t in array all_tables loop
         insert into public.role_permissions (role, resource, can_read, can_write) values
             ('admin',       t, true, true),
-            ('underwriter',       t, true, t = any(uw_write)),
-            ('accounting',       t, true, t = any(acct_write)),
-            ('viewer',       t, true, false),
+            ('underwriter', t, true, t = any(uw_write)),
+            ('accounting',  t, true, t = any(acct_write)),
+            ('viewer',      t, true, false);
     end loop;
 end $$;

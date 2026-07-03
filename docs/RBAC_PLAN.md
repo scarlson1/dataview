@@ -1,17 +1,45 @@
 # RBAC Plan
 
-Status: **proposed** — decisions locked, implementation not started.
+Status: **implemented (backend + invite/auth); frontend enforcement partial.**
+See [Implementation status](#implementation-status) below for what has shipped
+versus what remains. The design sections that follow describe the shipped
+system; note the `viewer` role was named `read_only` in the original proposal.
 
-Adds role-based access control to the Evertas MGA dashboard. Today authorization
-is effectively "has a valid session": every `authenticated` user gets permissive
-`using (true)` read + write on all ~20 tables
+Adds role-based access control to the Evertas MGA dashboard. Previously
+authorization was effectively "has a valid session": every `authenticated` user
+got permissive `using (true)` read + write on all ~20 tables
 (`supabase/migrations/20260701174102_grant_authenticated_read_access.sql`), the
-only gate is `src/routes/_dashboard.tsx` checking a session exists, and the
-`invite-user` edge function treats any session as authorized.
+only gate was `src/routes/_dashboard.tsx` checking a session exists, and the
+`invite-user` edge function treated any session as authorized.
+
+## Implementation status
+
+| Phase | Area | Status | Where |
+|---|---|---|---|
+| 1 | `app_role` enum, `user_roles`, `role_permissions`, `authorize()` | ✅ done | `20260703021911_rbac.sql` |
+| 1 | Admin backfill for the dev/seed user | ✅ done | `supabase/seed.sql` |
+| 2 | Custom Access Token Hook injects `user_role` claim | ✅ done | `20260703023018_auth-hook.sql`, `config.toml` |
+| 3 | Role-based RLS (`rbac read`/`rbac write` → `authorize()`) + seed `role_permissions` | ✅ done | `20260703040348_rbac_policies.sql` |
+| 4 | `invite-user` gated to admins; accepts + persists `role` | ✅ done | `supabase/functions/invite-user/index.ts` |
+| 4 | Role dropdown on invite form | ✅ done | `src/components/auth/InviteUserForm.tsx` |
+| 5 | Session role loaded into an auth provider/hook | ✅ done | `src/context/AuthContext.tsx` (`useAuth().role`) |
+| 5 | Nav filtering + hide/disable write actions by role | ⬜ pending | — |
+| 5 | Team/Users admin screen: list users + change role | ⬜ pending (invite-only so far) | `src/routes/_dashboard.users.tsx` |
+| 5 | Realtime subscription on own `user_roles` row → `refreshSession()` | ⬜ pending | — |
+| 6 | psql RLS tests per role; per-role UI pass | ⬜ pending | — |
+
+**Deviations from the original proposal:**
+
+- The read-only role shipped as **`viewer`**, not `read_only`.
+- The seed permission mapping uses the actual table names: `budget_targets`
+  (not `budget`), `subscription` + `subscription_participant` (not
+  `subscriptions`), and adds `air_exposure` / `air_equipment` / `lob_defaults`.
+- The auth hook currently sets the claim to JSON `null` (not `viewer`) when a
+  user has no `user_roles` row, so a roleless user is denied everywhere.
 
 ## Decisions (locked)
 
-- **Roles:** `admin`, `underwriter`, `accounting`, `read_only`, backed by a
+- **Roles:** `admin`, `underwriter`, `accounting`, `viewer`, backed by a
   data-driven `role_permissions` table (role × table → read/write) rather than
   hand-written per-table policies.
 - **Refresh model:** role lives in a JWT claim (via the Custom Access Token
@@ -64,16 +92,20 @@ so a role change is **not** automatically instant. To get near-instant refresh:
 - Other/offline sessions pick up the change on next token refresh (≤1h);
   optionally shorten `jwt_expiry` to tighten the worst case.
 
-## Seed permission mapping (tunable)
+## Seed permission mapping (as shipped — tunable)
+
+Seeded in `20260703040348_rbac_policies.sql`. Every role reads every table;
+write is the only lever.
 
 - **admin** — all tables read/write + user management / invites.
 - **underwriter** — write: policies, binder, binder_section, binder_part,
   new_business_submissions, renewals, claims, agencies, carriers, clients,
-  underwriters, capacity, license; read: everything else.
+  underwriters, capacity, license, air_exposure, air_equipment; read:
+  everything else.
 - **accounting** — write: invoices, payments, accounts_receivable,
-  accounts_receivable_payments, capacity_remittance, budget, subscriptions;
-  read: the rest.
-- **read_only** — read all, write none.
+  accounts_receivable_payments, capacity_remittance, budget_targets,
+  subscription, subscription_participant; read: the rest.
+- **viewer** — read all, write none.
 
 ## Implementation phases
 

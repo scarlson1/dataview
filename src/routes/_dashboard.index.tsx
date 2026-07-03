@@ -3,6 +3,7 @@
  * a few book-wide KPIs (bound premium YTD, active policies, open receivables,
  * renewal pipeline) and provides quick jumps into the reports and data tables.
  */
+import { useAuth } from '#/context/AuthContext';
 import { money } from '#/lib/money';
 import { supabase } from '#/supabaseClient';
 import { TableIcon } from '#/components/TableIcon';
@@ -46,14 +47,7 @@ interface Summary {
 
 function Home() {
   const navigate = useNavigate();
-
-  const user = useQuery({
-    queryKey: ['user'],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getUser();
-      return data.user ?? null;
-    },
-  });
+  const { user } = useAuth();
 
   const summary = useQuery<Summary>({
     queryKey: ['home-summary'],
@@ -103,7 +97,7 @@ function Home() {
   const s = summary.data;
   const loading = summary.isLoading;
   const greeting = greetingForHour(new Date().getHours());
-  const name = user.data?.email ? user.data.email.split('@')[0] : 'there';
+  const name = user?.email ? user.email.split('@')[0] : 'there';
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -257,7 +251,7 @@ function Home() {
 }
 
 const greetingForHour = (h: number): string =>
-  h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 
 interface Shortcut {
   to: string;

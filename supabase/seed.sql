@@ -95,6 +95,10 @@ begin
                        'email_verified', true),
     'email', now(), now(), now()
   );
+
+  -- Give the dev user the admin role so we're not locked out once RBAC RLS is
+  -- in force. Cascades away with the user on the next reseed (delete above).
+  insert into public.user_roles (user_id, role) values (v_user_id, 'admin');
 end $$;
 
 do $$
