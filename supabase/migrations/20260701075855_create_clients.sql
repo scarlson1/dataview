@@ -29,6 +29,7 @@ CREATE TABLE public.clients (
     updated_at timestamptz DEFAULT now() NOT NULL, 
     date_added date
 );
+comment on table public.clients is 'Clients to associate with new business & policies';
 
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clients ADD CONSTRAINT clients_pkey PRIMARY KEY (id);
