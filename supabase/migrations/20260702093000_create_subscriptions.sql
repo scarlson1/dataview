@@ -121,11 +121,12 @@ grant select, insert, update, delete on public.subscription_participant to authe
 grant select on public.subscription_participant_computed to authenticated;
 grant execute on function public.create_subscription(bigint, varchar, jsonb, text) to authenticated;
 
-create policy "authenticated read"  on public.subscription
-  for select to authenticated using (true);
-create policy "authenticated write" on public.subscription
-  for all    to authenticated using (true) with check (true);
-create policy "authenticated read"  on public.subscription_participant
-  for select to authenticated using (true);
-create policy "authenticated write" on public.subscription_participant
-  for all    to authenticated using (true) with check (true);
+-- REMOVE IN FAVOR OF RBAC IMPLEMENTATION
+-- create policy "authenticated read"  on public.subscription
+--   for select to authenticated using (true);
+-- create policy "authenticated write" on public.subscription
+--   for all    to authenticated using (true) with check (true);
+-- create policy "authenticated read"  on public.subscription_participant
+--   for select to authenticated using (true);
+-- create policy "authenticated write" on public.subscription_participant
+--   for all    to authenticated using (true) with check (true);

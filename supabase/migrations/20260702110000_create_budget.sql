@@ -24,7 +24,9 @@ alter table public.budget_targets enable row level security;
 
 grant select, insert, update, delete on public.budget_targets to authenticated;
 
-create policy "authenticated read"  on public.budget_targets
-  for select to authenticated using (true);
-create policy "authenticated write" on public.budget_targets
-  for all    to authenticated using (true) with check (true);
+
+-- REMOVE IN FAVOR OF RBAC IMPLEMENTATION
+-- create policy "authenticated read"  on public.budget_targets
+--   for select to authenticated using (true);
+-- create policy "authenticated write" on public.budget_targets
+--   for all    to authenticated using (true) with check (true);

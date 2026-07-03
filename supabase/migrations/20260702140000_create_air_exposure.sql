@@ -140,12 +140,14 @@ grant select, insert, update, delete on public.air_exposure  to authenticated;
 grant select, insert, update, delete on public.air_equipment to authenticated;
 grant select on public.air_exposure_computed to authenticated;
 
-create policy "authenticated read"  on public.air_exposure
-  for select to authenticated using (true);
-create policy "authenticated write" on public.air_exposure
-  for all    to authenticated using (true) with check (true);
 
-create policy "authenticated read"  on public.air_equipment
-  for select to authenticated using (true);
-create policy "authenticated write" on public.air_equipment
-  for all    to authenticated using (true) with check (true);
+-- REMOVE IN FAVOR OF RBAC IMPLEMENTATION
+-- create policy "authenticated read"  on public.air_exposure
+--   for select to authenticated using (true);
+-- create policy "authenticated write" on public.air_exposure
+--   for all    to authenticated using (true) with check (true);
+
+-- create policy "authenticated read"  on public.air_equipment
+--   for select to authenticated using (true);
+-- create policy "authenticated write" on public.air_equipment
+--   for all    to authenticated using (true) with check (true);

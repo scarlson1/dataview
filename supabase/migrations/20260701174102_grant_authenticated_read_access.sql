@@ -6,7 +6,8 @@
 -- access is intentionally left for a future migration.
 
 -- Base tables: need both a GRANT (object-level privilege) and an RLS policy
--- (row-level privilege) for `authenticated` to read them.
+-- (row-level privilege) for `authenticated` to read them. RLS now handled by RBAC policies 
+
 do $$
 declare
   t text;
@@ -40,14 +41,6 @@ begin
     -- are permissive. Per-underwriter/agency scoping (assigned_to*, agent_id)
     -- would be added here later.
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
-    execute format(
-      'create policy "authenticated read" on public.%I for select to authenticated using (true)',
-      t
-    );
-    execute format(
-      'create policy "authenticated write" on public.%I for all to authenticated using (true) with check (true)',
-      t
-    );
   end loop;
 end $$;
 
