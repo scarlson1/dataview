@@ -91,6 +91,7 @@ const TableRow = ({
   const theme = useTheme();
   const table = TABLES[name];
   const label = formatTableLabel(table.label);
+
   return (
     <Tooltip title={collapsed ? label : ''} placement='right'>
       <Box
@@ -98,6 +99,7 @@ const TableRow = ({
         sx={(theme) => ({
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '12px',
           height: 40,
           px: 1.5,

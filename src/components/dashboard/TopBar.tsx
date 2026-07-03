@@ -1,7 +1,6 @@
 import { ToggleDarkMode } from '#/components/ToggleDarkMode';
 import { MONO_FONT } from '#/theme/tokens';
 import AppBar from '@mui/material/AppBar';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
@@ -81,7 +80,7 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
             <CircleHelp size={22} />
           </IconButton>
         </Tooltip> */}
-        <Avatar
+        {/* <Avatar
           sx={(theme) => ({
             width: 36,
             height: 36,
@@ -93,7 +92,7 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
           })}
         >
           AL
-        </Avatar>
+        </Avatar> */}
       </Toolbar>
     </AppBar>
   );
