@@ -9,6 +9,7 @@
 import { EntityDrawer } from '#/components/EntityDrawer';
 import { PolicyActions } from '#/components/PolicyActions';
 import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
 import { getEntityForm } from '#/data/entityForms';
 import { getTable } from '#/data/tables';
 import { labelize, money } from '#/lib/money';
@@ -44,11 +45,14 @@ function DetailRoute() {
   const { table: tableName, id } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { can } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
 
   const table = getTable(tableName);
   const entityForm = getEntityForm(tableName);
   const FormComponent = entityForm?.component;
+  // Hide edit UI for roles that can't write this table (RLS enforces it too).
+  const canEdit = can(tableName, 'write');
 
   const rowQuery = useQuery({
     queryKey: ['entity-detail', tableName, id],
@@ -116,7 +120,7 @@ function DetailRoute() {
               }}
             />
           )}
-          {entityForm && (
+          {entityForm && canEdit && (
             <Button
               variant='contained'
               startIcon={<Pencil size={16} />}
@@ -173,7 +177,7 @@ function DetailRoute() {
         </Paper>
       )}
 
-      {entityForm && FormComponent && (
+      {entityForm && FormComponent && canEdit && (
         <EntityDrawer
           open={editOpen}
           title={entityForm.editTitle}

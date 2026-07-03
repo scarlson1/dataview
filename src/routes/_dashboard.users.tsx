@@ -4,6 +4,7 @@ import { supabase } from '#/supabaseClient';
 import {
   Box,
   CircularProgress,
+  Grid,
   MenuItem,
   Paper,
   TextField,
@@ -42,7 +43,9 @@ interface TeamMember {
   created_at: string;
 }
 
-const invokeManageUsers = async <T,>(body: Record<string, unknown>): Promise<T> => {
+const invokeManageUsers = async <T,>(
+  body: Record<string, unknown>,
+): Promise<T> => {
   const { data, error } = await supabase.functions.invoke('manage-users', {
     body,
   });
@@ -73,95 +76,111 @@ function RouteComponent() {
   });
 
   return (
-    <Box sx={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <Box>
-        <Typography component='h1' sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>
-          Team
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-          Manage who can access the workspace and what they can do.
-        </Typography>
-      </Box>
-
-      {/* Members */}
-      <Box>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1.25 }}>
-          Members
-        </Typography>
-        <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
-          {members.isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress size={22} />
-            </Box>
-          ) : members.error ? (
-            <Box sx={{ p: 2 }}>
-              <Typography sx={{ fontSize: 13, color: 'error.main' }}>
-                {(members.error as Error).message}
-              </Typography>
-            </Box>
-          ) : (
-            (members.data ?? []).map((m, i) => (
-              <Box
-                key={m.id}
-                sx={(theme) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 2,
-                  p: '10px 16px',
-                  borderTop:
-                    i === 0
-                      ? 'none'
-                      : `1px solid ${theme.vars.palette.borderSoft}`,
-                })}
-              >
-                <Typography
-                  sx={{
-                    fontSize: 14,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {m.email ?? '(no email)'}
-                </Typography>
-                <TextField
-                  select
-                  size='small'
-                  value={m.role ?? ''}
-                  disabled={setRole.isPending}
-                  onChange={(e) =>
-                    setRole.mutate({ userId: m.id, role: e.target.value })
-                  }
-                  sx={{ minWidth: 150, flexShrink: 0 }}
-                >
-                  {m.role === null && (
-                    <MenuItem value='' disabled>
-                      No role
-                    </MenuItem>
-                  )}
-                  {ROLE_OPTIONS.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+    <Grid container spacing={4}>
+      <Grid size={12}>
+        <Box>
+          <Typography
+            component='h1'
+            sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}
+          >
+            Team
+          </Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+            Manage who can access the workspace and what they can do.
+          </Typography>
+        </Box>
+      </Grid>
+      <Grid size={{ xs: 12, lg: 8 }}>
+        {/* Members */}
+        <Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1.25 }}>
+            Members
+          </Typography>
+          <Paper
+            variant='outlined'
+            sx={{ borderRadius: 2, overflow: 'hidden' }}
+          >
+            {members.isLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress size={22} />
               </Box>
-            ))
-          )}
-        </Paper>
-      </Box>
+            ) : members.error ? (
+              <Box sx={{ p: 2 }}>
+                <Typography sx={{ fontSize: 13, color: 'error.main' }}>
+                  {(members.error as Error).message}
+                </Typography>
+              </Box>
+            ) : (
+              (members.data ?? []).map((m, i) => (
+                <Box
+                  key={m.id}
+                  sx={(theme) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 2,
+                    p: '10px 16px',
+                    borderTop:
+                      i === 0
+                        ? 'none'
+                        : `1px solid ${theme.vars.palette.borderSoft}`,
+                  })}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {m.email ?? '(no email)'}
+                  </Typography>
+                  <TextField
+                    select
+                    size='small'
+                    variant='standard'
+                    value={m.role ?? ''}
+                    disabled={setRole.isPending}
+                    onChange={(e) =>
+                      setRole.mutate({ userId: m.id, role: e.target.value })
+                    }
+                    sx={{ minWidth: 150, flexShrink: 0 }}
+                  >
+                    {m.role === null && (
+                      <MenuItem value='' disabled>
+                        No role
+                      </MenuItem>
+                    )}
+                    {ROLE_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+              ))
+            )}
+          </Paper>
+        </Box>
+      </Grid>
 
-      {/* Invite */}
-      <Box sx={{ maxWidth: 400 }}>
+      <Grid size={{ xs: 12, lg: 4 }}>
+        {/* Invite */}
+
         <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1.25 }}>
           Invite a new member
         </Typography>
-        <InviteUserForm
-          onInvited={() =>
-            queryClient.invalidateQueries({ queryKey: ['team-members'] })
-          }
-        />
-      </Box>
-    </Box>
+        <Paper
+          variant='outlined'
+          sx={{ borderRadius: 2, overflow: 'hidden', p: 3 }}
+        >
+          <InviteUserForm
+            onInvited={() =>
+              queryClient.invalidateQueries({ queryKey: ['team-members'] })
+            }
+          />
+        </Paper>
+      </Grid>
+    </Grid>
   );
 }

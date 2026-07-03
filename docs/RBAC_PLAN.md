@@ -1,9 +1,10 @@
 # RBAC Plan
 
-Status: **implemented (backend + invite/auth); frontend enforcement partial.**
-See [Implementation status](#implementation-status) below for what has shipped
-versus what remains. The design sections that follow describe the shipped
-system; note the `viewer` role was named `read_only` in the original proposal.
+Status: **implemented (backend + invite/auth + frontend enforcement).** Only
+per-role verification (Phase 6) and optional nav read-filtering remain — see
+[Implementation status](#implementation-status) below. The design sections that
+follow describe the shipped system; note the `viewer` role was named `read_only`
+in the original proposal.
 
 Adds role-based access control to the Evertas MGA dashboard. Previously
 authorization was effectively "has a valid session": every `authenticated` user
@@ -23,9 +24,10 @@ only gate was `src/routes/_dashboard.tsx` checking a session exists, and the
 | 4 | `invite-user` gated to admins; accepts + persists `role` | ✅ done | `supabase/functions/invite-user/index.ts` |
 | 4 | Role dropdown on invite form | ✅ done | `src/components/auth/InviteUserForm.tsx` |
 | 5 | Session role loaded into an auth provider/hook | ✅ done | `src/context/AuthContext.tsx` (`useAuth().role`) |
-| 5 | Nav filtering + hide/disable write actions by role | ⬜ pending | — |
-| 5 | Team/Users admin screen: list users + change role | ⬜ pending (invite-only so far) | `src/routes/_dashboard.users.tsx` |
-| 5 | Realtime subscription on own `user_roles` row → `refreshSession()` | ⬜ pending | — |
+| 5 | Hide/disable write actions by role (New, Edit, PolicyActions) | ✅ done | `TableViewer.tsx`, `_dashboard.$table.$id.tsx`, `PolicyActions.tsx` |
+| 5 | Nav read-filtering by role | ⬜ deferred (moot: every role reads every table today) | `Sidebar.tsx` |
+| 5 | Team/Users admin screen: list users + change role | ✅ done | `_dashboard.users.tsx`, `supabase/functions/manage-users/index.ts` |
+| 5 | Realtime subscription on own `user_roles` row → `refreshSession()` | ✅ done | `src/context/AuthContext.tsx` |
 | 6 | psql RLS tests per role; per-role UI pass | ⬜ pending | — |
 
 **Deviations from the original proposal:**
