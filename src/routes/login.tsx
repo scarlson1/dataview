@@ -4,15 +4,17 @@ import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Database, Moon, ShieldCheck, Sun } from "lucide-react";
+import { Database, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { ToggleDarkMode } from "#/components/ToggleDarkMode";
 import { SignInForm } from "../components/auth/SignInForm";
-import { useColorMode } from "../theme/ColorModeContext";
+// import { useColorMode } from '../theme/ColorModeContext';
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
 	const navigate = useNavigate();
-	const { mode, toggleMode } = useColorMode();
+	// const { mode, setMode } = useColorScheme();
 	const goToApp = () => navigate({ to: "/" });
 
 	return (
@@ -24,8 +26,8 @@ function LoginPage() {
 				alignItems: "center",
 				justifyContent: "center",
 				p: 3,
-				backgroundColor: theme.tokens.authBg,
-				backgroundImage: theme.tokens.authDots,
+				backgroundColor: theme.vars.palette.authBg,
+				// backgroundImage: theme.vars.palette.authDots,
 				backgroundSize: "22px 22px",
 			})}
 		>
@@ -34,7 +36,7 @@ function LoginPage() {
 				sx={(theme) => ({
 					width: "100%",
 					maxWidth: 404,
-					border: `1px solid ${theme.tokens.borderSoft}`,
+					border: `1px solid ${theme.vars.palette.borderSoft}`,
 					borderRadius: "14px",
 					boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 12px 32px rgba(0,0,0,0.14)",
 					p: "40px 38px 34px",
@@ -60,7 +62,7 @@ function LoginPage() {
 							backgroundColor: "primary.main",
 							color: "primary.contrastText",
 							mb: "16px",
-							boxShadow: `0 4px 12px ${theme.tokens.primarySoft}`,
+							boxShadow: `0 4px 12px ${theme.vars.palette.primary.light}`,
 						})}
 					>
 						<Database size={28} />
@@ -84,7 +86,7 @@ function LoginPage() {
 				<Button
 					fullWidth
 					variant="outlined"
-					onClick={goToApp}
+					onClick={() => toast.error("SSO is not configured yet")}
 					startIcon={<ShieldCheck size={19} />}
 					sx={{ height: 46, fontSize: 14, fontWeight: 500 }}
 				>
@@ -99,21 +101,22 @@ function LoginPage() {
 						mt: "26px",
 					}}
 				>
-					<Box
-						onClick={toggleMode}
-						sx={{
-							display: "inline-flex",
-							alignItems: "center",
-							gap: "6px",
-							cursor: "pointer",
-							fontSize: 12.5,
-							color: "text.disabled",
-							"&:hover": { color: "text.secondary" },
-						}}
-					>
-						{mode === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-						{mode === "dark" ? "Light mode" : "Dark mode"}
-					</Box>
+					{/* <Box
+            onClick={() => setMode()}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              fontSize: 12.5,
+              color: 'text.disabled',
+              '&:hover': { color: 'text.secondary' },
+            }}
+          >
+            {mode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {mode === 'dark' ? 'Light mode' : 'Dark mode'}
+          </Box> */}
+					<ToggleDarkMode />
 				</Box>
 			</Paper>
 		</Box>

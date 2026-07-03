@@ -10,52 +10,286 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as PoliciesNewRouteImport } from './routes/policies.new'
+import { Route as AuthPasswordResetRouteImport } from './routes/auth.password-reset'
+import { Route as DashboardWorkflowRouteImport } from './routes/_dashboard.workflow'
+import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
+import { Route as DashboardUepRouteImport } from './routes/_dashboard.uep'
+import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
+import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
+import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
+import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard.carrier-prem-com'
+import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
+import { Route as DashboardAgdRouteImport } from './routes/_dashboard.agd'
+import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
+import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
+import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
+import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
+import { Route as DashboardAir_exposureIdRouteImport } from './routes/_dashboard.air_exposure.$id'
+import { Route as DashboardAccounts_receivableIdRouteImport } from './routes/_dashboard.accounts_receivable.$id'
+import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => DashboardRoute,
 } as any)
 const PoliciesNewRoute = PoliciesNewRouteImport.update({
   id: '/policies/new',
   path: '/policies/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthPasswordResetRoute = AuthPasswordResetRouteImport.update({
+  id: '/auth/password-reset',
+  path: '/auth/password-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardWorkflowRoute = DashboardWorkflowRouteImport.update({
+  id: '/workflow',
+  path: '/workflow',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardUsersRoute = DashboardUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardUepRoute = DashboardUepRouteImport.update({
+  id: '/uep',
+  path: '/uep',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSubscriptionsRoute = DashboardSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStampRoute = DashboardStampRouteImport.update({
+  id: '/stamp',
+  path: '/stamp',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardExportsRoute = DashboardExportsRouteImport.update({
+  id: '/exports',
+  path: '/exports',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCarrierPremComRoute = DashboardCarrierPremComRouteImport.update({
+  id: '/carrier-prem-com',
+  path: '/carrier-prem-com',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBudgetRoute = DashboardBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAgdRoute = DashboardAgdRouteImport.update({
+  id: '/agd',
+  path: '/agd',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTableRoute = DashboardTableRouteImport.update({
+  id: '/$table',
+  path: '/$table',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardTableRoute,
+} as any)
+const DashboardInvoicesIdRoute = DashboardInvoicesIdRouteImport.update({
+  id: '/invoices/$id',
+  path: '/invoices/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBinderIdRoute = DashboardBinderIdRouteImport.update({
+  id: '/binder/$id',
+  path: '/binder/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAir_exposureIdRoute = DashboardAir_exposureIdRouteImport.update({
+  id: '/air_exposure/$id',
+  path: '/air_exposure/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAccounts_receivableIdRoute =
+  DashboardAccounts_receivableIdRouteImport.update({
+    id: '/accounts_receivable/$id',
+    path: '/accounts_receivable/$id',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardTableIdRoute = DashboardTableIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardTableRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/$table': typeof DashboardTableRouteWithChildren
+  '/agd': typeof DashboardAgdRoute
+  '/budget': typeof DashboardBudgetRoute
+  '/carrier-prem-com': typeof DashboardCarrierPremComRoute
+  '/exports': typeof DashboardExportsRoute
+  '/stamp': typeof DashboardStampRoute
+  '/subscriptions': typeof DashboardSubscriptionsRoute
+  '/uep': typeof DashboardUepRoute
+  '/users': typeof DashboardUsersRoute
+  '/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/$table/$id': typeof DashboardTableIdRoute
+  '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
+  '/binder/$id': typeof DashboardBinderIdRoute
+  '/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/agd': typeof DashboardAgdRoute
+  '/budget': typeof DashboardBudgetRoute
+  '/carrier-prem-com': typeof DashboardCarrierPremComRoute
+  '/exports': typeof DashboardExportsRoute
+  '/stamp': typeof DashboardStampRoute
+  '/subscriptions': typeof DashboardSubscriptionsRoute
+  '/uep': typeof DashboardUepRoute
+  '/users': typeof DashboardUsersRoute
+  '/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/': typeof DashboardIndexRoute
+  '/$table/$id': typeof DashboardTableIdRoute
+  '/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
+  '/binder/$id': typeof DashboardBinderIdRoute
+  '/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/$table': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/accept-invite': typeof AcceptInviteRoute
   '/login': typeof LoginRoute
+  '/_dashboard/$table': typeof DashboardTableRouteWithChildren
+  '/_dashboard/agd': typeof DashboardAgdRoute
+  '/_dashboard/budget': typeof DashboardBudgetRoute
+  '/_dashboard/carrier-prem-com': typeof DashboardCarrierPremComRoute
+  '/_dashboard/exports': typeof DashboardExportsRoute
+  '/_dashboard/stamp': typeof DashboardStampRoute
+  '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
+  '/_dashboard/uep': typeof DashboardUepRoute
+  '/_dashboard/users': typeof DashboardUsersRoute
+  '/_dashboard/workflow': typeof DashboardWorkflowRoute
+  '/auth/password-reset': typeof AuthPasswordResetRoute
   '/policies/new': typeof PoliciesNewRoute
+  '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/$table/$id': typeof DashboardTableIdRoute
+  '/_dashboard/accounts_receivable/$id': typeof DashboardAccounts_receivableIdRoute
+  '/_dashboard/air_exposure/$id': typeof DashboardAir_exposureIdRoute
+  '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
+  '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/_dashboard/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/policies/new'
+  fullPaths:
+    | '/'
+    | '/accept-invite'
+    | '/login'
+    | '/$table'
+    | '/agd'
+    | '/budget'
+    | '/carrier-prem-com'
+    | '/exports'
+    | '/stamp'
+    | '/subscriptions'
+    | '/uep'
+    | '/users'
+    | '/workflow'
+    | '/auth/password-reset'
+    | '/policies/new'
+    | '/$table/$id'
+    | '/accounts_receivable/$id'
+    | '/air_exposure/$id'
+    | '/binder/$id'
+    | '/invoices/$id'
+    | '/$table/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/policies/new'
-  id: '__root__' | '/' | '/login' | '/policies/new'
+  to:
+    | '/accept-invite'
+    | '/login'
+    | '/agd'
+    | '/budget'
+    | '/carrier-prem-com'
+    | '/exports'
+    | '/stamp'
+    | '/subscriptions'
+    | '/uep'
+    | '/users'
+    | '/workflow'
+    | '/auth/password-reset'
+    | '/policies/new'
+    | '/'
+    | '/$table/$id'
+    | '/accounts_receivable/$id'
+    | '/air_exposure/$id'
+    | '/binder/$id'
+    | '/invoices/$id'
+    | '/$table'
+  id:
+    | '__root__'
+    | '/_dashboard'
+    | '/accept-invite'
+    | '/login'
+    | '/_dashboard/$table'
+    | '/_dashboard/agd'
+    | '/_dashboard/budget'
+    | '/_dashboard/carrier-prem-com'
+    | '/_dashboard/exports'
+    | '/_dashboard/stamp'
+    | '/_dashboard/subscriptions'
+    | '/_dashboard/uep'
+    | '/_dashboard/users'
+    | '/_dashboard/workflow'
+    | '/auth/password-reset'
+    | '/policies/new'
+    | '/_dashboard/'
+    | '/_dashboard/$table/$id'
+    | '/_dashboard/accounts_receivable/$id'
+    | '/_dashboard/air_exposure/$id'
+    | '/_dashboard/binder/$id'
+    | '/_dashboard/invoices/$id'
+    | '/_dashboard/$table/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  AcceptInviteRoute: typeof AcceptInviteRoute
   LoginRoute: typeof LoginRoute
+  AuthPasswordResetRoute: typeof AuthPasswordResetRoute
   PoliciesNewRoute: typeof PoliciesNewRoute
 }
 
@@ -68,12 +302,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/policies/new': {
       id: '/policies/new'
@@ -82,12 +330,187 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PoliciesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/password-reset': {
+      id: '/auth/password-reset'
+      path: '/auth/password-reset'
+      fullPath: '/auth/password-reset'
+      preLoaderRoute: typeof AuthPasswordResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/workflow': {
+      id: '/_dashboard/workflow'
+      path: '/workflow'
+      fullPath: '/workflow'
+      preLoaderRoute: typeof DashboardWorkflowRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/users': {
+      id: '/_dashboard/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof DashboardUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/uep': {
+      id: '/_dashboard/uep'
+      path: '/uep'
+      fullPath: '/uep'
+      preLoaderRoute: typeof DashboardUepRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/subscriptions': {
+      id: '/_dashboard/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof DashboardSubscriptionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/stamp': {
+      id: '/_dashboard/stamp'
+      path: '/stamp'
+      fullPath: '/stamp'
+      preLoaderRoute: typeof DashboardStampRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/exports': {
+      id: '/_dashboard/exports'
+      path: '/exports'
+      fullPath: '/exports'
+      preLoaderRoute: typeof DashboardExportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/carrier-prem-com': {
+      id: '/_dashboard/carrier-prem-com'
+      path: '/carrier-prem-com'
+      fullPath: '/carrier-prem-com'
+      preLoaderRoute: typeof DashboardCarrierPremComRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/budget': {
+      id: '/_dashboard/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof DashboardBudgetRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/agd': {
+      id: '/_dashboard/agd'
+      path: '/agd'
+      fullPath: '/agd'
+      preLoaderRoute: typeof DashboardAgdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/$table': {
+      id: '/_dashboard/$table'
+      path: '/$table'
+      fullPath: '/$table'
+      preLoaderRoute: typeof DashboardTableRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/$table/': {
+      id: '/_dashboard/$table/'
+      path: '/'
+      fullPath: '/$table/'
+      preLoaderRoute: typeof DashboardTableIndexRouteImport
+      parentRoute: typeof DashboardTableRoute
+    }
+    '/_dashboard/invoices/$id': {
+      id: '/_dashboard/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof DashboardInvoicesIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/binder/$id': {
+      id: '/_dashboard/binder/$id'
+      path: '/binder/$id'
+      fullPath: '/binder/$id'
+      preLoaderRoute: typeof DashboardBinderIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/air_exposure/$id': {
+      id: '/_dashboard/air_exposure/$id'
+      path: '/air_exposure/$id'
+      fullPath: '/air_exposure/$id'
+      preLoaderRoute: typeof DashboardAir_exposureIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/accounts_receivable/$id': {
+      id: '/_dashboard/accounts_receivable/$id'
+      path: '/accounts_receivable/$id'
+      fullPath: '/accounts_receivable/$id'
+      preLoaderRoute: typeof DashboardAccounts_receivableIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/$table/$id': {
+      id: '/_dashboard/$table/$id'
+      path: '/$id'
+      fullPath: '/$table/$id'
+      preLoaderRoute: typeof DashboardTableIdRouteImport
+      parentRoute: typeof DashboardTableRoute
+    }
   }
 }
 
+interface DashboardTableRouteChildren {
+  DashboardTableIdRoute: typeof DashboardTableIdRoute
+  DashboardTableIndexRoute: typeof DashboardTableIndexRoute
+}
+
+const DashboardTableRouteChildren: DashboardTableRouteChildren = {
+  DashboardTableIdRoute: DashboardTableIdRoute,
+  DashboardTableIndexRoute: DashboardTableIndexRoute,
+}
+
+const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
+  DashboardTableRouteChildren,
+)
+
+interface DashboardRouteChildren {
+  DashboardTableRoute: typeof DashboardTableRouteWithChildren
+  DashboardAgdRoute: typeof DashboardAgdRoute
+  DashboardBudgetRoute: typeof DashboardBudgetRoute
+  DashboardCarrierPremComRoute: typeof DashboardCarrierPremComRoute
+  DashboardExportsRoute: typeof DashboardExportsRoute
+  DashboardStampRoute: typeof DashboardStampRoute
+  DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
+  DashboardUepRoute: typeof DashboardUepRoute
+  DashboardUsersRoute: typeof DashboardUsersRoute
+  DashboardWorkflowRoute: typeof DashboardWorkflowRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardAccounts_receivableIdRoute: typeof DashboardAccounts_receivableIdRoute
+  DashboardAir_exposureIdRoute: typeof DashboardAir_exposureIdRoute
+  DashboardBinderIdRoute: typeof DashboardBinderIdRoute
+  DashboardInvoicesIdRoute: typeof DashboardInvoicesIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardTableRoute: DashboardTableRouteWithChildren,
+  DashboardAgdRoute: DashboardAgdRoute,
+  DashboardBudgetRoute: DashboardBudgetRoute,
+  DashboardCarrierPremComRoute: DashboardCarrierPremComRoute,
+  DashboardExportsRoute: DashboardExportsRoute,
+  DashboardStampRoute: DashboardStampRoute,
+  DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
+  DashboardUepRoute: DashboardUepRoute,
+  DashboardUsersRoute: DashboardUsersRoute,
+  DashboardWorkflowRoute: DashboardWorkflowRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardAccounts_receivableIdRoute: DashboardAccounts_receivableIdRoute,
+  DashboardAir_exposureIdRoute: DashboardAir_exposureIdRoute,
+  DashboardBinderIdRoute: DashboardBinderIdRoute,
+  DashboardInvoicesIdRoute: DashboardInvoicesIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  AcceptInviteRoute: AcceptInviteRoute,
   LoginRoute: LoginRoute,
+  AuthPasswordResetRoute: AuthPasswordResetRoute,
   PoliciesNewRoute: PoliciesNewRoute,
 }
 export const routeTree = rootRouteImport

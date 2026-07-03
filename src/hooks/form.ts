@@ -1,26 +1,32 @@
-// import { Checkbox } from '@/components/forms/Checkbox';
 import { createFormHook } from '@tanstack/react-form';
 // import { MaskInput } from '../components/forms/MaskInput';
-// import { Select } from '@/components/forms/Select';
 import { SubmitButton } from '#/components/forms/SubmitButton';
 // import { WizardNavButtons } from '../components/forms/WizardNavButtons';
 import { lazy } from 'react';
 import { fieldContext, formContext } from './formContext';
 
 const TextField = lazy(() => import('../components/forms/TextField.tsx'));
-// const DatePicker = lazy(() => import('../components/forms/DatePicker.tsx'));
-// const Autocomplete = lazy(() => import('../components/forms/Autocomplete.tsx'));
+const DatePicker = lazy(() => import('../components/forms/DatePicker.tsx'));
+const Autocomplete = lazy(() => import('../components/forms/Autocomplete.tsx'));
+const ToggleButtonGroup = lazy(
+  () => import('../components/forms/ToggleButtonGroup.tsx'),
+);
+const EntitySelect = lazy(() => import('../components/forms/EntitySelect.tsx'));
+const Checkbox = lazy(() => import('../components/forms/Checkbox.tsx'));
+const Select = lazy(() => import('../components/forms/Select.tsx'));
 
 // TODO: create other reusable input types (number input, select, masked fields etc.)
 
 // useAppForm is similar to useForm, but provides reusable custom UI components (<field.TextField>, <form.SubmitButton>, etc.)
-const { useAppForm, withForm } = createFormHook({
+const { useAppForm, withForm, withFieldGroup } = createFormHook({
   fieldComponents: {
     TextField,
-    // Checkbox,
-    // Select,
-    // DatePicker,
-    // Autocomplete,
+    Checkbox,
+    Select,
+    DatePicker,
+    Autocomplete,
+    EntitySelect,
+    ToggleButtonGroup,
     // MaskInput,
   },
   formComponents: {
@@ -31,4 +37,4 @@ const { useAppForm, withForm } = createFormHook({
   formContext,
 });
 
-export { useAppForm, withForm };
+export { useAppForm, withFieldGroup, withForm };
