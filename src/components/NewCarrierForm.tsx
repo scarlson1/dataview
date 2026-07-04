@@ -2,11 +2,11 @@ import { AddressFieldGroup } from '#/components/AddressFieldGroup';
 import {
   carrierStatus,
   carrierType,
-  type NewCarrierValues,
   newCarrierFormOpts,
+  type NewCarrierValues,
 } from '#/constants/newCarrierForm';
-import type { EntityFormProps } from '#/data/entityForms';
 import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
@@ -55,7 +55,10 @@ const carrierTypeOptions = carrierType.options.map((v) => ({
   value: v,
   label: v,
 }));
-const statusOptions = carrierStatus.options.map((v) => ({ value: v, label: v }));
+const statusOptions = carrierStatus.options.map((v) => ({
+  value: v,
+  label: v,
+}));
 
 export const NewCarrierForm = ({
   recordId,
@@ -121,7 +124,7 @@ export const NewCarrierForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 8 }}>
             <form.AppField name='carrierName'>
@@ -136,7 +139,10 @@ export const NewCarrierForm = ({
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='carrierType'>
               {(field) => (
-                <field.Select label='Carrier type' options={carrierTypeOptions} />
+                <field.Select
+                  label='Carrier type'
+                  options={carrierTypeOptions}
+                />
               )}
             </form.AppField>
           </Grid>
@@ -147,7 +153,9 @@ export const NewCarrierForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={12}>
@@ -209,6 +217,7 @@ export const NewCarrierForm = ({
           spacing={2}
           rowSpacing={undefined}
           columnSpacing={undefined}
+          inputSize='small'
         />
         <Box>
           <form.AppField name='country'>
@@ -217,7 +226,9 @@ export const NewCarrierForm = ({
         </Box>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>

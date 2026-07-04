@@ -1,6 +1,12 @@
 import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
-import { CircularProgress, Drawer, useMediaQuery, useTheme } from '@mui/material';
+import {
+  CircularProgress,
+  Drawer,
+  Fab,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import {
   createFileRoute,
@@ -9,6 +15,7 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router';
+import { Menu } from 'lucide-react';
 import { Suspense, useState } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { TopBar } from '../components/dashboard/TopBar';
@@ -91,6 +98,7 @@ function DashboardLayout() {
       >
         <TopBar
           activeName={table?.label ?? ''}
+          showMenuButton={!isMobile}
           onToggleSidebar={() =>
             isMobile ? setMobileOpen((o) => !o) : setCollapsed((c) => !c)
           }
@@ -120,6 +128,22 @@ function DashboardLayout() {
           </Suspense>
         </Box>
       </Box>
+
+      {isMobile && (
+        <Fab
+          color='primary'
+          aria-label='Open menu'
+          onClick={() => setMobileOpen(true)}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: (t) => t.zIndex.speedDial,
+          }}
+        >
+          <Menu />
+        </Fab>
+      )}
     </Box>
   );
 }

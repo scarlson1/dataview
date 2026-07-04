@@ -104,7 +104,7 @@ export const NewClaimForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         {/* Policy — auto-fills client & carrier from the selected policy row */}
         <form.AppField name='policyId'>
           {(field) => (

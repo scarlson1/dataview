@@ -227,6 +227,7 @@ export const NewAgencyForm = ({
           spacing={2}
           rowSpacing={undefined}
           columnSpacing={undefined}
+          inputSize='small'
         />
         <Collapse in={isError}>
           <Alert severity='error'>
@@ -240,7 +241,9 @@ export const NewAgencyForm = ({
             </Button>
           ) : null}
 
-          <form.SubmitButton label={editing ? 'Save agency' : 'Create agency'} />
+          <form.SubmitButton
+            label={editing ? 'Save agency' : 'Create agency'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

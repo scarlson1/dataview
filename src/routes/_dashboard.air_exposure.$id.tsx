@@ -7,6 +7,7 @@
  * table with add/edit that reuses the registered entity forms in a drawer,
  * seeded with the parent exposure key.
  */
+import { useAuth } from '#/context/AuthContext';
 import { EntityDrawer } from '#/components/EntityDrawer';
 import { StatusChip } from '#/components/StatusChip';
 import { getEntityForm } from '#/data/entityForms';
@@ -100,6 +101,9 @@ function AirExposureDetail() {
   const exposureId = Number(id);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { can } = useAuth();
+  const canWriteExposure = can('air_exposure', 'write');
+  const canWriteEquipment = can('air_equipment', 'write');
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
 
   const exposureQuery = useQuery({
@@ -221,19 +225,21 @@ function AirExposureDetail() {
                 />
               )}
             </Box>
-            <Button
-              variant='contained'
-              startIcon={<Pencil size={16} />}
-              onClick={() =>
-                setDrawer({
-                  relation: 'air_exposure',
-                  recordId: exposure.id,
-                  initialRow: exposure as unknown as Record<string, unknown>,
-                })
-              }
-            >
-              Edit
-            </Button>
+            {canWriteExposure && (
+              <Button
+                variant='contained'
+                startIcon={<Pencil size={16} />}
+                onClick={() =>
+                  setDrawer({
+                    relation: 'air_exposure',
+                    recordId: exposure.id,
+                    initialRow: exposure as unknown as Record<string, unknown>,
+                  })
+                }
+              >
+                Edit
+              </Button>
+            )}
           </Box>
 
           {/* Location & policy linkage */}
@@ -333,19 +339,21 @@ function AirExposureDetail() {
             <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
               Equipment schedule ({equipment.length})
             </Typography>
-            <Button
-              size='small'
-              variant='outlined'
-              startIcon={<Plus size={15} />}
-              onClick={() =>
-                setDrawer({
-                  relation: 'air_equipment',
-                  defaultValues: { exposureId: exposure.id },
-                })
-              }
-            >
-              Add equipment
-            </Button>
+            {canWriteEquipment && (
+              <Button
+                size='small'
+                variant='outlined'
+                startIcon={<Plus size={15} />}
+                onClick={() =>
+                  setDrawer({
+                    relation: 'air_equipment',
+                    defaultValues: { exposureId: exposure.id },
+                  })
+                }
+              >
+                Add equipment
+              </Button>
+            )}
           </Box>
 
           <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'auto' }}>
@@ -365,14 +373,20 @@ function AirExposureDetail() {
                 {equipment.map((e) => (
                   <TableRow
                     key={e.id}
-                    hover
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() =>
-                      setDrawer({
-                        relation: 'air_equipment',
-                        recordId: e.id,
-                        initialRow: e as unknown as Record<string, unknown>,
-                      })
+                    hover={canWriteEquipment}
+                    sx={{ cursor: canWriteEquipment ? 'pointer' : 'default' }}
+                    onClick={
+                      canWriteEquipment
+                        ? () =>
+                            setDrawer({
+                              relation: 'air_equipment',
+                              recordId: e.id,
+                              initialRow: e as unknown as Record<
+                                string,
+                                unknown
+                              >,
+                            })
+                        : undefined
                     }
                   >
                     <TableCell sx={{ fontFamily: 'monospace' }}>

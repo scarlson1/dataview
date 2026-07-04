@@ -110,7 +110,7 @@ export const NewPaymentForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         <form.AppField name='policyId'>
           {(field) => (
             <field.EntitySelect

@@ -3,14 +3,13 @@ import { Grid } from '@mui/material';
 
 export const ClientDetailsForm = withForm({
   defaultValues: {
-    companyName: 'John',
-    clientType: 'Doe',
-    firstName: 'John',
-    lastName: 'Doe',
+    companyName: '',
+    clientType: '',
+    firstName: '',
+    lastName: '',
   },
   // // Optional, but adds props to the `render` function in addition to `form`
   props: {
-    // title: 'Child Form',
     spacing: 2,
     rowSpacing: undefined as number | undefined,
     columnSpacing: undefined as number | undefined,

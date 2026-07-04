@@ -55,6 +55,7 @@ function ToggleButtonGroup({
         onBlur={handleBlur}
         color={Boolean(errors?.length) ? 'error' : props.color}
       >
+        {children}
         {options.map((o) => (
           <ToggleButton key={o.value} value={o.value}>
             {o.icon ? o.icon : null}

@@ -33,8 +33,8 @@ export const addressValues = z.object({
   addressLine1: z.string().min(1),
   addressLine2: z.string(),
   city: z.string().min(1),
-  state: z.string().min(2), // TODO: add state validation ??
-  postal: z.string().min(5),
+  state: z.string().length(2).uppercase(), // TODO: add state validation ??
+  postal: z.string().min(5).max(10),
 });
 
 export const newClientValues = //addressValues.and(
@@ -49,14 +49,20 @@ export const newClientValues = //addressValues.and(
       address: addressValues,
     })
     .refine(
-      (data) => data.clientType === 'individual' && data.firstName.length >= 1,
+      (data) => {
+        if (data.clientType === 'individual') return data.firstName.length < 1;
+        return true;
+      },
       {
         message: 'name required',
         path: ['firstName'],
       },
     )
     .refine(
-      (data) => data.clientType === 'individual' && data.lastName.length >= 1,
+      (data) => {
+        if (data.clientType === 'individual') return data.lastName.length > 1;
+        return true;
+      },
       {
         message: 'name required',
         path: ['lastName'],

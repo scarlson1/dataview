@@ -39,9 +39,12 @@ interface AcceptInviteFormProps {
 }
 
 export const AcceptInviteForm = ({ onSuccess }: AcceptInviteFormProps) => {
-	// The invite link redirects here with a `code`/hash that supabase-js exchanges
-	// for a session automatically (`detectSessionInUrl`, on by default in the
-	// browser client). Until that resolves we don't know if the link was valid.
+	// The invite email links here with `?token_hash=...&type=invite`. We verify
+	// that token to establish a session. We deliberately don't rely on the PKCE
+	// `code` exchange (supabase-js default flow): an invite is initiated
+	// server-side, so the invitee's browser has no code_verifier and the
+	// exchange would fail. Until verifyOtp resolves we don't know if the link
+	// was valid.
 	const [sessionState, setSessionState] = useState<
 		"checking" | "valid" | "invalid"
 	>("checking");
@@ -50,23 +53,35 @@ export const AcceptInviteForm = ({ onSuccess }: AcceptInviteFormProps) => {
 		let cancelled = false;
 
 		const check = async () => {
-			const { data } = await supabase.auth.getSession();
+			// If a session already exists (e.g. re-mount after verify), keep it.
+			const { data: existing } = await supabase.auth.getSession();
+			if (existing.session) {
+				if (!cancelled) setSessionState("valid");
+				return;
+			}
+
+			const params = new URLSearchParams(window.location.search);
+			const tokenHash = params.get("token_hash");
+			const type = params.get("type");
+
+			if (!tokenHash || type !== "invite") {
+				if (!cancelled) setSessionState("invalid");
+				return;
+			}
+
+			const { error } = await supabase.auth.verifyOtp({
+				token_hash: tokenHash,
+				type: "invite",
+			});
 			if (!cancelled) {
-				setSessionState(data.session ? "valid" : "invalid");
+				setSessionState(error ? "invalid" : "valid");
 			}
 		};
-
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange((event) => {
-			if (event === "SIGNED_IN") setSessionState("valid");
-		});
 
 		check();
 
 		return () => {
 			cancelled = true;
-			subscription.unsubscribe();
 		};
 	}, []);
 

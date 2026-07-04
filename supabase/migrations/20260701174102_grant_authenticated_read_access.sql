@@ -47,6 +47,7 @@ end $$;
 -- Companion `security_invoker` views: only need the GRANT. RLS is enforced
 -- when the view queries its underlying base table as the calling role.
 grant select on public.agencies_with_status          to authenticated;
+grant select on public.clients_computed              to authenticated;
 grant select on public.accounts_receivable_computed  to authenticated;
 grant select on public.binder_part_computed          to authenticated;
 grant select on public.license_computed              to authenticated;

@@ -179,7 +179,7 @@ export const NewAirExposureForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2.5} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2.5}>
         <SectionLabel>Policy linkage</SectionLabel>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>

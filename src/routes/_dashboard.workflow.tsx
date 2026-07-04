@@ -6,6 +6,7 @@
  *   Policy        -> Generate Invoice (rpc generate_invoice)   => INV -> AR -> CAP
  *   Receivable    -> Record Payment  (rpc record_ar_payment)   => balances update
  */
+import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -95,6 +96,13 @@ interface RenewalRow {
 
 function WorkflowPage() {
   const qc = useQueryClient();
+  const { can } = useAuth();
+  const canWriteNbs = can('new_business_submissions', 'write');
+  const canWritePolicies = can('policies', 'write');
+  const canWriteInvoices = can('invoices', 'write');
+  const canWritePayments = can('accounts_receivable_payments', 'write');
+  const canWriteRemit = can('capacity_remittance', 'write');
+  const canWriteRenewals = can('renewals', 'write');
   const [newBusinessOpen, setNewBusinessOpen] = useState(false);
   const [payTarget, setPayTarget] = useState<ArTarget | null>(null);
   const [remitTarget, setRemitTarget] = useState<CapTarget | null>(null);
@@ -313,16 +321,18 @@ function WorkflowPage() {
         empty={unboundNbs.length === 0}
         emptyText='No unbound submissions.'
         action={
-          <Button
-            size='small'
-            variant='contained'
-            startIcon={
-              <Plus size={16} color={'var(--variant-containedColor)'} />
-            }
-            onClick={() => setNewBusinessOpen(true)}
-          >
-            New submission
-          </Button>
+          canWriteNbs ? (
+            <Button
+              size='small'
+              variant='contained'
+              startIcon={
+                <Plus size={16} color={'var(--variant-containedColor)'} />
+              }
+              onClick={() => setNewBusinessOpen(true)}
+            >
+              New submission
+            </Button>
+          ) : undefined
         }
       >
         {unboundNbs.map((n) => (
@@ -331,14 +341,16 @@ function WorkflowPage() {
             <Cell grow>{clientName(n.clients)}</Cell>
             <Cell>{n.line_of_business ?? '—'}</Cell>
             <StatusChip label={labelize(n.stage)} tone={valueTone(n.stage)} />
-            <Button
-              size='small'
-              variant='contained'
-              disabled={bind.isPending}
-              onClick={() => bind.mutate(n.id)}
-            >
-              Bind
-            </Button>
+            {canWritePolicies && (
+              <Button
+                size='small'
+                variant='contained'
+                disabled={bind.isPending}
+                onClick={() => bind.mutate(n.id)}
+              >
+                Bind
+              </Button>
+            )}
           </Row>
         ))}
       </Section>
@@ -357,14 +369,16 @@ function WorkflowPage() {
             <Cell>
               {p.carrier_id == null ? 'subscription' : 'single carrier'}
             </Cell>
-            <Button
-              size='small'
-              variant='contained'
-              disabled={invoice.isPending}
-              onClick={() => invoice.mutate(p.id)}
-            >
-              Generate Invoice
-            </Button>
+            {canWriteInvoices && (
+              <Button
+                size='small'
+                variant='contained'
+                disabled={invoice.isPending}
+                onClick={() => invoice.mutate(p.id)}
+              >
+                Generate Invoice
+              </Button>
+            )}
           </Row>
         ))}
       </Section>
@@ -386,13 +400,15 @@ function WorkflowPage() {
               label={labelize(r.ar_status)}
               tone={valueTone(r.ar_status)}
             />
-            <Button
-              size='small'
-              variant='outlined'
-              onClick={() => setPayTarget(r)}
-            >
-              Record Payment
-            </Button>
+            {canWritePayments && (
+              <Button
+                size='small'
+                variant='outlined'
+                onClick={() => setPayTarget(r)}
+              >
+                Record Payment
+              </Button>
+            )}
           </Row>
         ))}
       </Section>
@@ -413,14 +429,16 @@ function WorkflowPage() {
               label={labelize(c.ap_status)}
               tone={valueTone(c.ap_status)}
             />
-            <Button
-              size='small'
-              variant='outlined'
-              disabled={(Number(c.available_for_payment) || 0) <= 0}
-              onClick={() => setRemitTarget(c)}
-            >
-              Record Remittance
-            </Button>
+            {canWriteRemit && (
+              <Button
+                size='small'
+                variant='outlined'
+                disabled={(Number(c.available_for_payment) || 0) <= 0}
+                onClick={() => setRemitTarget(c)}
+              >
+                Record Remittance
+              </Button>
+            )}
           </Row>
         ))}
       </Section>
@@ -431,15 +449,17 @@ function WorkflowPage() {
         empty={openRenewals.length === 0}
         emptyText='No renewals awaiting a bind. Seed the pipeline to pull upcoming expiries.'
         action={
-          <Button
-            size='small'
-            variant='outlined'
-            startIcon={<RefreshCw size={16} />}
-            disabled={seedRenewals.isPending}
-            onClick={() => seedRenewals.mutate()}
-          >
-            Seed renewals
-          </Button>
+          canWriteRenewals ? (
+            <Button
+              size='small'
+              variant='outlined'
+              startIcon={<RefreshCw size={16} />}
+              disabled={seedRenewals.isPending}
+              onClick={() => seedRenewals.mutate()}
+            >
+              Seed renewals
+            </Button>
+          ) : undefined
         }
       >
         {openRenewals.map((r) => (
@@ -455,14 +475,16 @@ function WorkflowPage() {
               label={labelize(r.renewal_status)}
               tone={valueTone(r.renewal_status)}
             />
-            <Button
-              size='small'
-              variant='contained'
-              disabled={bindRenewal.isPending}
-              onClick={() => bindRenewal.mutate(r.id)}
-            >
-              Bind renewal
-            </Button>
+            {canWriteRenewals && (
+              <Button
+                size='small'
+                variant='contained'
+                disabled={bindRenewal.isPending}
+                onClick={() => bindRenewal.mutate(r.id)}
+              >
+                Bind renewal
+              </Button>
+            )}
           </Row>
         ))}
       </Section>

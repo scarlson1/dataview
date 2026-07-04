@@ -105,7 +105,7 @@ export const NewLicenseForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         <form.AppField name='agentId'>
           {(field) => (
             <field.EntitySelect

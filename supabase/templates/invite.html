@@ -1,0 +1,14 @@
+<h2>You have been invited</h2>
+
+<p>
+  You have been invited to create a user on {{ .SiteURL }}. Follow this link to
+  accept the invite and set your password:
+</p>
+
+<p>
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite"
+    >Accept the invite</a
+  >
+</p>
+
+<p>If you weren't expecting this invitation, you can ignore this email.</p>

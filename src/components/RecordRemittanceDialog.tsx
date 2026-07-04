@@ -10,12 +10,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   InputAdornment,
   Stack,
   TextField,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { X } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -78,8 +80,18 @@ export const RecordRemittanceDialog = ({
       fullWidth
       fullScreen={fullScreen}
     >
-      <DialogTitle>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
+      >
         Record remittance {cap ? `— ${cap.cap_ref}` : ''}
+        <IconButton onClick={onClose} edge='end' aria-label='Close'>
+          <X size={20} />
+        </IconButton>
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>

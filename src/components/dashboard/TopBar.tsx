@@ -15,15 +15,21 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { ChevronRight, PanelLeft, UserRoundPlus } from 'lucide-react';
+import { ChevronRight, PanelLeft, UserRoundPlus, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface TopBarProps {
   activeName: string;
   onToggleSidebar: () => void;
+  /** Hidden on mobile, where a floating button opens the nav instead. */
+  showMenuButton?: boolean;
 }
 
-export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
+export const TopBar = ({
+  activeName,
+  onToggleSidebar,
+  showMenuButton = true,
+}: TopBarProps) => {
   // const { mode, toggleMode } = useColorMode();
 
   return (
@@ -42,17 +48,24 @@ export const TopBar = ({ activeName, onToggleSidebar }: TopBarProps) => {
         disableGutters
         sx={{ minHeight: '64px !important', px: '20px', gap: '6px' }}
       >
-        <Tooltip title='Toggle sidebar'>
-          <IconButton
-            onClick={onToggleSidebar}
-            sx={{ width: 40, height: 40, ml: '-8px' }}
-          >
-            <PanelLeft size={22} />
-          </IconButton>
-        </Tooltip>
+        {showMenuButton && (
+          <Tooltip title='Toggle sidebar'>
+            <IconButton
+              onClick={onToggleSidebar}
+              sx={{ width: 40, height: 40, ml: '-8px' }}
+            >
+              <PanelLeft size={22} />
+            </IconButton>
+          </Tooltip>
+        )}
 
         <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: '8px', ml: '6px' }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            ml: showMenuButton ? '6px' : 0,
+          }}
         >
           <Typography
             sx={{
@@ -130,7 +143,7 @@ function AddUser() {
 
   return (
     <>
-      <IconButton>
+      <IconButton onClick={() => setOpen(true)}>
         <UserRoundPlus />
       </IconButton>
       <Dialog
@@ -140,7 +153,19 @@ function AddUser() {
         fullWidth
         fullScreen={fullScreen}
       >
-        <DialogTitle>Add User</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
+          Add User
+          <IconButton onClick={() => setOpen(false)} edge='end' aria-label='Close'>
+            <X size={20} />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           <InviteUserForm />
         </DialogContent>

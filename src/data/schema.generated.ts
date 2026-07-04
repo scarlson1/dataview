@@ -3039,6 +3039,145 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      }
+    ]
+  },
+  "clients_computed": {
+    "name": "clients_computed",
+    "kind": "view",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": true,
+        "kind": "mono"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "ref_year",
+        "label": "Ref Year",
+        "type": "smallint",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "clt_ref",
+        "label": "CLT Ref",
+        "type": "varchar(24)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "company_name",
+        "label": "Company Name",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "first_name",
+        "label": "First Name",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "last_name",
+        "label": "Last Name",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "client_type",
+        "label": "Client Type",
+        "type": "clienttype",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "industry",
+        "label": "Industry",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "status",
+        "label": "Status",
+        "type": "clientstatus",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "phone",
+        "label": "Phone",
+        "type": "varchar(30)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "email",
+        "label": "Email",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "address_line1",
+        "label": "Address Line1",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "address_line2",
+        "label": "Address Line2",
+        "type": "varchar(200)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "city",
+        "label": "City",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "state",
+        "label": "State",
+        "type": "varchar(2)",
+        "nullable": true,
+        "kind": "chip"
+      },
+      {
+        "field": "postal",
+        "label": "Postal",
+        "type": "varchar(12)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "country",
+        "label": "Country",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
       },
       {
         "field": "date_added",
@@ -5773,6 +5912,44 @@ export const SCHEMA = {
       }
     ]
   },
+  "role_permissions": {
+    "name": "role_permissions",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "role",
+        "label": "Role",
+        "type": "app_role",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "resource",
+        "label": "Resource",
+        "type": "text",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "can_read",
+        "label": "Can Read",
+        "type": "boolean",
+        "nullable": false,
+        "def": "false",
+        "kind": "bool"
+      },
+      {
+        "field": "can_write",
+        "label": "Can Write",
+        "type": "boolean",
+        "nullable": false,
+        "def": "false",
+        "kind": "bool"
+      }
+    ]
+  },
   "subscription": {
     "name": "subscription",
     "kind": "table",
@@ -6204,6 +6381,35 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      }
+    ]
+  },
+  "user_roles": {
+    "name": "user_roles",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "user_id",
+        "label": "User ID",
+        "type": "uuid",
+        "nullable": false,
+        "key": "UNIQUE",
+        "kind": "mono"
+      },
+      {
+        "field": "role",
+        "label": "Role",
+        "type": "app_role",
+        "nullable": false,
+        "kind": "chip"
       }
     ]
   }

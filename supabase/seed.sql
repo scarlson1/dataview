@@ -297,52 +297,51 @@ begin
   -- ==========================================================================
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
-  values ('Acme Manufacturing Inc', null, null, 'commercial', 'Manufacturing', 'active',
-     '312-555-0400', 'ap@acme-mfg.example', '1400 Industrial Blvd', 'Chicago', 'IL', '60632', 'USA', date '2025-11-01')
+     phone, email, address_line1, city, state, postal, country)
+  values ('Acme Manufacturing Inc', null, null, 'business', 'Manufacturing', 'active',
+     '312-555-0400', 'ap@acme-mfg.example', '1400 Industrial Blvd', 'Chicago', 'IL', '60632', 'USA')
   returning id into v_cli_acme;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
-  values ('Bayside Restaurants LLC', null, null, 'commercial', 'Hospitality', 'active',
-     '214-555-0410', 'finance@bayside.example', '78 Harbor Way', 'Dallas', 'TX', '75204', 'USA', date '2025-12-10')
+     phone, email, address_line1, city, state, postal, country)
+  values ('Bayside Restaurants LLC', null, null, 'business', 'Hospitality', 'active',
+     '214-555-0410', 'finance@bayside.example', '78 Harbor Way', 'Dallas', 'TX', '75204', 'USA')
   returning id into v_cli_bayside;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
+     phone, email, address_line1, city, state, postal, country)
   values (null, 'Robert', 'Smith', 'individual', 'Personal Lines', 'active',
-     '212-555-0420', 'robert.smith@example.com', '15 Riverside Dr', 'New York', 'NY', '10023', 'USA', date '2026-01-05')
+     '212-555-0420', 'robert.smith@example.com', '15 Riverside Dr', 'New York', 'NY', '10023', 'USA')
   returning id into v_cli_smith;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
+     phone, email, address_line1, city, state, postal, country)
   values ('Community Health Foundation', null, null, 'non_profit', 'Healthcare', 'prospect',
-     '415-555-0430', 'admin@chf.example', '500 Wellness Ave', 'San Francisco', 'CA', '94110', 'USA', date '2026-06-01')
+     '415-555-0430', 'admin@chf.example', '500 Wellness Ave', 'San Francisco', 'CA', '94110', 'USA')
   returning id into v_cli_chf;
 
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
-  values ('TechFlow Solutions', null, null, 'commercial', 'Technology', 'active',
-     '650-555-0440', 'ops@techflow.example', '2200 Mission College Blvd', 'Santa Clara', 'CA', '95054', 'USA', date '2026-02-20')
+     phone, email, address_line1, city, state, postal, country)
+  values ('TechFlow Solutions', null, null, 'business', 'Technology', 'active',
+     '650-555-0440', 'ops@techflow.example', '2200 Mission College Blvd', 'Santa Clara', 'CA', '95054', 'USA')
   returning id into v_cli_techflow;
 
   -- Bulk clients (pagination test data).
   insert into public.clients
     (company_name, first_name, last_name, client_type, industry, status,
-     phone, email, address_line1, city, state, postal, country, date_added)
+     phone, email, address_line1, city, state, postal, country)
   select
     'Test Client ' || lpad(g::text, 3, '0'), null, null,
-    (array['commercial', 'individual', 'non_profit', 'government'])[1 + (g % 4)]::public.clienttype,
+    (array['business', 'individual', 'non_profit', 'government', 'other'])[1 + (g % 4)]::public.clienttype,
     (array['Manufacturing', 'Technology', 'Healthcare', 'Retail', 'Hospitality', 'Construction', 'Finance', 'Real Estate'])[1 + (g % 8)],
     (array['active', 'inactive', 'prospect'])[1 + (g % 3)]::public.clientstatus,
     '555-' || lpad((1000 + g)::text, 4, '0'), 'client' || g || '@example.com',
     g || ' Test Ave', 'Springfield',
-    (array['CA', 'TX', 'NY', 'FL', 'IL'])[1 + (g % 5)], '00000', 'USA',
-    date '2026-01-01' + g
+    (array['CA', 'TX', 'NY', 'FL', 'IL'])[1 + (g % 5)], '00000', 'USA'
   from generate_series(1, 120) as g;
 
   -- ==========================================================================

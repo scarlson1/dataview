@@ -94,7 +94,7 @@ export const NewBudgetTargetForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         <Grid container spacing={2}>
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='year'>

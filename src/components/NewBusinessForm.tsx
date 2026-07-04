@@ -317,6 +317,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
                       onCreated={onCreated}
                       onCancel={onCancel}
                     />
+
                     // <ClientCreateBody defaultName={defaultName} onCreated={onCreated} onCancel={onCancel} />
                   )}
                   size='small'
