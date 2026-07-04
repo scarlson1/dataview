@@ -49,6 +49,33 @@ const pickPrimaryKey = (base: SchemaTable, columns: TableColumn[]): string => {
   return columns[0]?.field ?? 'id';
 };
 
+/**
+ * Enrich the source relation's columns with constraint/default metadata from
+ * the base table. Postgres views carry no keys, defaults, or foreign-key
+ * references, so when a base table's display columns come from a companion
+ * computed view (see `tableMeta.ts`), the Schema tab would otherwise render
+ * "—" for Key and Default. We fill those fields from the matching base column
+ * (by `field`), preserving the view's column order. View-only computed columns
+ * have no base match and pass through untouched. When the source *is* the base
+ * table there's nothing to merge, so return its columns as-is.
+ */
+const mergeColumns = (base: SchemaTable, source: SchemaTable): TableColumn[] => {
+  if (source.name === base.name) return source.columns;
+
+  const baseByField = new Map(base.columns.map((c) => [c.field, c]));
+  return source.columns.map((col) => {
+    const baseCol = baseByField.get(col.field);
+    if (!baseCol) return col;
+
+    const merged = { ...col };
+    if (col.key === undefined && baseCol.key !== undefined) merged.key = baseCol.key;
+    if (col.def === undefined && baseCol.def !== undefined) merged.def = baseCol.def;
+    if (col.references === undefined && baseCol.references !== undefined)
+      merged.references = baseCol.references;
+    return merged;
+  });
+};
+
 const buildTable = (base: SchemaTable): TableDef => {
   const overlay = TABLE_META[base.name] ?? {};
   const source =
@@ -56,6 +83,7 @@ const buildTable = (base: SchemaTable): TableDef => {
       ? overlay.source
       : base.name;
   const sourceSchema = SCHEMA[source as keyof typeof SCHEMA] as SchemaTable;
+  const columns = mergeColumns(base, sourceSchema);
 
   return {
     name: base.name,
@@ -64,8 +92,8 @@ const buildTable = (base: SchemaTable): TableDef => {
     description: overlay.description ?? `The public.${base.name} table.`,
     source,
     kind: base.kind,
-    columns: sourceSchema.columns,
-    primaryKey: pickPrimaryKey(base, sourceSchema.columns),
+    columns,
+    primaryKey: pickPrimaryKey(base, columns),
     hidden: overlay.hidden ?? [],
   };
 };
