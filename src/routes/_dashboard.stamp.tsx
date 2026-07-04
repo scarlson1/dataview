@@ -4,8 +4,7 @@
  * balance check render as a printable stamp. Use the browser Print action to
  * produce a PDF to attach to the policy file.
  */
-import { pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,6 +20,8 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Printer } from 'lucide-react';
 import { useState } from 'react';
+import { pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/stamp')({
   component: StampGenerator,
@@ -49,7 +50,9 @@ function StampGenerator() {
     queryFn: async (): Promise<SectionOpt[]> => {
       const { data, error } = await supabase
         .from('binder_section')
-        .select('id, sect_ref, section_number, section_display_name, participation_pct')
+        .select(
+          'id, sect_ref, section_number, section_display_name, participation_pct',
+        )
         .limit(200);
       if (error) throw error;
       return (data as unknown as Record<string, unknown>[]).map((r) => ({
@@ -84,7 +87,9 @@ function StampGenerator() {
   const balanced = Math.abs(Number(total) - Number(sectionPct)) < 0.0000001;
 
   return (
-    <Box sx={{ maxWidth: 800, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 800, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box
         className='no-print'
         sx={{
@@ -125,42 +130,53 @@ function StampGenerator() {
 
       {section && (
         <Paper variant='outlined' sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
-          <Typography sx={{ fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 18, fontWeight: 700, textAlign: 'center' }}
+          >
             Participation Schedule
           </Typography>
           <Typography
-            sx={{ fontSize: 14, color: 'text.secondary', textAlign: 'center', mb: 3 }}
+            sx={{
+              fontSize: 14,
+              color: 'text.secondary',
+              textAlign: 'center',
+              mb: 3,
+            }}
           >
             {section.label}
           </Typography>
           <Box sx={{ overflowX: 'auto' }}>
-          <Table size='small'>
-            <TableHead>
-              <TableRow>
-                <TableCell>Participant</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Syndicate / Entity #</TableCell>
-                <TableCell align='right'>Participation %</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell>{r.participant_name}</TableCell>
-                  <TableCell>{r.participant_type?.replace(/_/g, ' ')}</TableCell>
-                  <TableCell>{r.syndicate_entity_number ?? '—'}</TableCell>
-                  <TableCell align='right'>{pct(r.participation_pct, 5)}</TableCell>
-                </TableRow>
-              ))}
-              {rows.length === 0 && (
+            <Table size='small'>
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ color: 'text.disabled' }}>
-                    No participants for this section.
-                  </TableCell>
+                  <TableCell>Participant</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Syndicate / Entity #</TableCell>
+                  <TableCell align='right'>Participation %</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>{r.participant_name}</TableCell>
+                    <TableCell>
+                      {r.participant_type?.replace(/_/g, ' ')}
+                    </TableCell>
+                    <TableCell>{r.syndicate_entity_number ?? '—'}</TableCell>
+                    <TableCell align='right'>
+                      {pct(r.participation_pct, 5)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} sx={{ color: 'text.disabled' }}>
+                      No participants for this section.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </Box>
           <Box
             sx={{
@@ -170,9 +186,7 @@ function StampGenerator() {
               fontWeight: 700,
             }}
           >
-            <Box component='span'>
-              Section stated: {pct(sectionPct, 5)}
-            </Box>
+            <Box component='span'>Section stated: {pct(sectionPct, 5)}</Box>
             <Box
               component='span'
               sx={{ color: balanced ? 'success.main' : 'error.main' }}

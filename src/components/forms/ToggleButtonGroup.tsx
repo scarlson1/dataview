@@ -1,16 +1,16 @@
-import { useFieldContext } from '#/hooks/formContext';
 import {
   FormControl,
   FormLabel,
-  Typography,
   type ToggleButtonGroupProps as MuiToggleButtonGroupProps,
+  Typography,
 } from '@mui/material';
 import ToggleButton, {
   type ToggleButtonProps,
 } from '@mui/material/ToggleButton';
 import MuiToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useSelector } from '@tanstack/react-store';
-import { useId, type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
+import { useFieldContext } from '#/hooks/formContext';
 
 type ToggleButtonOption = {
   value: string;
@@ -53,7 +53,7 @@ function ToggleButtonGroup({
         value={state.value}
         onChange={(_, val) => handleChange(val)}
         onBlur={handleBlur}
-        color={Boolean(errors?.length) ? 'error' : props.color}
+        color={errors?.length ? 'error' : props.color}
       >
         {children}
         {options.map((o) => (

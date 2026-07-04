@@ -1,7 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 import { TableViewer } from '../components/dashboard/TableViewer';
 import { getTable } from '../data/tables';
 
@@ -32,7 +32,9 @@ function TableIndexRoute() {
       key={table.name}
       table={table}
       onRefresh={() =>
-        queryClient.invalidateQueries({ queryKey: ['table-data', table.source] })
+        queryClient.invalidateQueries({
+          queryKey: ['table-data', table.source],
+        })
       }
     />
   );

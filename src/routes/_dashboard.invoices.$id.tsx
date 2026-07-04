@@ -4,10 +4,7 @@
  * bills and the AR it feeds. The generic flat detail can't group the premium vs.
  * fees vs. commission build-up, which is what an invoice is.
  */
-import { StatusChip } from '#/components/StatusChip';
-import { labelize, money, pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -20,6 +17,10 @@ import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Receipt, ScrollText } from 'lucide-react';
+import { StatusChip } from '#/components/StatusChip';
+import { labelize, money, pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/invoices/$id')({
   component: InvoiceDetail,
@@ -78,8 +79,14 @@ const Line = ({
   bold?: boolean;
   muted?: boolean;
 }) => (
-  <TableRow sx={bold ? { '& td': { fontWeight: 700, borderTop: '2px solid' } } : undefined}>
-    <TableCell sx={{ color: muted ? 'text.secondary' : undefined, pl: muted ? 4 : 2 }}>
+  <TableRow
+    sx={
+      bold ? { '& td': { fontWeight: 700, borderTop: '2px solid' } } : undefined
+    }
+  >
+    <TableCell
+      sx={{ color: muted ? 'text.secondary' : undefined, pl: muted ? 4 : 2 }}
+    >
       {label}
     </TableCell>
     <TableCell align='right'>{value}</TableCell>
@@ -113,7 +120,9 @@ function InvoiceDetail() {
       <Button
         size='small'
         startIcon={<ArrowLeft size={16} />}
-        onClick={() => navigate({ to: '/$table', params: { table: 'invoices' } })}
+        onClick={() =>
+          navigate({ to: '/$table', params: { table: 'invoices' } })
+        }
         sx={{ mb: 2 }}
       >
         Invoices
@@ -191,18 +200,33 @@ function InvoiceDetail() {
                 gap: 2.5,
               }}
             >
-              <HeaderField label='Transaction' value={labelize(inv.transaction_type)} />
-              <HeaderField label='Invoice date' value={inv.invoice_date ?? '—'} />
+              <HeaderField
+                label='Transaction'
+                value={labelize(inv.transaction_type)}
+              />
+              <HeaderField
+                label='Invoice date'
+                value={inv.invoice_date ?? '—'}
+              />
               <HeaderField label='Due date' value={inv.due_date ?? '—'} />
-              <HeaderField label='Policy effective' value={inv.policy_eff_date ?? '—'} />
-              <HeaderField label='Policy expiry' value={inv.policy_exp_date ?? '—'} />
+              <HeaderField
+                label='Policy effective'
+                value={inv.policy_eff_date ?? '—'}
+              />
+              <HeaderField
+                label='Policy expiry'
+                value={inv.policy_exp_date ?? '—'}
+              />
             </Box>
           </Paper>
 
           <Typography sx={{ fontSize: 16, fontWeight: 700, mb: 1.5 }}>
             Premium & fees
           </Typography>
-          <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper
+            variant='outlined'
+            sx={{ borderRadius: 2, overflow: 'hidden' }}
+          >
             <Table size='small'>
               <TableBody>
                 <Line label='Term premium' value={money(inv.term_premium)} />
@@ -213,9 +237,17 @@ function InvoiceDetail() {
                     muted
                   />
                 )}
-                <Line label='Total term premium' value={money(inv.total_term_premium)} bold />
+                <Line
+                  label='Total term premium'
+                  value={money(inv.total_term_premium)}
+                  bold
+                />
                 <Line label='Policy fee' value={money(inv.policy_fee)} muted />
-                <Line label='Inspection fee' value={money(inv.inspection_fee)} muted />
+                <Line
+                  label='Inspection fee'
+                  value={money(inv.inspection_fee)}
+                  muted
+                />
                 {hasOther && (
                   <Line
                     label={inv.other_fee_description || 'Other fees'}
@@ -223,7 +255,11 @@ function InvoiceDetail() {
                     muted
                   />
                 )}
-                <Line label='Total premium + fees' value={money(inv.total_term_prem_fees)} bold />
+                <Line
+                  label='Total premium + fees'
+                  value={money(inv.total_term_prem_fees)}
+                  bold
+                />
                 <Line
                   label={`MGA net commission (${pct(inv.mga_net_com_pct)})`}
                   value={money(inv.mga_net_com_amt)}

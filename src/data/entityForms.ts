@@ -11,7 +11,7 @@
  * and calls onSaved(row) with the inserted/updated row. The same component is
  * reused for FK inline-create inside EntitySelect (pass onSaved={onCreated}).
  */
-import { type ComponentType, lazy, type LazyExoticComponent } from 'react';
+import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 
 export interface EntityFormProps {
   /** Present when editing an existing row; undefined when creating. */

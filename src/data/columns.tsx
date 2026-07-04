@@ -6,11 +6,12 @@
  * columns, monospace for ids, right-aligned numbers, formatted timestamps, etc.
  * This is the single place that decides how a Postgres column looks in the grid.
  */
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { MONO_FONT, valueTone } from '../theme/tokens';
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { StatusChip } from '../components/StatusChip';
+import { MONO_FONT, valueTone } from '../theme/tokens';
 import { capitalize, type TableColumn, type TableDef } from './tables';
 
 const isEmpty = (v: unknown): boolean =>
@@ -89,7 +90,9 @@ const renderCellFor = (
         isEmpty(value) ? (
           <Empty />
         ) : (
-          <Mono>{typeof value === 'string' ? value : JSON.stringify(value)}</Mono>
+          <Mono>
+            {typeof value === 'string' ? value : JSON.stringify(value)}
+          </Mono>
         );
     case 'datetime':
       return ({ value }) =>

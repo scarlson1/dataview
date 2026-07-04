@@ -6,8 +6,7 @@
  * DataGrid must be in `paginationMode/sortingMode/filterMode="server"` for the
  * models passed here to be authoritative.
  */
-import type { TableDef } from '#/data/tables';
-import { supabase } from '#/supabaseClient';
+
 import type {
   GridFilterItem,
   GridFilterModel,
@@ -15,6 +14,8 @@ import type {
   GridSortModel,
 } from '@mui/x-data-grid';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { TableDef } from '#/data/tables';
+import { supabase } from '#/supabaseClient';
 
 export interface TableQueryState {
   paginationModel: GridPaginationModel;
@@ -43,9 +44,7 @@ const isNumericTerm = (t: string): boolean => /^\d+(\.\d+)?$/.test(t);
 // user-supplied terms rather than trying to escape.
 const sanitize = (term: string): string => term.replace(/[(),]/g, ' ').trim();
 
-type PostgresFilter = ReturnType<
-  ReturnType<typeof supabase.from>['select']
->;
+type PostgresFilter = ReturnType<ReturnType<typeof supabase.from>['select']>;
 
 const applyFilterItem = (
   query: PostgresFilter,
@@ -147,7 +146,10 @@ const fetchPage = async (
 
   const { data, count, error } = await query;
   if (error) throw error;
-  return { rows: (data ?? []) as Record<string, unknown>[], rowCount: count ?? 0 };
+  return {
+    rows: (data ?? []) as Record<string, unknown>[],
+    rowCount: count ?? 0,
+  };
 };
 
 export const useTableData = (table: TableDef, state: TableQueryState) =>

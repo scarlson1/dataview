@@ -3,20 +3,11 @@
  * a few book-wide KPIs (bound premium YTD, active policies, open receivables,
  * renewal pipeline) and provides quick jumps into the reports and data tables.
  */
-import { useAuth } from '#/context/AuthContext';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { TableIcon } from '#/components/TableIcon';
-import {
-  formatTableLabel,
-  TABLE_GROUPS,
-  TABLES,
-  type TableName,
-} from '#/data/tables';
+
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
@@ -29,6 +20,16 @@ import {
   TrendingUp,
   Workflow,
 } from 'lucide-react';
+import { TableIcon } from '#/components/TableIcon';
+import { useAuth } from '#/context/AuthContext';
+import {
+  formatTableLabel,
+  TABLE_GROUPS,
+  TABLES,
+  type TableName,
+} from '#/data/tables';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/')({
   component: Home,
@@ -58,9 +59,7 @@ function Home() {
           .from('policies_computed')
           .select('status, total_term_premium, policy_eff_date'),
         supabase.from('accounts_receivable_aging').select('balance_due'),
-        supabase
-          .from('renewals_computed')
-          .select('renewal_status, ev_rnw_gwp'),
+        supabase.from('renewals_computed').select('renewal_status, ev_rnw_gwp'),
       ]);
       if (policies.error) throw policies.error;
       if (aging.error) throw aging.error;
@@ -162,11 +161,7 @@ function Home() {
           icon={<Coins size={18} />}
           label='Renewal pipeline (wtd)'
           value={loading ? '—' : money(s?.pipeline)}
-          hint={
-            s?.openRenewals
-              ? `${s.openRenewals} in pipeline`
-              : undefined
-          }
+          hint={s?.openRenewals ? `${s.openRenewals} in pipeline` : undefined}
         />
       </Box>
 
@@ -251,7 +246,13 @@ function Home() {
 }
 
 const greetingForHour = (h: number): string =>
-  h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  h < 5
+    ? 'Good evening'
+    : h < 12
+      ? 'Good morning'
+      : h < 18
+        ? 'Good afternoon'
+        : 'Good evening';
 
 interface Shortcut {
   to: string;
@@ -384,9 +385,15 @@ const ActionCard = ({
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{title}</Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
+            {title}
+          </Typography>
           <Box
             className='home-action-arrow'
             sx={{

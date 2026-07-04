@@ -4,12 +4,7 @@
  * page can't show the child payments or the running balance, which is the point
  * of an AR file. Reads accounts_receivable_computed for the live balance.
  */
-import { useAuth } from '#/context/AuthContext';
-import { RecordPaymentDialog } from '#/components/RecordPaymentDialog';
-import { StatusChip } from '#/components/StatusChip';
-import { labelize, money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -24,6 +19,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, FileText, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { RecordPaymentDialog } from '#/components/RecordPaymentDialog';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { labelize, money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/accounts_receivable/$id')({
   component: ArDetail,
@@ -99,9 +100,11 @@ function ArDetail() {
           .select('company_name, first_name, last_name')
           .eq('id', ar.client_id)
           .single();
-        const c = data as
-          | { company_name: string | null; first_name: string | null; last_name: string | null }
-          | null;
+        const c = data as {
+          company_name: string | null;
+          first_name: string | null;
+          last_name: string | null;
+        } | null;
         clientName =
           c?.company_name ||
           [c?.first_name, c?.last_name].filter(Boolean).join(' ') ||
@@ -116,7 +119,9 @@ function ArDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('accounts_receivable_payments')
-        .select('id, arpm_ref, payment_date, payment_amount, payment_method, reference_number, notes')
+        .select(
+          'id, arpm_ref, payment_date, payment_amount, payment_method, reference_number, notes',
+        )
         .eq('ar_id', arId)
         .order('payment_date');
       if (error) throw error;
@@ -176,7 +181,10 @@ function ArDetail() {
                 {title}
               </Typography>
               {ar.ar_status && (
-                <StatusChip label={labelize(ar.ar_status)} tone={valueTone(ar.ar_status)} />
+                <StatusChip
+                  label={labelize(ar.ar_status)}
+                  tone={valueTone(ar.ar_status)}
+                />
               )}
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -185,7 +193,10 @@ function ArDetail() {
                   variant='outlined'
                   startIcon={<FileText size={16} />}
                   onClick={() =>
-                    navigate({ to: '/invoices/$id', params: { id: String(ar.inv_id) } })
+                    navigate({
+                      to: '/invoices/$id',
+                      params: { id: String(ar.inv_id) },
+                    })
                   }
                 >
                   Invoice
@@ -213,22 +224,40 @@ function ArDetail() {
               }}
             >
               <HeaderField label='Client' value={clientName ?? '—'} />
-              <HeaderField label='Invoice date' value={ar.invoice_date ?? '—'} />
+              <HeaderField
+                label='Invoice date'
+                value={ar.invoice_date ?? '—'}
+              />
               <HeaderField label='Due date' value={ar.due_date ?? '—'} />
-              <HeaderField label='Invoice total' value={money(ar.invoice_total)} />
+              <HeaderField
+                label='Invoice total'
+                value={money(ar.invoice_total)}
+              />
               <HeaderField label='Total paid' value={money(ar.total_paid)} />
               <HeaderField label='Balance due' value={money(ar.balance_due)} />
               <HeaderField
                 label='Days outstanding'
-                value={ar.days_outstanding != null ? String(ar.days_outstanding) : '—'}
+                value={
+                  ar.days_outstanding != null
+                    ? String(ar.days_outstanding)
+                    : '—'
+                }
               />
-              <HeaderField label='Last payment' value={ar.last_payment_date ?? '—'} />
+              <HeaderField
+                label='Last payment'
+                value={ar.last_payment_date ?? '—'}
+              />
               {Number(ar.write_off_amt) > 0 && (
-                <HeaderField label='Written off' value={money(ar.write_off_amt)} />
+                <HeaderField
+                  label='Written off'
+                  value={money(ar.write_off_amt)}
+                />
               )}
             </Box>
             {ar.collection_notes && (
-              <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}>
+              <Typography
+                sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}
+              >
                 {ar.collection_notes}
               </Typography>
             )}
@@ -251,22 +280,30 @@ function ArDetail() {
               <TableBody>
                 {payments.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell sx={{ fontFamily: 'monospace' }}>{p.arpm_ref}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace' }}>
+                      {p.arpm_ref}
+                    </TableCell>
                     <TableCell>{p.payment_date ?? '—'}</TableCell>
                     <TableCell>{labelize(p.payment_method)}</TableCell>
                     <TableCell>{p.reference_number ?? '—'}</TableCell>
-                    <TableCell align='right'>{money(p.payment_amount)}</TableCell>
+                    <TableCell align='right'>
+                      {money(p.payment_amount)}
+                    </TableCell>
                   </TableRow>
                 ))}
                 {payments.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} sx={{ color: 'text.disabled' }}>
-                      {paymentsQuery.isLoading ? 'Loading…' : 'No payments recorded.'}
+                      {paymentsQuery.isLoading
+                        ? 'Loading…'
+                        : 'No payments recorded.'}
                     </TableCell>
                   </TableRow>
                 )}
                 {payments.length > 0 && (
-                  <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid' } }}>
+                  <TableRow
+                    sx={{ '& td': { fontWeight: 700, borderTop: '2px solid' } }}
+                  >
                     <TableCell colSpan={4}>Total paid</TableCell>
                     <TableCell align='right'>{money(ar.total_paid)}</TableCell>
                   </TableRow>
@@ -276,7 +313,11 @@ function ArDetail() {
           </Paper>
 
           <RecordPaymentDialog
-            ar={{ id: ar.id, ar_ref: ar.ar_ref ?? `AR #${ar.id}`, balance_due: ar.balance_due }}
+            ar={{
+              id: ar.id,
+              ar_ref: ar.ar_ref ?? `AR #${ar.id}`,
+              balance_due: ar.balance_due,
+            }}
             open={payOpen}
             onClose={() => setPayOpen(false)}
             onRecorded={refresh}

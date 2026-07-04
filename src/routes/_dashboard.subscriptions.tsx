@@ -4,9 +4,7 @@
  * submit once the participation balance reaches 100.00000%. Writes via the
  * create_subscription RPC (header + rows + flags the policy placement_type).
  */
-import { money, pct as pctFmt } from '#/lib/money';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
+
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -22,6 +20,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '#/context/AuthContext';
+import { money, pct as pctFmt } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/subscriptions')({
   component: SubscriptionBuilder,
@@ -33,10 +34,19 @@ interface Opt {
   total_term_premium?: number | null;
 }
 interface ParticipantRow {
+  uid: number;
   carrier: Opt | null;
   role: string;
   pctText: string;
 }
+
+let rowUid = 0;
+const makeRow = (role: string): ParticipantRow => ({
+  uid: ++rowUid,
+  carrier: null,
+  role,
+  pctText: '',
+});
 
 const ROLES = [
   { value: 'lead', label: 'Lead (within our group)' },
@@ -70,9 +80,7 @@ function SubscriptionBuilder() {
   const canWrite = can('subscription', 'write');
   const [policy, setPolicy] = useState<Opt | null>(null);
   const [marketLead, setMarketLead] = useState('');
-  const [rows, setRows] = useState<ParticipantRow[]>([
-    { carrier: null, role: 'lead', pctText: '' },
-  ]);
+  const [rows, setRows] = useState<ParticipantRow[]>([makeRow('lead')]);
 
   const policies = useOptions(
     'policies_computed',
@@ -81,8 +89,10 @@ function SubscriptionBuilder() {
       [r.pol_ref, r.policy_number].filter(Boolean).join(' · ') ||
       `Policy #${r.id}`,
   );
-  const carriers = useOptions('carriers', 'id, carrier_name', (r) =>
-    (r.carrier_name as string) || `Carrier #${r.id}`,
+  const carriers = useOptions(
+    'carriers',
+    'id, carrier_name',
+    (r) => (r.carrier_name as string) || `Carrier #${r.id}`,
   );
 
   const totalPct = rows.reduce((a, r) => a + (Number(r.pctText) || 0) / 100, 0);
@@ -91,8 +101,7 @@ function SubscriptionBuilder() {
 
   const setRow = (i: number, patch: Partial<ParticipantRow>) =>
     setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
-  const addRow = () =>
-    setRows((rs) => [...rs, { carrier: null, role: 'following', pctText: '' }]);
+  const addRow = () => setRows((rs) => [...rs, makeRow('following')]);
   const removeRow = (i: number) =>
     setRows((rs) => rs.filter((_, idx) => idx !== i));
 
@@ -120,13 +129,15 @@ function SubscriptionBuilder() {
       toast.success(`Subscription created (#${id})`);
       setPolicy(null);
       setMarketLead('');
-      setRows([{ carrier: null, role: 'lead', pctText: '' }]);
+      setRows([makeRow('lead')]);
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   return (
-    <Box sx={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box>
         <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
           Subscription builder
@@ -191,7 +202,7 @@ function SubscriptionBuilder() {
         <Stack sx={{ p: 2 }} spacing={1.5}>
           {rows.map((r, i) => (
             <Box
-              key={i}
+              key={r.uid}
               sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}
             >
               <Autocomplete<Opt>
@@ -245,7 +256,11 @@ function SubscriptionBuilder() {
             </Box>
           ))}
           <Box>
-            <Button startIcon={<Plus size={16} />} onClick={addRow} size='small'>
+            <Button
+              startIcon={<Plus size={16} />}
+              onClick={addRow}
+              size='small'
+            >
               Add carrier
             </Button>
           </Box>

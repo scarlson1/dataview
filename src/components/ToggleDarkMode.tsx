@@ -5,7 +5,7 @@
 // } from '@mui/icons-material';
 import { IconButton, styled, useColorScheme, useTheme } from '@mui/material';
 import { Moon, Sun, SunMoon } from 'lucide-react';
-import { useCallback, type ComponentProps } from 'react';
+import { type ComponentProps, useCallback } from 'react';
 
 interface IconWrapperProps extends ComponentProps<'span'> {
   transform: string;
@@ -60,7 +60,7 @@ export const ToggleDarkMode = () => {
 
   const handleMode = useCallback(() => {
     setMode(nextMode);
-  }, [nextMode]);
+  }, [nextMode, setMode]);
 
   if (!mode) return null;
 

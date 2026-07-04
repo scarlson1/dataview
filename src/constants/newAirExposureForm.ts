@@ -2,7 +2,12 @@ import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
 
 export const airExposureStatus = z.enum(['active', 'inactive']);
-export const DEDUCTIBLE_TYPES = ['Straight', 'Percentage', 'Franchise', 'Waiting Period'];
+export const DEDUCTIBLE_TYPES = [
+  'Straight',
+  'Percentage',
+  'Franchise',
+  'Waiting Period',
+];
 
 export const newAirExposureValues = z.object({
   policyId: z.number().nullable(),

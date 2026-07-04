@@ -3,11 +3,7 @@
  * (Current / 1-30 / 31-60 / 61-90 / 90+), backed by the accounts_receivable_aging
  * view. Summary tiles foot to the open-AR total; rows link to the AR detail page.
  */
-import { downloadCsv } from '#/lib/csv';
-import { money } from '#/lib/money';
-import { StatusChip } from '#/components/StatusChip';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -20,6 +16,11 @@ import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
+import { StatusChip } from '#/components/StatusChip';
+import { downloadCsv } from '#/lib/csv';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/agd')({
   component: AgdReport,
@@ -72,7 +73,9 @@ function AgdReport() {
   const total = rows.reduce((a, r) => a + num(r.balance_due), 0);
 
   return (
-    <Box sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -149,16 +152,23 @@ function AgdReport() {
                   })
                 }
               >
-                <TableCell sx={{ fontFamily: 'monospace' }}>{r.ar_ref}</TableCell>
+                <TableCell sx={{ fontFamily: 'monospace' }}>
+                  {r.ar_ref}
+                </TableCell>
                 <TableCell>{r.client_name ?? '—'}</TableCell>
                 <TableCell>{r.due_date ?? '—'}</TableCell>
                 <TableCell align='right'>{money(r.invoice_total)}</TableCell>
                 <TableCell align='right'>{money(r.balance_due)}</TableCell>
                 <TableCell align='right'>{r.days_outstanding ?? 0}</TableCell>
-                <TableCell>{r.aging_bucket ? BUCKET_LABEL[r.aging_bucket] : '—'}</TableCell>
+                <TableCell>
+                  {r.aging_bucket ? BUCKET_LABEL[r.aging_bucket] : '—'}
+                </TableCell>
                 <TableCell>
                   {r.ar_status ? (
-                    <StatusChip label={r.ar_status} tone={valueTone(r.ar_status)} />
+                    <StatusChip
+                      label={r.ar_status}
+                      tone={valueTone(r.ar_status)}
+                    />
                   ) : (
                     '—'
                   )}
@@ -190,13 +200,24 @@ const Kpi = ({
 }) => (
   <Paper
     variant='outlined'
-    sx={{ p: 1.75, borderRadius: 2, borderColor: accent ? 'primary.main' : undefined }}
+    sx={{
+      p: 1.75,
+      borderRadius: 2,
+      borderColor: accent ? 'primary.main' : undefined,
+    }}
   >
     <Typography
-      sx={{ fontSize: 11.5, color: 'text.secondary', fontWeight: 600, whiteSpace: 'nowrap' }}
+      sx={{
+        fontSize: 11.5,
+        color: 'text.secondary',
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+      }}
     >
       {label}
     </Typography>
-    <Typography sx={{ fontSize: 17, fontWeight: 700, mt: 0.5 }}>{value}</Typography>
+    <Typography sx={{ fontSize: 17, fontWeight: 700, mt: 0.5 }}>
+      {value}
+    </Typography>
   </Paper>
 );

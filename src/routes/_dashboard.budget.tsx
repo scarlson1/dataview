@@ -4,8 +4,7 @@
  * on the budget_targets table (New Budget Target form); this page rolls them up
  * against actuals from policies_computed and renewals_computed.
  */
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
@@ -19,6 +18,8 @@ import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/budget')({
   component: BudgetProforma,
@@ -48,7 +49,9 @@ function BudgetProforma() {
           .eq('year', year),
         supabase
           .from('policies_computed')
-          .select('id, line_of_business, total_term_premium, policy_eff_date, transaction_type'),
+          .select(
+            'id, line_of_business, total_term_premium, policy_eff_date, transaction_type',
+          ),
         supabase.from('renewals_computed').select('policy_id, ev_rnw_gwp'),
       ]);
       if (targets.error) throw targets.error;
@@ -78,7 +81,8 @@ function BudgetProforma() {
         get(p.line_of_business).bound += Number(p.total_term_premium) || 0;
       }
       for (const r of renewals.data ?? []) {
-        const lob = r.policy_id != null ? lobByPolicy.get(r.policy_id) ?? null : null;
+        const lob =
+          r.policy_id != null ? (lobByPolicy.get(r.policy_id) ?? null) : null;
         get(lob).pipeline += Number(r.ev_rnw_gwp) || 0;
       }
 
@@ -99,7 +103,9 @@ function BudgetProforma() {
   const years = [now - 1, now, now + 1, now + 2];
 
   return (
-    <Box sx={{ maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -143,7 +149,10 @@ function BudgetProforma() {
       >
         <Kpi label='Budget target' value={money(totals.budget)} />
         <Kpi label='Bound (actual)' value={money(totals.bound)} />
-        <Kpi label='Renewal pipeline (weighted)' value={money(totals.pipeline)} />
+        <Kpi
+          label='Renewal pipeline (weighted)'
+          value={money(totals.pipeline)}
+        />
       </Box>
 
       <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'auto' }}>
@@ -171,7 +180,9 @@ function BudgetProforma() {
                   <TableCell align='right'>{money(proforma)}</TableCell>
                   <TableCell
                     align='right'
-                    sx={{ color: variance >= 0 ? 'success.main' : 'error.main' }}
+                    sx={{
+                      color: variance >= 0 ? 'success.main' : 'error.main',
+                    }}
                   >
                     {money(variance)}
                   </TableCell>
@@ -196,9 +207,13 @@ function BudgetProforma() {
 
 const Kpi = ({ label, value }: { label: string; value: string }) => (
   <Paper variant='outlined' sx={{ p: 2, borderRadius: 2 }}>
-    <Typography sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}>
+    <Typography
+      sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}
+    >
       {label}
     </Typography>
-    <Typography sx={{ fontSize: 22, fontWeight: 700, mt: 0.5 }}>{value}</Typography>
+    <Typography sx={{ fontSize: 22, fontWeight: 700, mt: 0.5 }}>
+      {value}
+    </Typography>
   </Paper>
 );

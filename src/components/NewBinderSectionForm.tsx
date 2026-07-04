@@ -1,4 +1,14 @@
 import {
+  Alert,
+  Button,
+  Collapse,
+  Grid,
+  InputAdornment,
+  Stack,
+} from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
   binderSectionStatus,
   type NewBinderSectionValues,
   newBinderSectionFormOpts,
@@ -13,16 +23,6 @@ import {
   toNumber,
 } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
-import {
-  Alert,
-  Button,
-  Collapse,
-  Grid,
-  InputAdornment,
-  Stack,
-} from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 type SectionRow = Tables<'binder_section'>;
 type SectionInsert = TablesInsert<'binder_section'>;
@@ -102,7 +102,8 @@ export const NewBinderSectionForm = ({
         section_attachment: toNumber(value.sectionAttachment),
         lob_codes: emptyToNull(value.lobCodes),
         participation_pct: pctToDecimal(value.participationPct) ?? 0,
-        status: (emptyToNull(value.status) ?? 'active') as SectionInsert['status'],
+        status: (emptyToNull(value.status) ??
+          'active') as SectionInsert['status'],
         notes: emptyToNull(value.notes),
       };
       await mutateAsync(row);
@@ -195,18 +196,24 @@ export const NewBinderSectionForm = ({
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='Notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField label='Notes' multiline minRows={2} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -215,7 +222,9 @@ export const NewBinderSectionForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save section' : 'Create section'} />
+          <form.SubmitButton
+            label={editing ? 'Save section' : 'Create section'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

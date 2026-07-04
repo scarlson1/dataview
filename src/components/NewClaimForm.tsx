@@ -1,14 +1,4 @@
 import {
-  claimStatus,
-  type NewClaimValues,
-  newClaimFormOpts,
-} from '#/constants/newClaimForm';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
-import {
   Alert,
   Button,
   Collapse,
@@ -21,6 +11,16 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
+import {
+  claimStatus,
+  type NewClaimValues,
+  newClaimFormOpts,
+} from '#/constants/newClaimForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type ClaimRow = Tables<'claims'>;
 type ClaimInsert = TablesInsert<'claims'>;
@@ -72,7 +72,9 @@ export const NewClaimForm = ({
       return data[0] as ClaimRow;
     },
     onSuccess: (row) => {
-      toast.success(editing ? 'Claim updated' : 'Claim created', { id: 'claim' });
+      toast.success(editing ? 'Claim updated' : 'Claim created', {
+        id: 'claim',
+      });
       onSaved?.(row);
     },
     onError: (err) => toast.error(err.message, { id: 'claim' }),
@@ -192,7 +194,9 @@ export const NewClaimForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 6 }}>
@@ -244,7 +248,9 @@ export const NewClaimForm = ({
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>

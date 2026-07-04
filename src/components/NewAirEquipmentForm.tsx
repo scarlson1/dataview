@@ -1,14 +1,4 @@
 import {
-  EQUIPMENT_CATEGORIES,
-  type NewAirEquipmentValues,
-  newAirEquipmentFormOpts,
-} from '#/constants/newAirEquipmentForm';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
-import {
   Alert,
   Button,
   Collapse,
@@ -20,12 +10,25 @@ import {
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  EQUIPMENT_CATEGORIES,
+  type NewAirEquipmentValues,
+  newAirEquipmentFormOpts,
+} from '#/constants/newAirEquipmentForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type EqpRow = Tables<'air_equipment'>;
 type EqpInsert = TablesInsert<'air_equipment'>;
 
 const str = (v: unknown): string => (v == null ? '' : String(v));
-const categoryOptions = EQUIPMENT_CATEGORIES.map((v) => ({ value: v, label: v }));
+const categoryOptions = EQUIPMENT_CATEGORIES.map((v) => ({
+  value: v,
+  label: v,
+}));
 
 const SectionLabel = ({ children }: { children: string }) => (
   <Typography
@@ -180,7 +183,9 @@ export const NewAirEquipmentForm = ({
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='gpuCount'>
-              {(field) => <field.TextField label='GPU count' slotProps={numeric} />}
+              {(field) => (
+                <field.TextField label='GPU count' slotProps={numeric} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
@@ -204,7 +209,10 @@ export const NewAirEquipmentForm = ({
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='gpuUnitReplacementCost'>
               {(field) => (
-                <field.TextField label='Unit replacement cost' slotProps={dollar} />
+                <field.TextField
+                  label='Unit replacement cost'
+                  slotProps={dollar}
+                />
               )}
             </form.AppField>
           </Grid>
@@ -216,21 +224,30 @@ export const NewAirEquipmentForm = ({
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='serverRackCount'>
               {(field) => (
-                <field.TextField label='Server / rack count' slotProps={numeric} />
+                <field.TextField
+                  label='Server / rack count'
+                  slotProps={numeric}
+                />
               )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='serverReplacementCost'>
               {(field) => (
-                <field.TextField label='Server cost / unit' slotProps={dollar} />
+                <field.TextField
+                  label='Server cost / unit'
+                  slotProps={dollar}
+                />
               )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='supportingInfraValue'>
               {(field) => (
-                <field.TextField label='Supporting infra (UPS/cooling)' slotProps={dollar} />
+                <field.TextField
+                  label='Supporting infra (UPS/cooling)'
+                  slotProps={dollar}
+                />
               )}
             </form.AppField>
           </Grid>
@@ -253,13 +270,17 @@ export const NewAirEquipmentForm = ({
           </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='Notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField label='Notes' multiline minRows={2} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>

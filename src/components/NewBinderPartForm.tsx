@@ -1,4 +1,14 @@
 import {
+  Alert,
+  Button,
+  Collapse,
+  Grid,
+  InputAdornment,
+  Stack,
+} from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
   binderPartStatus,
   type NewBinderPartValues,
   newBinderPartFormOpts,
@@ -9,16 +19,6 @@ import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { decimalToPct, emptyToNull, pctToDecimal } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
-import {
-  Alert,
-  Button,
-  Collapse,
-  Grid,
-  InputAdornment,
-  Stack,
-} from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 type PartRow = Tables<'binder_part'>;
 type PartInsert = TablesInsert<'binder_part'>;
@@ -65,7 +65,11 @@ export const NewBinderPartForm = ({
     mutationFn: async (values: PartInsert) => {
       const q =
         recordId != null
-          ? supabase.from('binder_part').update(values).eq('id', recordId).select()
+          ? supabase
+              .from('binder_part')
+              .update(values)
+              .eq('id', recordId)
+              .select()
           : supabase.from('binder_part').insert(values).select();
       const { data, error } = await q;
       if (error) throw new Error(error.message);
@@ -90,7 +94,8 @@ export const NewBinderPartForm = ({
       const row: PartInsert = {
         sect_id: value.sectId,
         participant_name: value.participantName.trim(),
-        participant_type: value.participantType as PartInsert['participant_type'],
+        participant_type:
+          value.participantType as PartInsert['participant_type'],
         syndicate_entity_number: emptyToNull(value.syndicateEntityNumber),
         participation_pct: pctToDecimal(value.participationPct) ?? 0,
         status: (emptyToNull(value.status) ?? 'active') as PartInsert['status'],
@@ -108,10 +113,15 @@ export const NewBinderPartForm = ({
             <field.EntitySelect
               label='Binder section'
               table='binder_section'
-              searchColumns={['section_display_name', 'sect_ref', 'section_number']}
+              searchColumns={[
+                'section_display_name',
+                'sect_ref',
+                'section_number',
+              ]}
               getOptionLabel={(r) =>
-                [r.sect_ref, r.section_display_name].filter(Boolean).join(' · ') ||
-                `Section #${r.id}`
+                [r.sect_ref, r.section_display_name]
+                  .filter(Boolean)
+                  .join(' · ') || `Section #${r.id}`
               }
             />
           )}
@@ -154,18 +164,24 @@ export const NewBinderPartForm = ({
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='Notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField label='Notes' multiline minRows={2} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>

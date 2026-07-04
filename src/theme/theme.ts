@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import type {} from '@mui/material/themeCssVarsAugmentation';
-import { darkPalette, lightPalette, MONO_FONT, type ChipTone } from './tokens';
+import { type ChipTone, darkPalette, lightPalette, MONO_FONT } from './tokens';
 
 // Expose the custom design tokens on the MUI theme object.
 declare module '@mui/material/styles' {

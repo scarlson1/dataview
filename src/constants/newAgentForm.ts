@@ -1,6 +1,6 @@
-import { addressValues } from '#/constants/newClientForm';
 import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
+import { addressValues } from '#/constants/newClientForm';
 
 const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/,

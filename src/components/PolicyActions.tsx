@@ -3,8 +3,7 @@
  * Reinstate — driven by the create_endorsement / cancel_policy / reinstate_policy
  * RPCs. Each books a new POL row linked to the head of the chain.
  */
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
+
 import {
   Button,
   Dialog,
@@ -20,6 +19,8 @@ import dayjs from 'dayjs';
 import { FilePlus2, RotateCcw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
 
 interface PolicyActionsProps {
   policyId: number;

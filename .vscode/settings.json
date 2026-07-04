@@ -33,10 +33,7 @@
     "source.organizeImports.biome": "explicit"
   },
   "deno.enable": true,
-  "deno.unstable": true,
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
+  "deno.enablePaths": ["supabase/functions"],
   // "deno.importMap": "./supabase/functions/deno.json",
   "deno.lint": true,
   // "deno.fmt.options.singleQuote": true,

@@ -1,4 +1,3 @@
-import { useFieldContext } from '#/hooks/formContext';
 import type {
   AutocompleteValue,
   AutocompleteProps as MuiAutocompleteProps,
@@ -6,6 +5,7 @@ import type {
 } from '@mui/material';
 import { Autocomplete as MuiAutocomplete, TextField } from '@mui/material';
 import { useSelector } from '@tanstack/react-store';
+import { useFieldContext } from '#/hooks/formContext';
 
 type AutocompleteProps<
   Value,

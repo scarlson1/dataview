@@ -1,6 +1,3 @@
-import { InviteUserForm } from '#/components/auth/InviteUserForm';
-import { roleFromSession } from '#/lib/authRole';
-import { supabase } from '#/supabaseClient';
 import {
   Box,
   CircularProgress,
@@ -13,6 +10,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { roleFromSession } from '#/lib/authRole';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/users')({
   // Admin-only surface. The parent _dashboard route already ensures a session

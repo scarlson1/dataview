@@ -8,12 +8,16 @@
  * refresh the manifest.
  */
 import {
-  SCHEMA,
   type ColumnKind,
+  SCHEMA,
   type SchemaColumn,
   type SchemaTable,
 } from './schema.generated';
-import { COMPUTED_VIEW_SUFFIXES, PREFERRED_ORDER, TABLE_META } from './tableMeta';
+import {
+  COMPUTED_VIEW_SUFFIXES,
+  PREFERRED_ORDER,
+  TABLE_META,
+} from './tableMeta';
 
 export type { ColumnKind };
 export type TableColumn = SchemaColumn;
@@ -59,7 +63,10 @@ const pickPrimaryKey = (base: SchemaTable, columns: TableColumn[]): string => {
  * have no base match and pass through untouched. When the source *is* the base
  * table there's nothing to merge, so return its columns as-is.
  */
-const mergeColumns = (base: SchemaTable, source: SchemaTable): TableColumn[] => {
+const mergeColumns = (
+  base: SchemaTable,
+  source: SchemaTable,
+): TableColumn[] => {
   if (source.name === base.name) return source.columns;
 
   const baseByField = new Map(base.columns.map((c) => [c.field, c]));
@@ -68,8 +75,10 @@ const mergeColumns = (base: SchemaTable, source: SchemaTable): TableColumn[] => 
     if (!baseCol) return col;
 
     const merged = { ...col };
-    if (col.key === undefined && baseCol.key !== undefined) merged.key = baseCol.key;
-    if (col.def === undefined && baseCol.def !== undefined) merged.def = baseCol.def;
+    if (col.key === undefined && baseCol.key !== undefined)
+      merged.key = baseCol.key;
+    if (col.def === undefined && baseCol.def !== undefined)
+      merged.def = baseCol.def;
     if (col.references === undefined && baseCol.references !== undefined)
       merged.references = baseCol.references;
     return merged;
@@ -166,7 +175,12 @@ const GROUP_DEFS: TableGroup[] = [
   {
     id: 'administrative',
     label: 'Administrative',
-    tables: ['license', 'surplus_lines_state_rules', 'capacity', 'lob_defaults'],
+    tables: [
+      'license',
+      'surplus_lines_state_rules',
+      'capacity',
+      'lob_defaults',
+    ],
   },
   {
     id: 'exposure',

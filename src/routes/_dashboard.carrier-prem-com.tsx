@@ -4,9 +4,7 @@
  * share (backed by the carrier_prem_com_report view). Read-only with a CSV
  * export; totals foot to the portfolio.
  */
-import { downloadCsv } from '#/lib/csv';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -19,6 +17,9 @@ import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
+import { downloadCsv } from '#/lib/csv';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/carrier-prem-com')({
   component: CarrierPremComReport,
@@ -62,7 +63,9 @@ function CarrierPremComReport() {
   );
 
   return (
-    <Box sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -131,8 +134,12 @@ function CarrierPremComReport() {
                 <TableCell align='right'>{r.transaction_count ?? 0}</TableCell>
                 <TableCell align='right'>{money(r.total_premium)}</TableCell>
                 <TableCell align='right'>{money(r.total_gross_com)}</TableCell>
-                <TableCell align='right'>{money(r.total_mga_net_com)}</TableCell>
-                <TableCell align='right'>{money(r.total_carrier_net)}</TableCell>
+                <TableCell align='right'>
+                  {money(r.total_mga_net_com)}
+                </TableCell>
+                <TableCell align='right'>
+                  {money(r.total_carrier_net)}
+                </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
@@ -143,7 +150,9 @@ function CarrierPremComReport() {
               </TableRow>
             )}
             {rows.length > 0 && (
-              <TableRow sx={{ '& td': { fontWeight: 700, borderTop: '2px solid' } }}>
+              <TableRow
+                sx={{ '& td': { fontWeight: 700, borderTop: '2px solid' } }}
+              >
                 <TableCell>Total</TableCell>
                 <TableCell align='right' />
                 <TableCell align='right'>{money(totals.premium)}</TableCell>
@@ -161,9 +170,13 @@ function CarrierPremComReport() {
 
 const Kpi = ({ label, value }: { label: string; value: string }) => (
   <Paper variant='outlined' sx={{ p: 2, borderRadius: 2 }}>
-    <Typography sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}>
+    <Typography
+      sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}
+    >
       {label}
     </Typography>
-    <Typography sx={{ fontSize: 22, fontWeight: 700, mt: 0.5 }}>{value}</Typography>
+    <Typography sx={{ fontSize: 22, fontWeight: 700, mt: 0.5 }}>
+      {value}
+    </Typography>
   </Paper>
 );

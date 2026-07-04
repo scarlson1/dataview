@@ -1,4 +1,3 @@
-import { supabase } from '#/supabaseClient';
 import {
   Dialog,
   DialogActions,
@@ -14,6 +13,7 @@ import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '#/supabaseClient';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -216,81 +216,74 @@ function ForgotPasswordDialog({
   });
 
   return (
-    <>
-      <Dialog
-        open={open}
-        onClose={() => handleDismiss()}
-        maxWidth='xs'
-        fullWidth
-      >
-        <DialogTitle>Send Password Reset Link</DialogTitle>
-        <DialogContent>
-          {!isSuccess ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                form.handleSubmit();
+    <Dialog open={open} onClose={() => handleDismiss()} maxWidth='xs' fullWidth>
+      <DialogTitle>Send Password Reset Link</DialogTitle>
+      <DialogContent>
+        {!isSuccess ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            id='pw-reset-form'
+          >
+            <form.Field
+              name='email'
+              children={({ state, handleChange, handleBlur }) => {
+                return (
+                  <TextField
+                    autoFocus
+                    value={state.value}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onBlur={handleBlur}
+                    label='Email'
+                    placeholder='johndoe@gmail.com'
+                    fullWidth
+                  />
+                );
               }}
-              id='pw-reset-form'
+            />
+          </form>
+        ) : (
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {/* TODO: small checkmark lottie */}
+            <Typography>Check your input!</Typography>
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        {!isSuccess ? (
+          <>
+            <Button onClick={() => handleDismiss()}>Cancel</Button>
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
-              <form.Field
-                name='email'
-                children={({ state, handleChange, handleBlur }) => {
-                  return (
-                    <TextField
-                      autoFocus
-                      value={state.value}
-                      onChange={(e) => handleChange(e.target.value)}
-                      onBlur={handleBlur}
-                      label='Email'
-                      placeholder='johndoe@gmail.com'
-                      fullWidth
-                    />
-                  );
-                }}
-              />
-            </form>
-          ) : (
-            <Box
-              sx={{
-                p: 2,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {/* TODO: small checkmark lottie */}
-              <Typography>Check your input!</Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          {!isSuccess ? (
-            <>
-              <Button onClick={() => handleDismiss()}>Cancel</Button>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              >
-                {(
-                  [canSubmit], // isSubmitting
-                ) => (
-                  <Button
-                    loading={isPending}
-                    type='submit'
-                    form='pw-reset-form'
-                    disabled={!canSubmit}
-                  >
-                    Submit
-                  </Button>
-                )}
-              </form.Subscribe>
-            </>
-          ) : (
-            <Button onClick={() => handleDismiss()}>Done</Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </>
+              {(
+                [canSubmit], // isSubmitting
+              ) => (
+                <Button
+                  loading={isPending}
+                  type='submit'
+                  form='pw-reset-form'
+                  disabled={!canSubmit}
+                >
+                  Submit
+                </Button>
+              )}
+            </form.Subscribe>
+          </>
+        ) : (
+          <Button onClick={() => handleDismiss()}>Done</Button>
+        )}
+      </DialogActions>
+    </Dialog>
   );
 }

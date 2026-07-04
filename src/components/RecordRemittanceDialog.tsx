@@ -2,8 +2,7 @@
  * Records a carrier remittance against a CAP row via the `record_cap_remittance`
  * RPC (inserts a capacity_remittance child, bounded by available-for-payment).
  */
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import {
   Button,
   Dialog,
@@ -17,11 +16,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { X } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export interface CapTarget {
   id: number;

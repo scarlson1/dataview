@@ -3,9 +3,7 @@
  * Calls net_com_uep_asof(p_report_date); the funded reserve total and every
  * row recalculates when the date changes.
  */
-import { downloadCsv } from '#/lib/csv';
-import { money, pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -18,9 +16,12 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Download } from 'lucide-react';
 import dayjs from 'dayjs';
+import { Download } from 'lucide-react';
 import { useState } from 'react';
+import { downloadCsv } from '#/lib/csv';
+import { money, pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/uep')({
   component: UepReport,
@@ -61,7 +62,9 @@ function UepReport() {
   );
 
   return (
-    <Box sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -76,7 +79,8 @@ function UepReport() {
             Net-Commission UEP Reserve
           </Typography>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Funded fiduciary reserve on MGA net commission, as of the report date.
+            Funded fiduciary reserve on MGA net commission, as of the report
+            date.
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -105,7 +109,9 @@ function UepReport() {
       </Box>
 
       <Paper variant='outlined' sx={{ p: 2, borderRadius: 2 }}>
-        <Typography sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}>
+        <Typography
+          sx={{ fontSize: 12.5, color: 'text.secondary', fontWeight: 600 }}
+        >
           Funded Net-Com UEP Reserve
         </Typography>
         <Typography sx={{ fontSize: 28, fontWeight: 700 }}>
@@ -134,20 +140,26 @@ function UepReport() {
                 <TableCell>{r.client_name ?? `#${r.policy_id}`}</TableCell>
                 <TableCell>{r.line_of_business ?? '—'}</TableCell>
                 <TableCell>{r.status_as_of_rpt_date ?? '—'}</TableCell>
-                <TableCell align='right'>{money(r.total_term_premium)}</TableCell>
+                <TableCell align='right'>
+                  {money(r.total_term_premium)}
+                </TableCell>
                 <TableCell align='right'>{money(r.mga_net_com_amt)}</TableCell>
                 <TableCell align='right'>{pct(r.uep_pct_required)}</TableCell>
                 <TableCell align='right'>{pct(r.received_nep_pct)}</TableCell>
                 <TableCell align='right'>
                   {pct(r.selected_net_com_uep_pct)}
                 </TableCell>
-                <TableCell align='right'>{money(r.mga_net_com_uep_amt)}</TableCell>
+                <TableCell align='right'>
+                  {money(r.mga_net_com_uep_amt)}
+                </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} sx={{ color: 'text.disabled' }}>
-                  {query.isLoading ? 'Loading…' : 'No policies as of this date.'}
+                  {query.isLoading
+                    ? 'Loading…'
+                    : 'No policies as of this date.'}
                 </TableCell>
               </TableRow>
             )}

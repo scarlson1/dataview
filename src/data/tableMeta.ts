@@ -65,22 +65,26 @@ export const TABLE_META: Record<string, TableOverlay> = {
   },
   underwriters: {
     icon: 'underwriters',
-    description: 'Underwriters available for assignment on submissions and renewals.',
+    description:
+      'Underwriters available for assignment on submissions and renewals.',
   },
   policies: {
     icon: 'policies',
     source: 'policies_computed',
-    description: 'Bound policies and endorsements with premium and commission detail.',
+    description:
+      'Bound policies and endorsements with premium and commission detail.',
   },
   new_business_submissions: {
     icon: 'new_business',
     label: 'new_business_submissions',
-    description: 'New-business submissions moving through the underwriting pipeline.',
+    description:
+      'New-business submissions moving through the underwriting pipeline.',
   },
   renewals: {
     icon: 'renewals',
     source: 'renewals_computed',
-    description: 'Renewal transactions with retention probability and expected GWP.',
+    description:
+      'Renewal transactions with retention probability and expected GWP.',
   },
   binder_section: {
     icon: 'binder',
@@ -111,7 +115,8 @@ export const TABLE_META: Record<string, TableOverlay> = {
   license: {
     icon: 'license',
     source: 'license_computed',
-    description: 'Surplus-lines licenses with expiration and eligibility status.',
+    description:
+      'Surplus-lines licenses with expiration and eligibility status.',
   },
   surplus_lines_state_rules: {
     icon: 'rules',
@@ -127,7 +132,8 @@ export const TABLE_META: Record<string, TableOverlay> = {
   lob_defaults: {
     icon: 'rules',
     label: 'lob_defaults',
-    description: 'Per-line-of-business default renewal probability used by the renewal pipeline.',
+    description:
+      'Per-line-of-business default renewal probability used by the renewal pipeline.',
   },
   subscription: {
     icon: 'binder',

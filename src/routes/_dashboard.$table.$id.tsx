@@ -6,15 +6,7 @@
  * the relation has a registered form — offers an Edit drawer that reuses the
  * same create form pre-filled with the row.
  */
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { PolicyActions } from '#/components/PolicyActions';
-import { StatusChip } from '#/components/StatusChip';
-import { useAuth } from '#/context/AuthContext';
-import { getEntityForm } from '#/data/entityForms';
-import { getTable } from '#/data/tables';
-import { labelize, money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -25,12 +17,22 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import { Suspense, useState } from 'react';
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { PolicyActions } from '#/components/PolicyActions';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { getTable } from '#/data/tables';
+import { labelize, money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/$table/$id')({
   component: DetailRoute,
 });
 
-const MONEY_HINT = /(amt|amount|premium|fee|fees|total|balance|paid|com_\$|_usd)/i;
+const MONEY_HINT =
+  /(amt|amount|premium|fee|fees|total|balance|paid|com_\$|_usd)/i;
 const isMoneyField = (field: string): boolean => MONEY_HINT.test(field);
 const isStatusField = (field: string): boolean => /status$/.test(field);
 
@@ -89,7 +91,9 @@ function DetailRoute() {
       <Button
         size='small'
         startIcon={<ArrowLeft size={16} />}
-        onClick={() => navigate({ to: '/$table', params: { table: tableName } })}
+        onClick={() =>
+          navigate({ to: '/$table', params: { table: tableName } })
+        }
         sx={{ mb: 2 }}
       >
         {table.label}
@@ -211,7 +215,9 @@ function DetailRoute() {
               initialRow={row}
               onSaved={() => {
                 setEditOpen(false);
-                qc.invalidateQueries({ queryKey: ['entity-detail', tableName, id] });
+                qc.invalidateQueries({
+                  queryKey: ['entity-detail', tableName, id],
+                });
                 qc.invalidateQueries({ queryKey: ['table-data'] });
               }}
               onCancel={() => setEditOpen(false)}

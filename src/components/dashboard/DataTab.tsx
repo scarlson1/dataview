@@ -1,4 +1,3 @@
-import { useTableData } from '#/hooks/useTableData';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import {
@@ -9,6 +8,7 @@ import {
 } from '@mui/x-data-grid';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
+import { useTableData } from '#/hooks/useTableData';
 import { toGridColumns } from '../../data/columns';
 import type { TableDef } from '../../data/tables';
 import { MONO_FONT } from '../../theme/tokens';

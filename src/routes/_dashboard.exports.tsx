@@ -3,8 +3,7 @@
  * the aged-receivables and carrier premium/commission reports. Each pulls its
  * backing view on demand and streams a CSV to the browser.
  */
-import { downloadCsv } from '#/lib/csv';
-import { supabase } from '#/supabaseClient';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -13,6 +12,8 @@ import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { downloadCsv } from '#/lib/csv';
+import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/exports')({
   component: ExportCenter,
@@ -69,7 +70,8 @@ const EXPORTS: ExportDef[] = [
     relation: 'accounts_receivable_aging',
     filename: 'aged-receivables',
     title: 'Aged Receivables (AGD)',
-    description: 'Open AR balances bucketed Current / 1-30 / 31-60 / 61-90 / 90+.',
+    description:
+      'Open AR balances bucketed Current / 1-30 / 31-60 / 61-90 / 90+.',
     group: 'Reports',
   },
   {
@@ -109,7 +111,9 @@ function ExportCenter() {
   const groups = Array.from(new Set(EXPORTS.map((e) => e.group)));
 
   return (
-    <Box sx={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box
+      sx={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 3 }}
+    >
       <Box>
         <Typography sx={{ fontSize: 22, fontWeight: 700 }}>Exports</Typography>
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
@@ -131,7 +135,10 @@ function ExportCenter() {
           >
             {group}
           </Typography>
-          <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper
+            variant='outlined'
+            sx={{ borderRadius: 2, overflow: 'hidden' }}
+          >
             {EXPORTS.filter((e) => e.group === group).map((def, i, arr) => (
               <Box
                 key={def.relation}

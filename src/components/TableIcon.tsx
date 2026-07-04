@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/material';
 import {
-  Banknote,
   BadgeCheck,
+  Banknote,
   Building2,
   Clock,
   CreditCard,

@@ -1,16 +1,16 @@
+import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import type { ComponentType } from 'react';
 import { AddressFieldGroup } from '#/components/AddressFieldGroup';
 import {
   clientType,
-  newClientFormOpts,
   type NewClientValues,
+  newClientFormOpts,
 } from '#/constants/newClientForm';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
-import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import type { ComponentType } from 'react';
 
 type ClientRowInsert = TablesInsert<'clients'>;
 type ClientRow = Tables<'clients'>;
