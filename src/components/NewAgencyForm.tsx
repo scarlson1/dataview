@@ -133,7 +133,7 @@ export const NewAgencyForm = ({
     <form.AppForm>
       <Stack direction='column' spacing={2}>
         <Grid container spacing={2}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField
               name='agentLevel'
               children={(field) => (
@@ -150,7 +150,7 @@ export const NewAgencyForm = ({
               )}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField
               name='licenseeType'
               children={(field) => (
@@ -227,6 +227,7 @@ export const NewAgencyForm = ({
           spacing={2}
           rowSpacing={undefined}
           columnSpacing={undefined}
+          inputSize='small'
         />
         <Collapse in={isError}>
           <Alert severity='error'>
@@ -240,7 +241,9 @@ export const NewAgencyForm = ({
             </Button>
           ) : null}
 
-          <form.SubmitButton label={editing ? 'Save agency' : 'Create agency'} />
+          <form.SubmitButton
+            label={editing ? 'Save agency' : 'Create agency'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

@@ -219,7 +219,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
               </form.AppField>
             </Grid>
 
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
                 <form.AppField name='submissionDate'>
                   {({ DatePicker }) => (
@@ -236,7 +236,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
               </Suspense>
             </Grid>
 
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
                 <form.AppField name='quoteDueDate'>
                   {({ DatePicker }) => (
@@ -253,7 +253,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
               </Suspense>
             </Grid>
 
-            <Grid size={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
                 <form.AppField name='quoteReceivedDate'>
                   {({ DatePicker }) => (
@@ -317,6 +317,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
                       onCreated={onCreated}
                       onCancel={onCancel}
                     />
+
                     // <ClientCreateBody defaultName={defaultName} onCreated={onCreated} onCancel={onCancel} />
                   )}
                   size='small'

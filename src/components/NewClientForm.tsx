@@ -8,7 +8,7 @@ import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
-import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
+import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import type { ComponentType } from 'react';
 
@@ -23,6 +23,11 @@ interface NewClientFormProps {
   onSaved?: (data: ClientRow) => void;
   onCancel?: () => void;
 }
+
+const clientTypeOptions = clientType.options.map((c) => ({
+  value: c,
+  label: c,
+}));
 
 const clientStr = (v: unknown): string => (v == null ? '' : String(v));
 
@@ -103,41 +108,112 @@ export const NewClientForm = ({
     },
   });
 
+  // const clientType = form.useStore((state) => state.values.clientType);
+
   return (
-    // <Box component='form' onSubmit={() => {}}>
     <form.AppForm>
       <Stack direction='column' spacing={2}>
         <Grid container spacing={2}>
-          <Grid size={8}>
-            <form.AppField
-              name='companyName'
-              children={(field) => <field.TextField label='Company name' />}
-            />
-          </Grid>
-          <Grid size={4}>
+          <Grid size={12}>
             <form.AppField
               name='clientType'
+              // children={(field) => (
+              //   <field.TextField label='Client type' select size='small'>
+              //     {clientType.options.map((option) => (
+              //       <MenuItem key={option} value={option}>
+              //         {option}
+              //       </MenuItem>
+              //     ))}
+              //   </field.TextField>
+              // )}
               children={(field) => (
-                <field.TextField label='Client type' select>
-                  {clientType.options.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </field.TextField>
+                <field.ToggleButtonGroup
+                  options={clientTypeOptions}
+                  exclusive
+                  label='Client type'
+                  size='small'
+                  color='primary'
+                />
               )}
             />
           </Grid>
-          <Grid size={8}>
+
+          <form.Subscribe
+            selector={(state) => state.values.clientType}
+            children={(clientType) =>
+              clientType !== 'individual' ? (
+                <Grid size={12}>
+                  <form.AppField
+                    name='companyName'
+                    children={(field) => (
+                      <field.TextField label='Company name' size='small' />
+                    )}
+                  />
+                </Grid>
+              ) : (
+                <>
+                  <Grid size={6}>
+                    <form.AppField
+                      name='firstName'
+                      children={(field) => (
+                        <field.TextField label='First name' size='small' />
+                      )}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <form.AppField
+                      name='lastName'
+                      children={(field) => (
+                        <field.TextField label='Last name' size='small' />
+                      )}
+                    />
+                  </Grid>
+                </>
+              )
+            }
+          />
+
+          {/* <Grid size={12}>
+            <form.AppField
+              name='companyName'
+              children={(field) => (
+                <field.TextField label='Company name' size='small' />
+              )}
+            />
+          </Grid> */}
+
+          {/* <Grid size={8}>
             <form.AppField
               name='firstName'
-              children={(field) => <field.TextField label='First name' />}
+              children={(field) => (
+                <field.TextField label='First name' size='small' />
+              )}
             />
           </Grid>
           <Grid size={4}>
             <form.AppField
               name='lastName'
-              children={(field) => <field.TextField label='Last name' />}
+              children={(field) => (
+                <field.TextField label='Last name' size='small' />
+              )}
+            />
+          </Grid> */}
+
+          <Grid size={8}>
+            <form.AppField
+              name='email'
+              children={(field) => (
+                <field.TextField label='Email' size='small' />
+              )}
+            />
+          </Grid>
+          <Grid size={4}>
+            <form.AppField
+              name='phone'
+              // TODO: format mask
+              children={(field) => (
+                <field.TextField label='Phone' size='small' />
+              )}
             />
           </Grid>
         </Grid>
@@ -147,6 +223,7 @@ export const NewClientForm = ({
           spacing={2}
           rowSpacing={undefined}
           columnSpacing={undefined}
+          inputSize='small'
         />
 
         <Collapse in={isError}>
@@ -164,7 +241,9 @@ export const NewClientForm = ({
           >
             Cancel
           </Button>
-          <form.SubmitButton label={editing ? 'Save client' : 'Create client'} />
+          <form.SubmitButton
+            label={editing ? 'Save client' : 'Create client'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

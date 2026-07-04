@@ -276,5 +276,15 @@ export const theme = createTheme({
         tooltip: { fontSize: 12 },
       },
     },
+    MuiTextField: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
+    MuiFormControl: {
+      defaultProps: {
+        size: 'small', // Sets default size to small for standalone FormControls, Selects, etc.
+      },
+    },
   },
 });

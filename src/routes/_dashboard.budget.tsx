@@ -134,7 +134,13 @@ function BudgetProforma() {
         </TextField>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+          gap: 2,
+        }}
+      >
         <Kpi label='Budget target' value={money(totals.budget)} />
         <Kpi label='Bound (actual)' value={money(totals.bound)} />
         <Kpi label='Renewal pipeline (weighted)' value={money(totals.pipeline)} />

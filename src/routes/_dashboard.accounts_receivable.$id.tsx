@@ -4,6 +4,7 @@
  * page can't show the child payments or the running balance, which is the point
  * of an AR file. Reads accounts_receivable_computed for the live balance.
  */
+import { useAuth } from '#/context/AuthContext';
 import { RecordPaymentDialog } from '#/components/RecordPaymentDialog';
 import { StatusChip } from '#/components/StatusChip';
 import { labelize, money } from '#/lib/money';
@@ -77,6 +78,8 @@ function ArDetail() {
   const arId = Number(id);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { can } = useAuth();
+  const canRecordPayment = can('accounts_receivable_payments', 'write');
   const [payOpen, setPayOpen] = useState(false);
 
   const arQuery = useQuery({
@@ -188,14 +191,16 @@ function ArDetail() {
                   Invoice
                 </Button>
               )}
-              <Button
-                variant='contained'
-                startIcon={<Plus size={16} />}
-                disabled={balance <= 0}
-                onClick={() => setPayOpen(true)}
-              >
-                Record payment
-              </Button>
+              {canRecordPayment && (
+                <Button
+                  variant='contained'
+                  startIcon={<Plus size={16} />}
+                  disabled={balance <= 0}
+                  onClick={() => setPayOpen(true)}
+                >
+                  Record payment
+                </Button>
+              )}
             </Box>
           </Box>
 

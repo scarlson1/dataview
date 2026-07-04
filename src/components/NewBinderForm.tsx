@@ -102,7 +102,7 @@ export const NewBinderForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         <form.AppField name='carrierId'>
           {(field) => (
             <field.EntitySelect
@@ -139,7 +139,7 @@ export const NewBinderForm = ({
               )}
             </form.AppField>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='effDate'>
                 {({ DatePicker }) => (
@@ -151,7 +151,7 @@ export const NewBinderForm = ({
               </form.AppField>
             </Suspense>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='expDate'>
                 {({ DatePicker }) => (

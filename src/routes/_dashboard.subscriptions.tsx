@@ -5,6 +5,7 @@
  * create_subscription RPC (header + rows + flags the policy placement_type).
  */
 import { money, pct as pctFmt } from '#/lib/money';
+import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -65,6 +66,8 @@ const useOptions = (
   });
 
 function SubscriptionBuilder() {
+  const { can } = useAuth();
+  const canWrite = can('subscription', 'write');
   const [policy, setPolicy] = useState<Opt | null>(null);
   const [marketLead, setMarketLead] = useState('');
   const [rows, setRows] = useState<ParticipantRow[]>([
@@ -249,23 +252,25 @@ function SubscriptionBuilder() {
         </Stack>
       </Paper>
 
-      <Box>
-        <Button
-          variant='contained'
-          disabled={!policy || !balanced || submit.isPending}
-          onClick={() => submit.mutate()}
-        >
-          Create subscription
-        </Button>
-        {!balanced && (
-          <Typography
-            component='span'
-            sx={{ ml: 2, fontSize: 13, color: 'text.secondary' }}
+      {canWrite && (
+        <Box>
+          <Button
+            variant='contained'
+            disabled={!policy || !balanced || submit.isPending}
+            onClick={() => submit.mutate()}
           >
-            Participation must total 100% to submit.
-          </Typography>
-        )}
-      </Box>
+            Create subscription
+          </Button>
+          {!balanced && (
+            <Typography
+              component='span'
+              sx={{ ml: 2, fontSize: 13, color: 'text.secondary' }}
+            >
+              Participation must total 100% to submit.
+            </Typography>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

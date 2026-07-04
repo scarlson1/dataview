@@ -105,7 +105,17 @@ function AgdReport() {
         </Button>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr 1fr',
+            sm: 'repeat(3, 1fr)',
+            md: 'repeat(6, 1fr)',
+          },
+          gap: 2,
+        }}
+      >
         {BUCKETS.map((b) => (
           <Kpi key={b} label={BUCKET_LABEL[b]} value={money(byBucket(b))} />
         ))}

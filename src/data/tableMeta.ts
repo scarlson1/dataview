@@ -56,6 +56,7 @@ export const TABLE_META: Record<string, TableOverlay> = {
   },
   clients: {
     icon: 'clients',
+    source: 'clients_computed',
     description: 'Insured entities and individuals across all policies.',
   },
   carriers: {

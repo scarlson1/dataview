@@ -104,7 +104,7 @@ export const NewClaimForm = ({
 
   return (
     <form.AppForm>
-      <Stack direction='column' spacing={2} sx={{ p: 3 }}>
+      <Stack direction='column' spacing={2}>
         {/* Policy — auto-fills client & carrier from the selected policy row */}
         <form.AppField name='policyId'>
           {(field) => (
@@ -160,7 +160,7 @@ export const NewClaimForm = ({
             </form.AppField>
           </Grid>
 
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='dateOfLoss'>
                 {({ DatePicker }) => (
@@ -172,7 +172,7 @@ export const NewClaimForm = ({
               </form.AppField>
             </Suspense>
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
               <form.AppField name='dateReported'>
                 {({ DatePicker }) => (

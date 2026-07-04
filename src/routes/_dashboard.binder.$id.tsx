@@ -8,6 +8,7 @@
  */
 import { EntityDrawer } from '#/components/EntityDrawer';
 import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
 import { getEntityForm } from '#/data/entityForms';
 import { labelize, money, pct } from '#/lib/money';
 import { supabase } from '#/supabaseClient';
@@ -96,6 +97,10 @@ function BinderDetail() {
   const binderId = Number(id);
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { can } = useAuth();
+  const canWriteBinder = can('binder', 'write');
+  const canWriteSection = can('binder_section', 'write');
+  const canWritePart = can('binder_part', 'write');
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
 
   const binderQuery = useQuery({
@@ -213,19 +218,21 @@ function BinderDetail() {
             >
               {title}
             </Typography>
-            <Button
-              variant='contained'
-              startIcon={<Pencil size={16} />}
-              onClick={() =>
-                setDrawer({
-                  relation: 'binder',
-                  recordId: binder.id,
-                  initialRow: binder as unknown as Record<string, unknown>,
-                })
-              }
-            >
-              Edit
-            </Button>
+            {canWriteBinder && (
+              <Button
+                variant='contained'
+                startIcon={<Pencil size={16} />}
+                onClick={() =>
+                  setDrawer({
+                    relation: 'binder',
+                    recordId: binder.id,
+                    initialRow: binder as unknown as Record<string, unknown>,
+                  })
+                }
+              >
+                Edit
+              </Button>
+            )}
           </Box>
 
           <Paper variant='outlined' sx={{ p: 3, borderRadius: 2, mb: 3 }}>
@@ -261,19 +268,21 @@ function BinderDetail() {
             <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
               Sections ({sections.length})
             </Typography>
-            <Button
-              size='small'
-              variant='outlined'
-              startIcon={<Plus size={15} />}
-              onClick={() =>
-                setDrawer({
-                  relation: 'binder_section',
-                  defaultValues: { binderId: binder.id },
-                })
-              }
-            >
-              Add section
-            </Button>
+            {canWriteSection && (
+              <Button
+                size='small'
+                variant='outlined'
+                startIcon={<Plus size={15} />}
+                onClick={() =>
+                  setDrawer({
+                    relation: 'binder_section',
+                    defaultValues: { binderId: binder.id },
+                  })
+                }
+              >
+                Add section
+              </Button>
+            )}
           </Box>
 
           {sectionsQuery.isLoading ? (
@@ -324,31 +333,38 @@ function BinderDetail() {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                          size='small'
-                          startIcon={<Pencil size={14} />}
-                          onClick={() =>
-                            setDrawer({
-                              relation: 'binder_section',
-                              recordId: s.id,
-                              initialRow: s as unknown as Record<string, unknown>,
-                            })
-                          }
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size='small'
-                          startIcon={<Plus size={14} />}
-                          onClick={() =>
-                            setDrawer({
-                              relation: 'binder_part',
-                              defaultValues: { sectId: s.id },
-                            })
-                          }
-                        >
-                          Participant
-                        </Button>
+                        {canWriteSection && (
+                          <Button
+                            size='small'
+                            startIcon={<Pencil size={14} />}
+                            onClick={() =>
+                              setDrawer({
+                                relation: 'binder_section',
+                                recordId: s.id,
+                                initialRow: s as unknown as Record<
+                                  string,
+                                  unknown
+                                >,
+                              })
+                            }
+                          >
+                            Edit
+                          </Button>
+                        )}
+                        {canWritePart && (
+                          <Button
+                            size='small'
+                            startIcon={<Plus size={14} />}
+                            onClick={() =>
+                              setDrawer({
+                                relation: 'binder_part',
+                                defaultValues: { sectId: s.id },
+                              })
+                            }
+                          >
+                            Participant
+                          </Button>
+                        )}
                       </Box>
                     </Box>
 
@@ -371,14 +387,20 @@ function BinderDetail() {
                         {parts.map((p) => (
                           <TableRow
                             key={p.id}
-                            hover
-                            sx={{ cursor: 'pointer' }}
-                            onClick={() =>
-                              setDrawer({
-                                relation: 'binder_part',
-                                recordId: p.id,
-                                initialRow: p as unknown as Record<string, unknown>,
-                              })
+                            hover={canWritePart}
+                            sx={{ cursor: canWritePart ? 'pointer' : 'default' }}
+                            onClick={
+                              canWritePart
+                                ? () =>
+                                    setDrawer({
+                                      relation: 'binder_part',
+                                      recordId: p.id,
+                                      initialRow: p as unknown as Record<
+                                        string,
+                                        unknown
+                                      >,
+                                    })
+                                : undefined
                             }
                           >
                             <TableCell>{p.participant_name ?? '—'}</TableCell>

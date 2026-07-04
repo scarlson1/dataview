@@ -11,11 +11,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   InputAdornment,
   MenuItem,
   Stack,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
+import { X } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -47,6 +51,8 @@ export const RecordPaymentDialog = ({
   const [method, setMethod] = useState('ach');
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const suggested = Math.max(Number(ar?.balance_due) || 0, 0);
 
@@ -78,9 +84,25 @@ export const RecordPaymentDialog = ({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
-      <DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='xs'
+      fullWidth
+      fullScreen={fullScreen}
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
+      >
         Record payment {ar ? `— ${ar.ar_ref}` : ''}
+        <IconButton onClick={onClose} edge='end' aria-label='Close'>
+          <X size={20} />
+        </IconButton>
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>

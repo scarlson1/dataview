@@ -98,15 +98,31 @@ function DetailRoute() {
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
           justifyContent: 'space-between',
+          gap: 1.5,
           mb: 2,
         }}
       >
-        <Typography sx={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace' }}>
+        <Typography
+          sx={{
+            fontSize: 22,
+            fontWeight: 700,
+            fontFamily: 'monospace',
+            wordBreak: 'break-word',
+          }}
+        >
           {title}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           {tableName === 'policies' && (
             <PolicyActions
               policyId={Number(id)}
