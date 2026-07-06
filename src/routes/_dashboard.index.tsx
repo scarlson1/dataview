@@ -275,19 +275,19 @@ const SHORTCUTS: Shortcut[] = [
     icon: <TrendingUp size={20} />,
   },
   {
-    to: '/agd',
+    to: '/accounts_receivable',
     title: 'Aged receivables',
     description: 'Open AR balances bucketed by days past due.',
     icon: <Receipt size={20} />,
   },
   {
-    to: '/carrier-prem-com',
+    to: '/carriers',
     title: 'Carrier prem / com',
     description: 'Premium and commission owed to carriers.',
     icon: <Coins size={20} />,
   },
   {
-    to: '/uep',
+    to: '/policies',
     title: 'UEP reserve',
     description: 'Unearned premium reserve across the book.',
     icon: <PiggyBank size={20} />,

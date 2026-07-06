@@ -8,8 +8,9 @@
  * register a lazy component here and TableViewer renders it as a tab; no per
  * table route required. Tables without an entry simply show Data/Schema only.
  */
+
+import { Coins, PiggyBank, Receipt } from 'lucide-react';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
-import { Receipt } from 'lucide-react';
 import type { TableName } from '#/data/tables';
 
 export interface TableViewEntry {
@@ -33,6 +34,26 @@ const TABLE_VIEWS: Partial<Record<TableName, TableViewEntry[]>> = {
       icon: Receipt,
       component: lazyView(
         () => import('#/components/reports/AgedReceivablesReport'),
+      ),
+    },
+  ],
+  policies: [
+    {
+      id: 'uep',
+      label: 'UEP reserve',
+      icon: PiggyBank,
+      component: lazyView(
+        () => import('#/components/reports/UepReserveReport'),
+      ),
+    },
+  ],
+  carriers: [
+    {
+      id: 'prem_com',
+      label: 'Prem / Com',
+      icon: Coins,
+      component: lazyView(
+        () => import('#/components/reports/CarrierPremComReport'),
       ),
     },
   ],

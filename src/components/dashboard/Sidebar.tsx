@@ -9,13 +9,10 @@ import Typography from '@mui/material/Typography';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
-  Coins,
   Database,
   FileDown,
   Layers,
   LogOut,
-  PiggyBank,
-  Receipt,
   Stamp,
   TrendingUp,
   Users,
@@ -329,28 +326,10 @@ export const Sidebar = ({
           onClick={() => go(() => navigate({ to: '/subscriptions' }))}
         />
         <FooterItem
-          icon={<PiggyBank size={20} />}
-          label='UEP Reserve'
-          collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/uep' }))}
-        />
-        <FooterItem
           icon={<TrendingUp size={20} />}
           label='Budget'
           collapsed={collapsed}
           onClick={() => go(() => navigate({ to: '/budget' }))}
-        />
-        <FooterItem
-          icon={<Coins size={20} />}
-          label='Carrier Prem/Com'
-          collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/carrier-prem-com' }))}
-        />
-        <FooterItem
-          icon={<Receipt size={20} />}
-          label='Aged Receivables'
-          collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/agd' }))}
         />
         <FooterItem
           icon={<Stamp size={20} />}

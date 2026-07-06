@@ -86,6 +86,5 @@ See the [`docs/`](docs/) directory for details:
 
 - DataGrid actions (bind, etc.)
 - ReactPDF document generation
-- seed renewals
 - email notifications
--
+- LLM generated reports
