@@ -1,7 +1,3 @@
-import { InviteUserForm } from '#/components/auth/InviteUserForm';
-import { ToggleDarkMode } from '#/components/ToggleDarkMode';
-import { useAuth } from '#/context/AuthContext';
-import { MONO_FONT } from '#/theme/tokens';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +13,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ChevronRight, PanelLeft, UserRoundPlus, X } from 'lucide-react';
 import { useState } from 'react';
+import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { ToggleDarkMode } from '#/components/ToggleDarkMode';
+import { useAuth } from '#/context/AuthContext';
+import { MONO_FONT } from '#/theme/tokens';
 
 interface TopBarProps {
   activeName: string;
@@ -139,7 +139,7 @@ function AddUser() {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  if (role != 'admin') return null;
+  if (role !== 'admin') return null;
 
   return (
     <>
@@ -162,7 +162,11 @@ function AddUser() {
           }}
         >
           Add User
-          <IconButton onClick={() => setOpen(false)} edge='end' aria-label='Close'>
+          <IconButton
+            onClick={() => setOpen(false)}
+            edge='end'
+            aria-label='Close'
+          >
             <X size={20} />
           </IconButton>
         </DialogTitle>

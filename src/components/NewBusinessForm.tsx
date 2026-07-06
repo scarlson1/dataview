@@ -1,15 +1,3 @@
-import { NewAgencyForm } from '#/components/NewAgencyForm';
-import { NewClientForm } from '#/components/NewClientForm';
-import {
-  newBusinessFormOpts,
-  newBusinessStage,
-  priority,
-} from '#/constants/newBusinessForm';
-import { stateOptions } from '#/constants/usStates';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
 import {
   Badge,
   Box,
@@ -24,6 +12,18 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
+import { NewAgencyForm } from '#/components/NewAgencyForm';
+import { NewClientForm } from '#/components/NewClientForm';
+import {
+  newBusinessFormOpts,
+  newBusinessStage,
+  priority,
+} from '#/constants/newBusinessForm';
+import { stateOptions } from '#/constants/usStates';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type NewBusinessSubmissionInsert = TablesInsert<'new_business_submissions'>;
 type NewBusinessSubmission = Tables<'new_business_submissions'>;

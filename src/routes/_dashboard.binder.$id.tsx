@@ -6,13 +6,7 @@
  * must foot to the section's stated participation). Add/edit anywhere reuses the
  * registered entity forms in a drawer, seeded with the parent key.
  */
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { StatusChip } from '#/components/StatusChip';
-import { useAuth } from '#/context/AuthContext';
-import { getEntityForm } from '#/data/entityForms';
-import { labelize, money, pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -27,6 +21,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import { Suspense, useState } from 'react';
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { labelize, money, pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/binder/$id')({
   component: BinderDetail,
@@ -120,7 +121,8 @@ function BinderDetail() {
           .select('carrier_name')
           .eq('id', binder.carrier_id)
           .single();
-        carrierName = (data as { carrier_name: string } | null)?.carrier_name ?? null;
+        carrierName =
+          (data as { carrier_name: string } | null)?.carrier_name ?? null;
       }
       return { binder, carrierName };
     },
@@ -244,14 +246,25 @@ function BinderDetail() {
               }}
             >
               <HeaderField label='Carrier' value={carrierName ?? '—'} />
-              <HeaderField label='Binder number' value={binder.binder_number ?? '—'} />
-              <HeaderField label='Year of account' value={binder.yoa ? String(binder.yoa) : '—'} />
+              <HeaderField
+                label='Binder number'
+                value={binder.binder_number ?? '—'}
+              />
+              <HeaderField
+                label='Year of account'
+                value={binder.yoa ? String(binder.yoa) : '—'}
+              />
               <HeaderField label='Effective' value={binder.eff_date ?? '—'} />
               <HeaderField label='Expiry' value={binder.exp_date ?? '—'} />
-              <HeaderField label='Gross commission' value={pct(binder.gross_com_pct)} />
+              <HeaderField
+                label='Gross commission'
+                value={pct(binder.gross_com_pct)}
+              />
             </Box>
             {binder.notes && (
-              <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}>
+              <Typography
+                sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}
+              >
                 {binder.notes}
               </Typography>
             )}
@@ -303,7 +316,11 @@ function BinderDetail() {
                 const summed = Number(parts[0]?.section_total_pct) || 0;
                 const balanced = Math.abs(summed - stated) < PCT_TOL;
                 return (
-                  <Paper key={s.id} variant='outlined' sx={{ borderRadius: 2, p: 2.5 }}>
+                  <Paper
+                    key={s.id}
+                    variant='outlined'
+                    sx={{ borderRadius: 2, p: 2.5 }}
+                  >
                     <Box
                       sx={{
                         display: 'flex',
@@ -314,11 +331,18 @@ function BinderDetail() {
                       }}
                     >
                       <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
                           <Typography
-                            sx={{ fontSize: 15, fontWeight: 700, fontFamily: 'monospace' }}
+                            sx={{
+                              fontSize: 15,
+                              fontWeight: 700,
+                              fontFamily: 'monospace',
+                            }}
                           >
-                            {s.sect_ref ?? `Section ${s.section_number ?? s.id}`}
+                            {s.sect_ref ??
+                              `Section ${s.section_number ?? s.id}`}
                           </Typography>
                           {s.status && (
                             <StatusChip
@@ -327,7 +351,9 @@ function BinderDetail() {
                             />
                           )}
                         </Box>
-                        <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
+                        <Typography
+                          sx={{ fontSize: 13.5, color: 'text.secondary' }}
+                        >
                           {s.section_display_name ?? '—'}
                           {s.lob_codes ? ` · ${s.lob_codes}` : ''}
                         </Typography>
@@ -368,10 +394,26 @@ function BinderDetail() {
                       </Box>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 3, mb: 1.5, flexWrap: 'wrap' }}>
-                      <HeaderField label='Limit' value={money(s.section_limit)} />
-                      <HeaderField label='Attachment' value={money(s.section_attachment)} />
-                      <HeaderField label='Stated participation' value={pct(stated, 5)} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 3,
+                        mb: 1.5,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <HeaderField
+                        label='Limit'
+                        value={money(s.section_limit)}
+                      />
+                      <HeaderField
+                        label='Attachment'
+                        value={money(s.section_attachment)}
+                      />
+                      <HeaderField
+                        label='Stated participation'
+                        value={pct(stated, 5)}
+                      />
                     </Box>
 
                     <Table size='small'>
@@ -388,7 +430,9 @@ function BinderDetail() {
                           <TableRow
                             key={p.id}
                             hover={canWritePart}
-                            sx={{ cursor: canWritePart ? 'pointer' : 'default' }}
+                            sx={{
+                              cursor: canWritePart ? 'pointer' : 'default',
+                            }}
                             onClick={
                               canWritePart
                                 ? () =>
@@ -404,14 +448,23 @@ function BinderDetail() {
                             }
                           >
                             <TableCell>{p.participant_name ?? '—'}</TableCell>
-                            <TableCell>{labelize(p.participant_type)}</TableCell>
-                            <TableCell>{p.syndicate_entity_number ?? '—'}</TableCell>
-                            <TableCell align='right'>{pct(p.participation_pct, 5)}</TableCell>
+                            <TableCell>
+                              {labelize(p.participant_type)}
+                            </TableCell>
+                            <TableCell>
+                              {p.syndicate_entity_number ?? '—'}
+                            </TableCell>
+                            <TableCell align='right'>
+                              {pct(p.participation_pct, 5)}
+                            </TableCell>
                           </TableRow>
                         ))}
                         {parts.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={4} sx={{ color: 'text.disabled' }}>
+                            <TableCell
+                              colSpan={4}
+                              sx={{ color: 'text.disabled' }}
+                            >
                               No participants on this section.
                             </TableCell>
                           </TableRow>
@@ -432,8 +485,8 @@ function BinderDetail() {
                     >
                       {parts.length > 0 && (
                         <span>
-                          {balanced ? '✓' : '✗'} Participants total {pct(summed, 5)} of{' '}
-                          {pct(stated, 5)} stated
+                          {balanced ? '✓' : '✗'} Participants total{' '}
+                          {pct(summed, 5)} of {pct(stated, 5)} stated
                         </span>
                       )}
                     </Box>

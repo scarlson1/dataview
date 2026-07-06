@@ -1,7 +1,3 @@
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { useAuth } from '#/context/AuthContext';
-import { getEntityForm } from '#/data/entityForms';
-import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -11,6 +7,10 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { Download, Plus, RefreshCw, Rows3, Workflow } from 'lucide-react';
 import { Suspense, useState } from 'react';
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { MONO_FONT } from '#/theme/tokens';
 import type { TableDef } from '../../data/tables';
 import { TableIcon } from '../TableIcon';
 import { DataTab } from './DataTab';

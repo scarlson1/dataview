@@ -1,14 +1,4 @@
 import {
-  MONTHS,
-  type NewBudgetTargetValues,
-  newBudgetTargetFormOpts,
-} from '#/constants/newBudgetTargetForm';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
-import {
   Alert,
   Button,
   Collapse,
@@ -18,6 +8,16 @@ import {
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  MONTHS,
+  type NewBudgetTargetValues,
+  newBudgetTargetFormOpts,
+} from '#/constants/newBudgetTargetForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type BudgetRow = Tables<'budget_targets'>;
 type BudgetInsert = TablesInsert<'budget_targets'>;
@@ -101,7 +101,9 @@ export const NewBudgetTargetForm = ({
               {(field) => (
                 <field.TextField
                   label='Year'
-                  slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 4 } }}
+                  slotProps={{
+                    htmlInput: { inputMode: 'numeric', maxLength: 4 },
+                  }}
                 />
               )}
             </form.AppField>
@@ -135,13 +137,17 @@ export const NewBudgetTargetForm = ({
           </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='Notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField label='Notes' multiline minRows={2} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -150,7 +156,9 @@ export const NewBudgetTargetForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save target' : 'Create target'} />
+          <form.SubmitButton
+            label={editing ? 'Save target' : 'Create target'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

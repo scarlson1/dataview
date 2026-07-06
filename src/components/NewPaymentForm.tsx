@@ -1,15 +1,4 @@
 import {
-  type NewPaymentValues,
-  newPaymentFormOpts,
-  paymentMethod,
-  paymentStatus,
-} from '#/constants/newPaymentForm';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
-import {
   Alert,
   Button,
   Collapse,
@@ -22,6 +11,17 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
+import {
+  type NewPaymentValues,
+  newPaymentFormOpts,
+  paymentMethod,
+  paymentStatus,
+} from '#/constants/newPaymentForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type PaymentRow = Tables<'payments'>;
 type PaymentInsert = TablesInsert<'payments'>;
@@ -32,7 +32,10 @@ const methodOptions = paymentMethod.options.map((v) => ({
   value: v,
   label: v.replace(/_/g, ' '),
 }));
-const statusOptions = paymentStatus.options.map((v) => ({ value: v, label: v }));
+const statusOptions = paymentStatus.options.map((v) => ({
+  value: v,
+  label: v,
+}));
 
 const toFormValues = (
   row: Record<string, unknown> | null | undefined,
@@ -212,7 +215,9 @@ export const NewPaymentForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
@@ -223,7 +228,9 @@ export const NewPaymentForm = ({
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -232,7 +239,9 @@ export const NewPaymentForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save payment' : 'Create payment'} />
+          <form.SubmitButton
+            label={editing ? 'Save payment' : 'Create payment'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

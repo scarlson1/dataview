@@ -1,15 +1,4 @@
 import {
-  DEDUCTIBLE_TYPES,
-  type NewAirExposureValues,
-  airExposureStatus,
-  newAirExposureFormOpts,
-} from '#/constants/newAirExposureForm';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
-import {
   Alert,
   Button,
   Collapse,
@@ -21,16 +10,38 @@ import {
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  airExposureStatus,
+  DEDUCTIBLE_TYPES,
+  type NewAirExposureValues,
+  newAirExposureFormOpts,
+} from '#/constants/newAirExposureForm';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type AirRow = Tables<'air_exposure'>;
 type AirInsert = TablesInsert<'air_exposure'>;
 
 const str = (v: unknown): string => (v == null ? '' : String(v));
-const statusOptions = airExposureStatus.options.map((v) => ({ value: v, label: v }));
+const statusOptions = airExposureStatus.options.map((v) => ({
+  value: v,
+  label: v,
+}));
 const deductibleOptions = DEDUCTIBLE_TYPES.map((v) => ({ value: v, label: v }));
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+  <Typography
+    sx={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: 'text.secondary',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    }}
+  >
     {children}
   </Typography>
 );
@@ -100,14 +111,20 @@ export const NewAirExposureForm = ({
     mutationFn: async (values: AirInsert) => {
       const q =
         recordId != null
-          ? supabase.from('air_exposure').update(values).eq('id', recordId).select()
+          ? supabase
+              .from('air_exposure')
+              .update(values)
+              .eq('id', recordId)
+              .select()
           : supabase.from('air_exposure').insert(values).select();
       const { data, error } = await q;
       if (error) throw new Error(error.message);
       return data[0] as AirRow;
     },
     onSuccess: (row) => {
-      toast.success(editing ? 'Exposure updated' : 'Exposure created', { id: 'air' });
+      toast.success(editing ? 'Exposure updated' : 'Exposure created', {
+        id: 'air',
+      });
       onSaved?.(row);
     },
     onError: (err) => toast.error(err.message, { id: 'air' }),
@@ -115,7 +132,10 @@ export const NewAirExposureForm = ({
 
   const form = useAppForm({
     ...newAirExposureFormOpts,
-    defaultValues: toFormValues(initialRow, defaultValues as Partial<NewAirExposureValues>),
+    defaultValues: toFormValues(
+      initialRow,
+      defaultValues as Partial<NewAirExposureValues>,
+    ),
     onSubmit: async ({ value }) => {
       const row: AirInsert = {
         policy_id: value.policyId ?? null,
@@ -150,9 +170,11 @@ export const NewAirExposureForm = ({
         unit_floor_level: emptyToNull(value.unitFloorLevel),
         unit_gross_area: toNumber(value.unitGrossArea),
         unit_occupancy_desc: emptyToNull(value.unitOccupancyDesc),
-        building_replacement_value: toNumber(value.buildingReplacementValue) ?? 0,
+        building_replacement_value:
+          toNumber(value.buildingReplacementValue) ?? 0,
         contents_value: toNumber(value.contentsValue) ?? 0,
-        business_interruption_value: toNumber(value.businessInterruptionValue) ?? 0,
+        business_interruption_value:
+          toNumber(value.businessInterruptionValue) ?? 0,
         deductible_amount: toNumber(value.deductibleAmount),
         deductible_type: emptyToNull(value.deductibleType),
         policy_limit: toNumber(value.policyLimit),
@@ -163,13 +185,25 @@ export const NewAirExposureForm = ({
     },
   });
 
-  const money = (name: 'buildingReplacementValue' | 'contentsValue' | 'businessInterruptionValue' | 'deductibleAmount' | 'policyLimit', label: string) => (
+  const money = (
+    name:
+      | 'buildingReplacementValue'
+      | 'contentsValue'
+      | 'businessInterruptionValue'
+      | 'deductibleAmount'
+      | 'policyLimit',
+    label: string,
+  ) => (
     <form.AppField name={name}>
       {(field) => (
         <field.TextField
           label={label}
           slotProps={{
-            input: { startAdornment: <InputAdornment position='start'>$</InputAdornment> },
+            input: {
+              startAdornment: (
+                <InputAdornment position='start'>$</InputAdornment>
+              ),
+            },
             htmlInput: { inputMode: 'decimal' },
           }}
         />
@@ -215,12 +249,16 @@ export const NewAirExposureForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='certificateRef'>
-              {(field) => <field.TextField label='Certificate / policy number' />}
+              {(field) => (
+                <field.TextField label='Certificate / policy number' />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
@@ -244,37 +282,68 @@ export const NewAirExposureForm = ({
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 5 }}>
-            <form.AppField name='city'>{(field) => <field.TextField label='City' />}</form.AppField>
+            <form.AppField name='city'>
+              {(field) => <field.TextField label='City' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 4, sm: 2 }}>
             <form.AppField name='state'>
-              {(field) => <field.TextField label='State' slotProps={{ htmlInput: { maxLength: 2 } }} />}
+              {(field) => (
+                <field.TextField
+                  label='State'
+                  slotProps={{ htmlInput: { maxLength: 2 } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 8, sm: 2 }}>
-            <form.AppField name='zipCode'>{(field) => <field.TextField label='ZIP' />}</form.AppField>
+            <form.AppField name='zipCode'>
+              {(field) => <field.TextField label='ZIP' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <form.AppField name='county'>{(field) => <field.TextField label='County' />}</form.AppField>
+            <form.AppField name='county'>
+              {(field) => <field.TextField label='County' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='latitude'>
-              {(field) => <field.TextField label='Latitude' slotProps={{ htmlInput: { inputMode: 'decimal' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Latitude'
+                  slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='longitude'>
-              {(field) => <field.TextField label='Longitude' slotProps={{ htmlInput: { inputMode: 'decimal' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Longitude'
+                  slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='geocodeQuality'>
-              {(field) => <field.TextField label='Geocode quality (1–5)' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Geocode quality (1–5)'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='numberOfBuildings'>
-              {(field) => <field.TextField label='# buildings' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='# buildings'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
@@ -293,89 +362,161 @@ export const NewAirExposureForm = ({
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
-            <form.AppField name='buildingId'>{(field) => <field.TextField label='Building ID' />}</form.AppField>
+            <form.AppField name='buildingId'>
+              {(field) => <field.TextField label='Building ID' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='yearBuilt'>
-              {(field) => <field.TextField label='Year built' slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 4 } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Year built'
+                  slotProps={{
+                    htmlInput: { inputMode: 'numeric', maxLength: 4 },
+                  }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='numStoreys'>
-              {(field) => <field.TextField label='Storeys' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Storeys'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
             <form.AppField name='grossFloorArea'>
-              {(field) => <field.TextField label='Gross floor area (sq ft)' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Gross floor area (sq ft)'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='primaryConstructionClass'>
-              {(field) => <field.TextField label='Primary construction class' />}
+              {(field) => (
+                <field.TextField label='Primary construction class' />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
-            <form.AppField name='roofType'>{(field) => <field.TextField label='Roof type / covering' />}</form.AppField>
+            <form.AppField name='roofType'>
+              {(field) => <field.TextField label='Roof type / covering' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
-            <form.AppField name='roofShape'>{(field) => <field.TextField label='Roof shape' />}</form.AppField>
+            <form.AppField name='roofShape'>
+              {(field) => <field.TextField label='Roof shape' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <form.AppField name='foundationType'>{(field) => <field.TextField label='Foundation type' />}</form.AppField>
+            <form.AppField name='foundationType'>
+              {(field) => <field.TextField label='Foundation type' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
-            <form.AppField name='seismicDesignLevel'>{(field) => <field.TextField label='Seismic design level' />}</form.AppField>
+            <form.AppField name='seismicDesignLevel'>
+              {(field) => <field.TextField label='Seismic design level' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
-            <form.AppField name='windSpeedDesign'>{(field) => <field.TextField label='Wind speed design (mph)' />}</form.AppField>
+            <form.AppField name='windSpeedDesign'>
+              {(field) => <field.TextField label='Wind speed design (mph)' />}
+            </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 4 }}>
             <form.AppField name='fireProtectionClass'>
-              {(field) => <field.TextField label='Fire protection class (1–10)' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+              {(field) => (
+                <field.TextField
+                  label='Fire protection class (1–10)'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={12}>
-            <form.AppField name='sprinkler'>{(field) => <field.Checkbox label='Sprinklered' />}</form.AppField>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <form.AppField name='unitRef'>{(field) => <field.TextField label='Unit / suite ref' />}</form.AppField>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <form.AppField name='unitFloorLevel'>{(field) => <field.TextField label='Unit floor level' />}</form.AppField>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <form.AppField name='unitGrossArea'>
-              {(field) => <field.TextField label='Unit area (sq ft)' slotProps={{ htmlInput: { inputMode: 'numeric' } }} />}
+            <form.AppField name='sprinkler'>
+              {(field) => <field.Checkbox label='Sprinklered' />}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>
-            <form.AppField name='unitOccupancyDesc'>{(field) => <field.TextField label='Unit occupancy' />}</form.AppField>
+            <form.AppField name='unitRef'>
+              {(field) => <field.TextField label='Unit / suite ref' />}
+            </form.AppField>
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <form.AppField name='unitFloorLevel'>
+              {(field) => <field.TextField label='Unit floor level' />}
+            </form.AppField>
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <form.AppField name='unitGrossArea'>
+              {(field) => (
+                <field.TextField
+                  label='Unit area (sq ft)'
+                  slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+                />
+              )}
+            </form.AppField>
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <form.AppField name='unitOccupancyDesc'>
+              {(field) => <field.TextField label='Unit occupancy' />}
+            </form.AppField>
           </Grid>
         </Grid>
 
         <Divider />
         <SectionLabel>Insured values (TIV)</SectionLabel>
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 4 }}>{money('buildingReplacementValue', 'Building replacement value')}</Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>{money('contentsValue', 'Contents value')}</Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>{money('businessInterruptionValue', 'Business interruption value')}</Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>{money('deductibleAmount', 'Deductible amount')}</Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            {money('buildingReplacementValue', 'Building replacement value')}
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            {money('contentsValue', 'Contents value')}
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            {money('businessInterruptionValue', 'Business interruption value')}
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            {money('deductibleAmount', 'Deductible amount')}
+          </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
             <form.AppField name='deductibleType'>
-              {(field) => <field.Select label='Deductible type' options={deductibleOptions} />}
+              {(field) => (
+                <field.Select
+                  label='Deductible type'
+                  options={deductibleOptions}
+                />
+              )}
             </form.AppField>
           </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>{money('policyLimit', 'Policy limit applicable')}</Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            {money('policyLimit', 'Policy limit applicable')}
+          </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='AIR modeling notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField
+                  label='AIR modeling notes'
+                  multiline
+                  minRows={2}
+                />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -384,7 +525,9 @@ export const NewAirExposureForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save exposure' : 'Create exposure'} />
+          <form.SubmitButton
+            label={editing ? 'Save exposure' : 'Create exposure'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

@@ -7,13 +7,7 @@
  * table with add/edit that reuses the registered entity forms in a drawer,
  * seeded with the parent exposure key.
  */
-import { useAuth } from '#/context/AuthContext';
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { StatusChip } from '#/components/StatusChip';
-import { getEntityForm } from '#/data/entityForms';
-import { labelize, money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -28,6 +22,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import { Suspense, useState } from 'react';
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { labelize, money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/air_exposure/$id')({
   component: AirExposureDetail,
@@ -124,8 +125,13 @@ function AirExposureDetail() {
           .select('pol_ref, policy_number')
           .eq('id', exposure.policy_id)
           .single();
-        const p = data as { pol_ref: string; policy_number: string | null } | null;
-        policyRef = p ? [p.pol_ref, p.policy_number].filter(Boolean).join(' · ') : null;
+        const p = data as {
+          pol_ref: string;
+          policy_number: string | null;
+        } | null;
+        policyRef = p
+          ? [p.pol_ref, p.policy_number].filter(Boolean).join(' · ')
+          : null;
       }
       let clientName: string | null = null;
       if (exposure.client_id != null) {
@@ -134,9 +140,11 @@ function AirExposureDetail() {
           .select('company_name, first_name, last_name')
           .eq('id', exposure.client_id)
           .single();
-        const c = data as
-          | { company_name: string | null; first_name: string | null; last_name: string | null }
-          | null;
+        const c = data as {
+          company_name: string | null;
+          first_name: string | null;
+          last_name: string | null;
+        } | null;
         clientName = c
           ? c.company_name ||
             [c.first_name, c.last_name].filter(Boolean).join(' ') ||
@@ -200,7 +208,8 @@ function AirExposureDetail() {
         </Box>
       ) : exposureQuery.isError ? (
         <Typography color='error'>
-          {(exposureQuery.error as Error)?.message ?? 'Failed to load exposure.'}
+          {(exposureQuery.error as Error)?.message ??
+            'Failed to load exposure.'}
         </Typography>
       ) : exposure ? (
         <>
@@ -263,8 +272,14 @@ function AirExposureDetail() {
                     .join(', ') || '—'
                 }
               />
-              <HeaderField label='Policy' value={exposureQuery.data?.policyRef ?? '—'} />
-              <HeaderField label='Client' value={exposureQuery.data?.clientName ?? '—'} />
+              <HeaderField
+                label='Policy'
+                value={exposureQuery.data?.policyRef ?? '—'}
+              />
+              <HeaderField
+                label='Client'
+                value={exposureQuery.data?.clientName ?? '—'}
+              />
               <HeaderField
                 label='Building'
                 value={exposure.building_id ?? '—'}
@@ -275,7 +290,9 @@ function AirExposureDetail() {
               />
             </Box>
             {exposure.notes && (
-              <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}>
+              <Typography
+                sx={{ fontSize: 13.5, color: 'text.secondary', mt: 2 }}
+              >
                 {exposure.notes}
               </Typography>
             )}
@@ -297,7 +314,10 @@ function AirExposureDetail() {
                 label='Building'
                 value={money(exposure.building_replacement_value)}
               />
-              <HeaderField label='Contents' value={money(exposure.contents_value)} />
+              <HeaderField
+                label='Contents'
+                value={money(exposure.contents_value)}
+              />
               <HeaderField
                 label='Business interruption'
                 value={money(exposure.business_interruption_value)}
@@ -318,7 +338,9 @@ function AirExposureDetail() {
                 alignItems: 'baseline',
               })}
             >
-              <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 600 }}>
+              <Typography
+                sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 600 }}
+              >
                 Total exposure TIV (property + equipment)
               </Typography>
               <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
@@ -394,12 +416,20 @@ function AirExposureDetail() {
                     </TableCell>
                     <TableCell>{e.equipment_category ?? '—'}</TableCell>
                     <TableCell>
-                      {[e.gpu_count ? `${e.gpu_count}×` : '', e.gpu_manufacturer, e.gpu_model]
+                      {[
+                        e.gpu_count ? `${e.gpu_count}×` : '',
+                        e.gpu_manufacturer,
+                        e.gpu_model,
+                      ]
                         .filter(Boolean)
                         .join(' ') || '—'}
                     </TableCell>
-                    <TableCell align='right'>{money(e.total_gpu_value)}</TableCell>
-                    <TableCell align='right'>{money(e.total_server_value)}</TableCell>
+                    <TableCell align='right'>
+                      {money(e.total_gpu_value)}
+                    </TableCell>
+                    <TableCell align='right'>
+                      {money(e.total_server_value)}
+                    </TableCell>
                     <TableCell align='right'>
                       {money(e.supporting_infra_value)}
                     </TableCell>
@@ -422,7 +452,11 @@ function AirExposureDetail() {
       ) : null}
 
       {drawer && DrawerForm && (
-        <EntityDrawer open title={drawerTitle ?? ''} onClose={() => setDrawer(null)}>
+        <EntityDrawer
+          open
+          title={drawerTitle ?? ''}
+          onClose={() => setDrawer(null)}
+        >
           <Suspense
             fallback={
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>

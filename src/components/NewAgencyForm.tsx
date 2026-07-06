@@ -1,18 +1,18 @@
+import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import type { ComponentType } from 'react';
 import { AddressFieldGroup } from '#/components/AddressFieldGroup';
 import {
   agentLevel,
   billingEntity,
   licenseeType,
-  newAgencyFormOpts,
   type NewAgencyValues,
+  newAgencyFormOpts,
 } from '#/constants/newAgentForm';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
-import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import type { ComponentType } from 'react';
 
 type AgencyRowInsert = TablesInsert<'agencies'>;
 type AgencyRow = Tables<'agencies'>;

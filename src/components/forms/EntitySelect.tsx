@@ -32,8 +32,7 @@
  * internally and selects it in the input. So the create dialog only has to
  * insert the row and hand it back — it never touches the form directly.
  */
-import { useFieldContext } from '#/hooks/formContext';
-import { supabase } from '#/supabaseClient';
+
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -47,6 +46,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useSelector } from '@tanstack/react-store';
 import { Plus } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
+import { useFieldContext } from '#/hooks/formContext';
+import { supabase } from '#/supabaseClient';
 
 export interface EntityRow {
   id: number;
@@ -93,7 +94,11 @@ type LooseQuery = ReturnType<ReturnType<typeof supabase.from>['select']>;
 
 const dedupeById = (rows: EntityRow[]): EntityRow[] => {
   const seen = new Set<number>();
-  return rows.filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
+  return rows.filter((r) => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
 };
 
 // PostgREST `or()` treats commas/parens as syntax — strip them from user input.

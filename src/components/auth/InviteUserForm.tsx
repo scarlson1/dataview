@@ -1,4 +1,3 @@
-import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -6,6 +5,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
+import { supabase } from '#/supabaseClient';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

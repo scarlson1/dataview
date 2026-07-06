@@ -108,8 +108,6 @@ export const NewClientForm = ({
     },
   });
 
-  // const clientType = form.useStore((state) => state.values.clientType);
-
   return (
     <form.AppForm>
       <Stack direction='column' spacing={2}>
@@ -172,32 +170,6 @@ export const NewClientForm = ({
               )
             }
           />
-
-          {/* <Grid size={12}>
-            <form.AppField
-              name='companyName'
-              children={(field) => (
-                <field.TextField label='Company name' size='small' />
-              )}
-            />
-          </Grid> */}
-
-          {/* <Grid size={8}>
-            <form.AppField
-              name='firstName'
-              children={(field) => (
-                <field.TextField label='First name' size='small' />
-              )}
-            />
-          </Grid>
-          <Grid size={4}>
-            <form.AppField
-              name='lastName'
-              children={(field) => (
-                <field.TextField label='Last name' size='small' />
-              )}
-            />
-          </Grid> */}
 
           <Grid size={8}>
             <form.AppField

@@ -1,15 +1,15 @@
-import { roleFromSession } from '#/lib/authRole';
-import { supabase } from '#/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from 'react';
+import { roleFromSession } from '#/lib/authRole';
+import { supabase } from '#/supabaseClient';
 
 export type PermAction = 'read' | 'write';
 
@@ -125,8 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const can = useCallback(
-    (resource: string, action: PermAction) =>
-      permissions[action].has(resource),
+    (resource: string, action: PermAction) => permissions[action].has(resource),
     [permissions],
   );
 

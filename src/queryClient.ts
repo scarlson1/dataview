@@ -1,9 +1,9 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
-//   defaultOptions: {
-//     queries: {
-//        staleTime: Infinity,
-//     },
-//   },
-})
+  //   defaultOptions: {
+  //     queries: {
+  //        staleTime: Infinity,
+  //     },
+  //   },
+});

@@ -3,8 +3,7 @@
  * (inserts an accounts_receivable_payments child + refreshes AR status).
  * Replaces the old window.prompt on the workflow board.
  */
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
+
 import {
   Button,
   Dialog,
@@ -19,11 +18,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { X } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 export interface ArTarget {
   id: number;

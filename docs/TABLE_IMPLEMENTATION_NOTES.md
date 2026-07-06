@@ -386,3 +386,18 @@ Every top-level entity now has a stored generated `*_ref` column
 read **+ write** (`select, insert, update, delete` + `for all` policy) for
 `authenticated` across base tables (incl. `lob_defaults`), since the app now writes.
 Single-tenant internal tool; per-underwriter/agency scoping is a future refinement.
+
+### Schema tab shows view columns enriched with base-table key/def/references
+
+When a base table points `source` at a companion `_computed`/`_with_status` view
+(see `tableMeta.ts`), the dashboard queries and displays the **view's** columns.
+Postgres views carry no primary/foreign keys, unique constraints, or column
+defaults, so the Schema tab's **Key** and **Default** columns rendered `—` for
+all 10 view-backed tables (policies, clients, agencies, renewals,
+accounts_receivable, license, capacity, binder_part, subscription_participant,
+air_exposure). `buildTable()` in `src/data/tables.ts` now merges `key`, `def`,
+and `references` from the matching **base** column (by `field`) into each view
+column, preserving the view's column order. View-only computed columns have no
+base match and pass through untouched; when `source === base.name` the merge is
+a no-op identity. `schema.generated.ts` stays untouched — the enrichment happens
+only in the registry the UI reads.

@@ -6,8 +6,7 @@
  *   Policy        -> Generate Invoice (rpc generate_invoice)   => INV -> AR -> CAP
  *   Receivable    -> Record Payment  (rpc record_ar_payment)   => balances update
  */
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -17,6 +16,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
 import { NewBusinessDrawer } from '../components/NewBusinessDrawer';
 import {
   type ArTarget,

@@ -1,3 +1,6 @@
+import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   type NewUnderwriterValues,
   newUnderwriterFormOpts,
@@ -8,9 +11,6 @@ import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
-import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 type UwRow = Tables<'underwriters'>;
 type UwInsert = TablesInsert<'underwriters'>;
@@ -112,7 +112,9 @@ export const NewUnderwriterForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='status'>
-              {(field) => <field.Select label='Status' options={statusOptions} />}
+              {(field) => (
+                <field.Select label='Status' options={statusOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -128,7 +130,9 @@ export const NewUnderwriterForm = ({
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>

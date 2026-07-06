@@ -1,3 +1,16 @@
+import {
+  Alert,
+  Button,
+  Collapse,
+  Grid,
+  InputAdornment,
+  Skeleton,
+  Stack,
+} from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import { Suspense } from 'react';
+import { toast } from 'sonner';
 import { NewCarrierForm } from '#/components/NewCarrierForm';
 import {
   type NewBinderValues,
@@ -14,19 +27,6 @@ import {
   toNumber,
 } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
-import {
-  Alert,
-  Button,
-  Collapse,
-  Grid,
-  InputAdornment,
-  Skeleton,
-  Stack,
-} from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import { Suspense } from 'react';
-import { toast } from 'sonner';
 
 type BinderRow = Tables<'binder'>;
 type BinderInsert = TablesInsert<'binder'>;
@@ -134,7 +134,9 @@ export const NewBinderForm = ({
               {(field) => (
                 <field.TextField
                   label='YOA'
-                  slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 4 } }}
+                  slotProps={{
+                    htmlInput: { inputMode: 'numeric', maxLength: 4 },
+                  }}
                 />
               )}
             </form.AppField>
@@ -183,13 +185,17 @@ export const NewBinderForm = ({
           </Grid>
           <Grid size={12}>
             <form.AppField name='notes'>
-              {(field) => <field.TextField label='Notes' multiline minRows={2} />}
+              {(field) => (
+                <field.TextField label='Notes' multiline minRows={2} />
+              )}
             </form.AppField>
           </Grid>
         </Grid>
 
         <Collapse in={isError}>
-          <Alert severity='error'>{error?.message ?? 'An error occurred'}</Alert>
+          <Alert severity='error'>
+            {error?.message ?? 'An error occurred'}
+          </Alert>
         </Collapse>
 
         <Stack direction='row' spacing={2}>
@@ -198,7 +204,9 @@ export const NewBinderForm = ({
               Cancel
             </Button>
           )}
-          <form.SubmitButton label={editing ? 'Save binder' : 'Create binder'} />
+          <form.SubmitButton
+            label={editing ? 'Save binder' : 'Create binder'}
+          />
         </Stack>
       </Stack>
     </form.AppForm>

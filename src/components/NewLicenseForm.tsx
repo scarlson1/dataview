@@ -1,15 +1,3 @@
-import { NewAgencyForm } from '#/components/NewAgencyForm';
-import {
-  licenseType,
-  newLicenseFormOpts,
-  type NewLicenseValues,
-} from '#/constants/newLicenseForm';
-import { stateOptions } from '#/constants/usStates';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import type { EntityFormProps } from '#/data/entityForms';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toDateStr } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
 import {
   Alert,
   Box,
@@ -23,6 +11,18 @@ import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Suspense } from 'react';
 import { toast } from 'sonner';
+import { NewAgencyForm } from '#/components/NewAgencyForm';
+import {
+  licenseType,
+  type NewLicenseValues,
+  newLicenseFormOpts,
+} from '#/constants/newLicenseForm';
+import { stateOptions } from '#/constants/usStates';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 
 type LicenseRow = Tables<'license'>;
 type LicenseInsert = TablesInsert<'license'>;
