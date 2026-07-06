@@ -19,9 +19,10 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Pencil, Plus } from 'lucide-react';
+import { ArrowLeft, Pencil, Plus, Printer } from 'lucide-react';
 import { Suspense, useState } from 'react';
 import { EntityDrawer } from '#/components/EntityDrawer';
+import { StampPrintDialog } from '#/components/StampPrintDialog';
 import { StatusChip } from '#/components/StatusChip';
 import { useAuth } from '#/context/AuthContext';
 import { getEntityForm } from '#/data/entityForms';
@@ -103,6 +104,7 @@ function BinderDetail() {
   const canWriteSection = can('binder_section', 'write');
   const canWritePart = can('binder_part', 'write');
   const [drawer, setDrawer] = useState<DrawerState | null>(null);
+  const [stampSection, setStampSection] = useState<SectionRow | null>(null);
 
   const binderQuery = useQuery({
     queryKey: ['binder-detail', binderId],
@@ -359,6 +361,13 @@ function BinderDetail() {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size='small'
+                          startIcon={<Printer size={14} />}
+                          onClick={() => setStampSection(s)}
+                        >
+                          Stamp
+                        </Button>
                         {canWriteSection && (
                           <Button
                             size='small'
@@ -497,6 +506,25 @@ function BinderDetail() {
           )}
         </>
       ) : null}
+
+      {stampSection && (
+        <StampPrintDialog
+          open
+          onClose={() => setStampSection(null)}
+          label={
+            [stampSection.sect_ref, stampSection.section_display_name]
+              .filter(Boolean)
+              .join(' · ') || `Section #${stampSection.id}`
+          }
+          statedPct={Number(stampSection.participation_pct) || 0}
+          parts={partsBySection.get(stampSection.id) ?? []}
+          totalPct={
+            Number(
+              (partsBySection.get(stampSection.id) ?? [])[0]?.section_total_pct,
+            ) || 0
+          }
+        />
+      )}
 
       {drawer && DrawerForm && (
         <EntityDrawer

@@ -20,10 +20,31 @@ body {
   /*stroke-width: 2px; */
 }
 
-/* Print: hide anything opted out via .no-print (e.g. the stamp generator's
-   header + section picker) so only the printable content reaches the page. */
+/* Print: hide anything opted out via .no-print (e.g. the stamp dialog's
+   title bar) so only the printable content reaches the page. */
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  /* Stamp print: when a StampPrintDialog stages a print, hide the whole app
+     shell and let the dialog (portaled to <body>, a sibling of #app) print
+     alone, expanded to the page instead of a scrollable modal. */
+  body.printing-stamp #app {
+    display: none !important;
+  }
+  body.printing-stamp .MuiBackdrop-root {
+    display: none !important;
+  }
+  body.printing-stamp .MuiDialog-container {
+    display: block !important;
+    height: auto !important;
+  }
+  body.printing-stamp .stamp-print-paper {
+    box-shadow: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
   }
 }

@@ -161,12 +161,19 @@ begin
   insert into public.surplus_lines_state_rules
     (state, state_full_name, entity_license_accepted, individual_license_required,
      stamping_office, source, last_verified)
+  -- Flags mirror the SingleSource "SL State Rules" tab (Troutman manual):
+  -- entity_license_accepted / individual_license_required. Most NAIC-model states
+  -- accept an entity license (individual NOT required); NC & ND are the classic
+  -- individual-required exceptions. These flags feed advisory helpers only — they
+  -- do NOT gate SL Licensee resolution (see policies_computed).
   values
-    ('CA', 'California', true,  true, 'The Surplus Line Association of California', 'SL Laws Manual', date '2026-01-15'),
-    ('TX', 'Texas',      true,  true, 'Surplus Lines Stamping Office of Texas',    'SL Laws Manual', date '2026-01-15'),
-    ('NY', 'New York',   true,  true, 'Excess Line Association of New York',       'SL Laws Manual', date '2026-01-15'),
-    ('FL', 'Florida',    true,  true, 'Florida Surplus Lines Service Office',      'SL Laws Manual', date '2026-01-15'),
-    ('IL', 'Illinois',   false, true, 'Surplus Line Association of Illinois',      'SL Laws Manual', date '2026-01-15');
+    ('CA', 'California',     true,  false, 'The Surplus Line Association of California', 'Troutman 2025', date '2026-01-15'),
+    ('TX', 'Texas',          true,  false, 'Surplus Lines Stamping Office of Texas',    'Troutman 2025', date '2026-01-15'),
+    ('NY', 'New York',       true,  false, 'Excess Line Association of New York',       'Troutman 2025', date '2026-01-15'),
+    ('FL', 'Florida',        true,  false, 'Florida Surplus Lines Service Office',      'Troutman 2025', date '2026-01-15'),
+    ('IL', 'Illinois',       true,  false, 'Surplus Line Association of Illinois',      'Troutman 2025', date '2026-01-15'),
+    ('NC', 'North Carolina', false, true,  'NC Surplus Lines Association',              'Troutman 2025', date '2026-01-15'),
+    ('ND', 'North Dakota',   false, true,  null,                                        'Troutman 2025', date '2026-01-15');
 
   -- ==========================================================================
   -- Agencies (MGA -> wholesale -> retail -> individual sub-producer)
@@ -379,14 +386,19 @@ begin
     (v_sect_prop, 'Lloyd''s Syndicate 1084 (CSL)', 'lloyds_syndicate', '1084', 0.25000, 'active', 'Following syndicate.');
 
   -- ==========================================================================
-  -- Licenses (SL licenses held by the MGA; default SL licensee per state)
+  -- Licenses. The wholesale broker (v_wholesale) is the surplus-lines licensee
+  -- for its downstream retail producers, so the Default SL licenses sit on it.
+  -- SL Licensee resolution matches on the billing group (agencies.billing_id):
+  -- v_retail bills to v_wholesale, so retail-produced SL policies roll up to the
+  -- wholesale's Default SL license (one-hop). The v_retail P&C row (non-"Surplus
+  -- Lines") is intentionally excluded by the license_type filter.
   -- ==========================================================================
   insert into public.license
     (agent_id, license_type, state, license_number, eff_date, exp_date, default_sl_licensee, notes)
   values
-    (v_mga, 'Surplus Lines', 'CA', 'CA-SL-778812', date '2025-01-01', date '2026-12-31', true,  'Resident SL license.'),
-    (v_mga, 'Surplus Lines', 'TX', 'TX-SL-449021', date '2025-01-01', date '2026-12-31', true,  'Non-resident SL license.'),
-    (v_mga, 'Surplus Lines', 'NY', 'NY-EL-330145', date '2025-01-01', date '2026-12-31', true,  'Excess line broker license.'),
+    (v_wholesale, 'Surplus Lines', 'CA', 'CA-SL-778812', date '2025-01-01', date '2026-12-31', true,  'Resident SL license.'),
+    (v_wholesale, 'Surplus Lines', 'TX', 'TX-SL-449021', date '2025-01-01', date '2026-12-31', true,  'Non-resident SL license.'),
+    (v_wholesale, 'Surplus Lines', 'NY', 'NY-EL-330145', date '2025-01-01', date '2026-12-31', true,  'Excess line broker license.'),
     (v_retail, 'Resident P&C', 'TX', 'TX-PC-100233', date '2025-06-01', date '2027-05-31', false, 'Retail producer P&C.');
 
   -- ==========================================================================

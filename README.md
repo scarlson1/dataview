@@ -81,3 +81,10 @@ See the [`docs/`](docs/) directory for details:
 - [RBAC_PLAN.md](docs/RBAC_PLAN.md) — role-based access control (roles, RLS, invites)
 - [ROADMAP.md](docs/ROADMAP.md) — project roadmap
 - [SUPABASE_QUICKSTART.md](docs/SUPABASE_QUICKSTART.md) — Supabase setup
+
+## TODO
+
+- DataGrid actions (bind, etc.)
+- ReactPDF document generation
+- email notifications
+- LLM generated reports

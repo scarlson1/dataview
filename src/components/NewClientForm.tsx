@@ -4,13 +4,14 @@ import {
   newClientFormOpts,
   type NewClientValues,
 } from '#/constants/newClientForm';
+import { GoogleMapsProvider } from '#/context/GoogleMapsContext';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
-import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
+import { Alert, Button, Collapse, Grid, Skeleton, Stack } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
-import type { ComponentType } from 'react';
+import { Suspense, type ComponentType } from 'react';
 
 type ClientRowInsert = TablesInsert<'clients'>;
 type ClientRow = Tables<'clients'>;
@@ -189,14 +190,19 @@ export const NewClientForm = ({
             />
           </Grid>
         </Grid>
-        <AddressFieldGroup
-          form={form}
-          fields='address'
-          spacing={2}
-          rowSpacing={undefined}
-          columnSpacing={undefined}
-          inputSize='small'
-        />
+
+        <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
+          <GoogleMapsProvider>
+            <AddressFieldGroup
+              form={form}
+              fields='address'
+              spacing={2}
+              rowSpacing={undefined}
+              columnSpacing={undefined}
+              inputSize='small'
+            />
+          </GoogleMapsProvider>
+        </Suspense>
 
         <Collapse in={isError}>
           <Alert severity='error'>

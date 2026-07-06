@@ -130,8 +130,8 @@ UW registry referenced by submissions, renewals, and policies (`assigned_to*`). 
 
 #### `license` + `surplus_lines_state_rules`
 State licenses held by an agency, and per-state surplus-lines regulatory rules (`surplus_lines_state_rules`, natural key `state`).
-- Partial unique index `license_one_default_sl_per_agent_state`: only **one** `default_sl_licensee` per `(agent_id, state)`.
-- **`license_computed`** view derives `status` (active/expired vs today), `days_to_expiration`, and joins `entity_license_accepted` from the state rules.
+- Partial unique index `license_one_default_sl_per_agent_state`: only **one** `default_sl_licensee` per `(agent_id, state)`. Note SL resolution matches on the **billing group** (`agencies.billing_id`), not raw `agent_id` — see `policies_computed` (§5); two agents in one billing group could each hold a state default, so resolution takes `LIMIT 1`.
+- **`license_computed`** view derives `status` (active/expired vs today), `days_to_expiration`, and joins `entity_license_accepted` from the state rules. `entity_license_accepted` is **advisory** — it does not gate SL licensee resolution.
 
 #### `lob_defaults`
 Per-line-of-business default renewal probability (seeded: GL 0.85, Property 0.80, WC 0.82, Cyber 0.75, Auto 0.83, Umbrella 0.80). Feeds `renewals_computed`.
@@ -274,13 +274,28 @@ agency_com_amt        = total_term_premium × agency_com_pct
 mga_net_com_amt       = total_term_premium × (gross_com_pct − agency_com_pct)
 carrier_net_amt       = total_term_premium × (1 − gross_com_pct)
 current_policy_exp_date = MAX(txn_exp_date) over the chain (partition by head)
-sl_licensee_name / sl_eligible_licensees = resolved from license by home_state + agent
+sl_licensee_name        = override agency's name, else the Default 'Surplus Lines'
+                          license whose HOLDER shares the policy agent's billing group
+sl_eligible_licensees   = count of ACTIVE 'Surplus Lines' licenses in that billing group
 ```
 
-> **Assumptions flagged in the migration** (confirm before trusting revenue
-> numbers): pro-rata is `/365` (no leap-year handling); the "chain" for
-> `current_policy_exp_date` is `COALESCE(parent_policy_id, id)`; SL licensee
-> resolution is approximated to the license's own `agent_id`.
+**SL Licensee resolution** (`20260706120000_fix_sl_licensee_resolution.sql`) mirrors
+the SingleSource workbook's `POL!AE` / `POL!AF` formulas:
+- If `sl_licensee_override_agent_id` is set → that agency's `display_name`
+  **directly** (no license lookup).
+- Otherwise → the `default_sl_licensee` license of `license_type = 'Surplus Lines'`
+  for the policy `home_state`, whose holder's `agencies.billing_id` equals the
+  **policy agent's** `billing_id`. `billing_id` is the workbook's "Billing AGT-ID"
+  (a one-hop parent roll-up via `billing_entity='parent'`), so a producing agent
+  that bills to a parent resolves to the parent's SL license.
+- The `SL_STATE_RULES` entity-vs-individual flags do **not** gate this resolution
+  in the workbook — they feed only the advisory "Suggested Default" helper — so
+  they are intentionally not applied here.
+
+> **Assumptions still flagged** (confirm before trusting revenue numbers):
+> pro-rata is `/365` (no leap-year handling); the "chain" for
+> `current_policy_exp_date` is `COALESCE(parent_policy_id, id)` (one generation —
+> a renewal-of-a-renewal points at the prior renewal, not the original NB).
 
 ### `capacity_computed` — fiduciary funding
 
