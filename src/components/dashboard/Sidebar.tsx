@@ -1,3 +1,4 @@
+import { useAuth } from '#/context/AuthContext';
 import { Skeleton, useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -11,21 +12,20 @@ import {
   ChevronDown,
   Database,
   FileDown,
-  Layers,
   LogOut,
-  Stamp,
+  Pin,
   TrendingUp,
   Users,
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '#/context/AuthContext';
 import {
   formatTableLabel,
   TABLE_GROUPS,
   TABLES,
   type TableName,
 } from '../../data/tables';
+import { usePinnedTables } from '../../hooks/usePinnedTables';
 import { TableIcon } from '../TableIcon';
 
 const SIDEBAR_OPEN = 260;
@@ -81,12 +81,16 @@ const TableRow = ({
   name,
   active,
   collapsed,
+  pinned,
   onSelect,
+  onTogglePin,
 }: {
   name: TableName;
   active: boolean;
   collapsed: boolean;
+  pinned: boolean;
   onSelect: (name: TableName) => void;
+  onTogglePin: (name: TableName) => void;
 }) => {
   const theme = useTheme();
   const table = TABLES[name];
@@ -116,6 +120,8 @@ const TableRow = ({
               ? theme.vars.palette.primary.light
               : theme.vars.palette.hover,
           },
+          // reveal the pin button on row hover (unless already pinned)
+          '&:hover .pin-toggle': { opacity: 1 },
         })}
       >
         <Box sx={{ display: 'flex', flexShrink: 0 }}>
@@ -130,17 +136,49 @@ const TableRow = ({
           />
         </Box>
         {!collapsed && (
-          <Typography
-            sx={{
-              flex: 1,
-              fontSize: 14,
-              fontWeight: 500,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {label}
-          </Typography>
+          <>
+            <Typography
+              sx={{
+                flex: 1,
+                fontSize: 14,
+                fontWeight: 500,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {label}
+            </Typography>
+            <Tooltip title={pinned ? 'Unpin' : 'Pin'} placement='top'>
+              <IconButton
+                className='pin-toggle'
+                size='small'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTogglePin(name);
+                }}
+                sx={{
+                  flexShrink: 0,
+                  p: '2px',
+                  m: '-2px',
+                  color: pinned ? 'primary.main' : 'text.disabled',
+                  opacity: pinned ? 1 : 0,
+                  transition: 'opacity 0.15s ease',
+                  '&:hover': {
+                    color: pinned ? 'primary.main' : 'text.primary',
+                  },
+                }}
+              >
+                <Pin
+                  size={8}
+                  fill={pinned ? 'currentColor' : 'none'}
+                  style={{
+                    transform: pinned ? 'rotate(45deg)' : 'none',
+                    transition: 'transform 0.15s ease',
+                  }}
+                />
+              </IconButton>
+            </Tooltip>
+          </>
         )}
       </Box>
     </Tooltip>
@@ -157,9 +195,13 @@ export const Sidebar = ({
 }: SidebarProps) => {
   const navigate = useNavigate();
   const { role } = useAuth();
+  const { pinned, isPinned, togglePin } = usePinnedTables();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(TABLE_GROUPS.map((g) => [g.id, false])),
   );
+
+  // Only surface pins for tables that still exist in the registry.
+  const pinnedTables = pinned.filter((name) => TABLES[name]);
 
   const toggleGroup = (id: string) =>
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -240,14 +282,63 @@ export const Sidebar = ({
           // p: '12px 10px',
         }}
       >
+        {/* pinned tables — kept at the top for quick access */}
+        {!collapsed && pinnedTables.length > 0 && (
+          <Box sx={{ mb: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                p: '6px 12px 6px 8px',
+                color: 'text.disabled',
+                userSelect: 'none',
+              }}
+            >
+              <Pin size={13} style={{ flexShrink: 0 }} />
+              <Typography
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.09em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Pinned
+              </Typography>
+            </Box>
+            <Box sx={{ mt: 0.5 }}>
+              {pinnedTables.map((name) => (
+                <TableRow
+                  key={name}
+                  name={name}
+                  active={name === activeTable}
+                  collapsed={false}
+                  pinned
+                  onSelect={(name) => go(() => onSelectTable(name))}
+                  onTogglePin={togglePin}
+                />
+              ))}
+            </Box>
+            <Divider sx={{ mt: 1, mx: 0.5 }} />
+          </Box>
+        )}
         {collapsed
-          ? TABLE_GROUPS.flatMap((group) => group.tables).map((name) => (
+          ? // pinned tables float to the top of the flat rail
+            [
+              ...pinnedTables,
+              ...TABLE_GROUPS.flatMap((group) => group.tables).filter(
+                (name) => !isPinned(name),
+              ),
+            ].map((name) => (
               <TableRow
                 key={name}
                 name={name}
                 active={name === activeTable}
                 collapsed
+                pinned={isPinned(name)}
                 onSelect={(name) => go(() => onSelectTable(name))}
+                onTogglePin={togglePin}
               />
             ))
           : TABLE_GROUPS.map((group) => {
@@ -295,7 +386,9 @@ export const Sidebar = ({
                           name={name}
                           active={name === activeTable}
                           collapsed={false}
+                          pinned={isPinned(name)}
                           onSelect={(name) => go(() => onSelectTable(name))}
+                          onTogglePin={togglePin}
                         />
                       ))}
                     </Box>
@@ -320,22 +413,10 @@ export const Sidebar = ({
           onClick={() => go(() => navigate({ to: '/workflow' }))}
         />
         <FooterItem
-          icon={<Layers size={20} />}
-          label='Subscriptions'
-          collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/subscriptions' }))}
-        />
-        <FooterItem
           icon={<TrendingUp size={20} />}
           label='Budget'
           collapsed={collapsed}
           onClick={() => go(() => navigate({ to: '/budget' }))}
-        />
-        <FooterItem
-          icon={<Stamp size={20} />}
-          label='Stamp'
-          collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/stamp' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}

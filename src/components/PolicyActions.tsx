@@ -5,6 +5,7 @@
  */
 
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -16,9 +17,10 @@ import {
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { FilePlus2, RotateCcw, XCircle } from 'lucide-react';
+import { FilePlus2, Layers, RotateCcw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { SubscriptionBuilder } from '#/components/SubscriptionBuilder';
 import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 
@@ -28,7 +30,7 @@ interface PolicyActionsProps {
   onDone: () => void;
 }
 
-type Mode = 'endorse' | 'cancel' | null;
+type Mode = 'endorse' | 'cancel' | 'subscription' | null;
 
 export const PolicyActions = ({
   policyId,
@@ -109,39 +111,56 @@ export const PolicyActions = ({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Endorse/cancel/reinstate all write policies — hide for non-writers (the
-  // underlying RPCs are RLS-protected regardless).
-  if (!can('policies', 'write')) return null;
+  // Mid-term actions write policies; the subscription builder writes the
+  // subscription relation. Permission each independently (RPCs are RLS-protected
+  // regardless) and render nothing if the user can do neither.
+  const canPolicy = can('policies', 'write');
+  const canSub = can('subscription', 'write');
+  if (!canPolicy && !canSub) return null;
 
   return (
     <>
       <Stack direction='row' spacing={1}>
-        <Button
-          size='small'
-          variant='contained'
-          startIcon={<FilePlus2 size={16} />}
-          onClick={() => setMode('endorse')}
-        >
-          Endorse
-        </Button>
-        <Button
-          size='small'
-          variant='outlined'
-          color='error'
-          startIcon={<XCircle size={16} />}
-          onClick={() => setMode('cancel')}
-        >
-          Cancel
-        </Button>
-        <Button
-          size='small'
-          variant='outlined'
-          startIcon={<RotateCcw size={16} />}
-          disabled={reinstate.isPending}
-          onClick={() => reinstate.mutate()}
-        >
-          Reinstate
-        </Button>
+        {canPolicy && (
+          <>
+            <Button
+              size='small'
+              variant='contained'
+              startIcon={<FilePlus2 size={16} />}
+              onClick={() => setMode('endorse')}
+            >
+              Endorse
+            </Button>
+            <Button
+              size='small'
+              variant='outlined'
+              color='error'
+              startIcon={<XCircle size={16} />}
+              onClick={() => setMode('cancel')}
+            >
+              Cancel
+            </Button>
+            <Button
+              size='small'
+              variant='outlined'
+              startIcon={<RotateCcw size={16} />}
+              disabled={reinstate.isPending}
+              onClick={() => reinstate.mutate()}
+            >
+              Reinstate
+            </Button>
+          </>
+        )}
+        {canSub && (
+          <Button
+            size='small'
+            variant='outlined'
+            startIcon={<Layers size={16} />}
+            onClick={() => setMode('subscription')}
+          >
+            Subscription
+          </Button>
+        )}
       </Stack>
 
       {/* Endorsement */}
@@ -255,6 +274,26 @@ export const PolicyActions = ({
             Book cancellation
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Subscription (co-insurance) builder */}
+      <Dialog
+        open={mode === 'subscription'}
+        onClose={() => setMode(null)}
+        maxWidth='md'
+        fullWidth
+      >
+        <DialogTitle>Build subscription — {polRef}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <SubscriptionBuilder
+              policyId={policyId}
+              polRef={polRef}
+              onCreated={onDone}
+              onClose={() => setMode(null)}
+            />
+          </Box>
+        </DialogContent>
       </Dialog>
     </>
   );

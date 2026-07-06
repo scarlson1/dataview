@@ -1,16 +1,11 @@
-import {
-  Box,
-  CircularProgress,
-  Grid,
-  MenuItem,
-  Paper,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Chip, Grid, Paper, Typography } from '@mui/material';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { useAuth } from '#/context/AuthContext';
 import { roleFromSession } from '#/lib/authRole';
 import { supabase } from '#/supabaseClient';
 
@@ -36,6 +31,15 @@ const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer' },
 ] as const;
 
+type ChipColor = 'primary' | 'info' | 'success' | 'default';
+
+const ROLE_CHIP_COLOR: Record<string, ChipColor> = {
+  admin: 'primary',
+  underwriter: 'info',
+  accounting: 'success',
+  viewer: 'default',
+};
+
 interface TeamMember {
   id: string;
   email: string | null;
@@ -56,6 +60,11 @@ const invokeManageUsers = async <T,>(
 
 function RouteComponent() {
   const queryClient = useQueryClient();
+  const { role: currentRole } = useAuth();
+  // The route is already admin-gated, but keep the edit affordance explicitly
+  // tied to the admin role so the grid stays read-only if it's ever reused or
+  // the guard changes. RLS + the manage-users function remain the real check.
+  const isAdmin = currentRole === 'admin';
 
   const members = useQuery({
     queryKey: ['team-members'],
@@ -72,8 +81,66 @@ function RouteComponent() {
       toast.success('Role updated');
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
     },
-    onError: (e: Error) => toast.error(e.message),
   });
+
+  const columns = useMemo<GridColDef<TeamMember>[]>(
+    () => [
+      {
+        field: 'email',
+        headerName: 'Email',
+        flex: 1,
+        minWidth: 220,
+        valueGetter: (_value, row) => row.email ?? '(no email)',
+      },
+      {
+        field: 'role',
+        headerName: 'Role',
+        width: 180,
+        type: 'singleSelect',
+        // Only admins get inline editing; everyone else sees a read-only cell.
+        editable: isAdmin,
+        valueOptions: ROLE_OPTIONS.map((o) => ({
+          value: o.value,
+          label: o.label,
+        })),
+        valueFormatter: (value) =>
+          ROLE_OPTIONS.find((o) => o.value === value)?.label ?? 'No role',
+        renderCell: (params) => {
+          const value = params.value as string | null;
+          const label =
+            ROLE_OPTIONS.find((o) => o.value === value)?.label ?? 'No role';
+          return (
+            <Chip
+              size='small'
+              label={label}
+              color={value ? ROLE_CHIP_COLOR[value] ?? 'default' : 'default'}
+              variant={value ? 'filled' : 'outlined'}
+            />
+          );
+        },
+      },
+      {
+        field: 'created_at',
+        headerName: 'Joined',
+        width: 140,
+        valueFormatter: (value) =>
+          value ? new Date(value as string).toLocaleDateString() : '',
+      },
+    ],
+    [isAdmin],
+  );
+
+  // Persistence hook: called when an edited role cell is committed. Push the
+  // change to the server and only resolve with the new row on success — a
+  // rejected promise makes the grid revert the cell and fire the error handler.
+  const processRowUpdate = async (
+    newRow: TeamMember,
+    oldRow: TeamMember,
+  ): Promise<TeamMember> => {
+    if (newRow.role === oldRow.role || !newRow.role) return oldRow;
+    await setRole.mutateAsync({ userId: newRow.id, role: newRow.role });
+    return newRow;
+  };
 
   return (
     <Grid container spacing={4}>
@@ -96,71 +163,50 @@ function RouteComponent() {
           <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1.25 }}>
             Members
           </Typography>
-          <Paper
-            variant='outlined'
-            sx={{ borderRadius: 2, overflow: 'hidden' }}
-          >
-            {members.isLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                <CircularProgress size={22} />
-              </Box>
-            ) : members.error ? (
-              <Box sx={{ p: 2 }}>
-                <Typography sx={{ fontSize: 13, color: 'error.main' }}>
-                  {(members.error as Error).message}
-                </Typography>
-              </Box>
-            ) : (
-              (members.data ?? []).map((m, i) => (
-                <Box
-                  key={m.id}
-                  sx={(theme) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 2,
-                    p: '10px 16px',
-                    borderTop:
-                      i === 0
-                        ? 'none'
-                        : `1px solid ${theme.vars.palette.borderSoft}`,
-                  })}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: 14,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {m.email ?? '(no email)'}
-                  </Typography>
-                  <TextField
-                    select
-                    size='small'
-                    variant='standard'
-                    value={m.role ?? ''}
-                    disabled={setRole.isPending}
-                    onChange={(e) =>
-                      setRole.mutate({ userId: m.id, role: e.target.value })
-                    }
-                    sx={{ minWidth: 150, flexShrink: 0 }}
-                  >
-                    {m.role === null && (
-                      <MenuItem value='' disabled>
-                        No role
-                      </MenuItem>
-                    )}
-                    {ROLE_OPTIONS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
-              ))
-            )}
-          </Paper>
+          {members.error ? (
+            <Paper
+              variant='outlined'
+              sx={{ borderRadius: 2, overflow: 'hidden', p: 2 }}
+            >
+              <Typography sx={{ fontSize: 13, color: 'error.main' }}>
+                {(members.error as Error).message}
+              </Typography>
+            </Paper>
+          ) : (
+            <Paper
+              variant='outlined'
+              sx={{ borderRadius: 2, overflow: 'hidden' }}
+            >
+              <DataGrid<TeamMember>
+                rows={members.data ?? []}
+                columns={columns}
+                getRowId={(row) => row.id}
+                loading={members.isLoading}
+                editMode='cell'
+                processRowUpdate={processRowUpdate}
+                onProcessRowUpdateError={(e: Error) => toast.error(e.message)}
+                disableRowSelectionOnClick
+                initialState={{
+                  pagination: { paginationModel: { pageSize: 25 } },
+                }}
+                pageSizeOptions={[25, 50, 100]}
+                sx={(theme) => ({
+                  border: 0,
+                  '--DataGrid-containerBackground': 'transparent',
+                  '& .MuiDataGrid-columnHeaders': {
+                    backgroundColor: theme.vars.palette.paper2,
+                  },
+                  '& .MuiDataGrid-columnHeaderTitle': {
+                    fontWeight: 600,
+                    fontSize: 13,
+                  },
+                  '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+                    outline: 'none',
+                  },
+                })}
+              />
+            </Paper>
+          )}
         </Box>
       </Grid>
 
