@@ -1,5 +1,6 @@
 import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
+import { zPhoneOptional } from '#/lib/phone';
 
 export const carrierType = z.enum([
   'admitted',
@@ -19,9 +20,9 @@ export const newCarrierValues = z.object({
   stateAdmitted: z.string(),
   domicileState: z.string(),
   contactName: z.string(),
-  phone: z.string(),
+  phone: zPhoneOptional,
   email: z.string(),
-  claimsPhone: z.string(),
+  claimsPhone: zPhoneOptional,
   country: z.string(),
   status: z.string(),
   address: z.object({

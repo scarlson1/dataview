@@ -1,3 +1,17 @@
+import { NewAgencyForm } from '#/components/NewAgencyForm';
+import { NewClientForm } from '#/components/NewClientForm';
+import {
+  newBusinessFormOpts,
+  newBusinessStage,
+  priority,
+  type NewBusinessValues,
+} from '#/constants/newBusinessForm';
+import { stateOptions } from '#/constants/usStates';
+import type { Tables, TablesInsert } from '#/data/database.types';
+import type { EntityFormProps } from '#/data/entityForms';
+import { useAppForm } from '#/hooks/form';
+import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
+import { supabase } from '#/supabaseClient';
 import {
   Badge,
   Box,
@@ -10,20 +24,8 @@ import {
 } from '@mui/material';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { Suspense } from 'react';
+import { Suspense, type ComponentType } from 'react';
 import { toast } from 'sonner';
-import { NewAgencyForm } from '#/components/NewAgencyForm';
-import { NewClientForm } from '#/components/NewClientForm';
-import {
-  newBusinessFormOpts,
-  newBusinessStage,
-  priority,
-} from '#/constants/newBusinessForm';
-import { stateOptions } from '#/constants/usStates';
-import type { Tables, TablesInsert } from '#/data/database.types';
-import { useAppForm } from '#/hooks/form';
-import { emptyToNull, toDateStr, toNumber } from '#/lib/formCoerce';
-import { supabase } from '#/supabaseClient';
 
 type NewBusinessSubmissionInsert = TablesInsert<'new_business_submissions'>;
 type NewBusinessSubmission = Tables<'new_business_submissions'>;
@@ -36,10 +38,16 @@ type UwStatus = 'active' | 'inactive' | 'on_leave';
 // }
 
 interface NewBusinessFormProps {
-  onSuccess?: (row: NewBusinessSubmission) => void;
+  defaultValues?: Partial<NewBusinessValues>;
+  recordId?: number;
+  initialRow?: Record<string, unknown> | null;
+  onCreated?: (data: NewBusinessSubmission) => void;
+  onSaved?: (data: NewBusinessSubmission) => void;
+  onCancel?: () => void;
+  // onSuccess?: (row: NewBusinessSubmission) => void;
 }
 
-export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
+export function NewBusinessForm({ onSaved }: NewBusinessFormProps) {
   const theme = useTheme();
 
   const { mutateAsync } = useMutation({
@@ -56,7 +64,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
     },
     onSuccess: (data) => {
       toast.success('record created', { id: 'new-business' });
-      onSuccess?.(data);
+      onSaved?.(data);
     },
     onError: (err) => {
       console.log(err);
@@ -162,7 +170,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
           minHeight: 0,
         }}
       >
-        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 3, py: 2 }}>
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pt: 1 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <form.AppField name='submissionNumber'>
@@ -571,7 +579,7 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
 
         <Box
           sx={{
-            px: 3,
+            // px: 3,
             py: 2,
             borderTop: 1,
             borderColor: 'divider',
@@ -585,285 +593,5 @@ export function NewBusinessForm({ onSuccess }: NewBusinessFormProps) {
   );
 }
 
-// export const NewBusinessForm = withForm({
-//   ...newBusinessFormOpts,
-//   props: {
-//     spacing: 2,
-//     rowSpacing: undefined as number | undefined,
-//     columnSpacing: undefined as number | undefined,
-//   },
-//   render: function Render({ form, spacing }) {
-//     const theme = useTheme();
-
-//     const { data: underwriters } = useSuspenseQuery({
-//       queryKey: ['underwriters'],
-//       queryFn: async () => {
-//         const { data, error } = await supabase.from('underwriters').select('*');
-//         // .eq('status', 'active'); // enable filter or add chip next to name with status
-
-//         if (error) return [];
-//         return data;
-//       },
-//     });
-
-//     const getUwStatusColor = (status: UwStatus) => {
-//       switch (status) {
-//         case 'active':
-//           return theme.vars.palette.success.light;
-//         case 'on_leave':
-//           return theme.vars.palette.warning.light;
-//         case 'inactive':
-//           return theme.vars.palette.error.light;
-//         default:
-//           return theme.vars.palette.grey[300];
-//       }
-//     };
-
-//     return (
-//       <Grid container spacing={spacing}>
-//         <Grid size={{ xs: 12, sm: 6 }}>
-//           <form.AppField name='stage'>
-//             {(field) => (
-//               <field.TextField label='Stage' select>
-//                 {newBusinessStage.options.map((o) => (
-//                   <MenuItem key={`stage-${o}`} value={o}>
-//                     {o}
-//                   </MenuItem>
-//                 ))}
-//               </field.TextField>
-//             )}
-//           </form.AppField>
-//         </Grid>
-//         <Grid size={{ xs: 12, sm: 6 }}>
-//           <form.AppField name='priority'>
-//             {(field) => (
-//               <field.ToggleButtonGroup
-//                 label='priority'
-//                 color='standard'
-//                 options={[
-//                   {
-//                     label: priority.enum.low,
-//                     value: priority.enum.low,
-//                   },
-//                   {
-//                     label: priority.enum.medium,
-//                     value: priority.enum.medium,
-//                   },
-//                   {
-//                     label: priority.enum.high,
-//                     value: priority.enum.high,
-//                   },
-//                 ]}
-//               >
-//                 {priority.options.map((o) => (
-//                   <ToggleButton key={`priority-${o}`} value={o}>
-//                     {o}
-//                   </ToggleButton>
-//                 ))}
-//               </field.ToggleButtonGroup>
-//             )}
-//           </form.AppField>
-//         </Grid>
-//         <Grid size={{ xs: 12, sm: 6 }}>
-//           <form.AppField name='stage'>
-//             {(field) => (
-//               <field.TextField label='Stage' select>
-//                 {newBusinessStage.options.map((o) => (
-//                   <MenuItem key={`stage-${o}`} value={o}>
-//                     {o}
-//                   </MenuItem>
-//                 ))}
-//               </field.TextField>
-//             )}
-//           </form.AppField>
-//         </Grid>
-
-//         <Grid size={6}>
-//           <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
-//             <form.AppField name='submissionDate'>
-//               {({ DatePicker }) => (
-//                 <DatePicker
-//                   label='Submission date'
-//                   slotProps={{
-//                     textField: {
-//                       size: 'small',
-//                     },
-//                   }}
-//                 />
-//               )}
-//             </form.AppField>
-//           </Suspense>
-//         </Grid>
-//         <Grid size={6}>
-//           <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
-//             <form.AppField name='quoteDueDate'>
-//               {({ DatePicker }) => (
-//                 <DatePicker
-//                   label='Quote due date'
-//                   slotProps={{
-//                     textField: {
-//                       size: 'small',
-//                     },
-//                   }}
-//                 />
-//               )}
-//             </form.AppField>
-//           </Suspense>
-//         </Grid>
-//         <Grid size={6}>
-//           <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
-//             <form.AppField name='policy.expirationDate'>
-//               {({ DatePicker }) => (
-//                 <DatePicker
-//                   label='Expiration date'
-//                   slotProps={{
-//                     textField: {
-//                       size: 'small',
-//                       required: true,
-//                     },
-//                   }}
-//                 />
-//               )}
-//             </form.AppField>
-//           </Suspense>
-//         </Grid>
-
-//         <Grid size={6}></Grid>
-
-//         <Grid size={12}>
-//           <form.AppField name='assignedTo'>
-//             {(field) => (
-//               <field.TextField label='Assigned to' select>
-//                 {underwriters.map((o) => (
-//                   <MenuItem key={`uw-${o.id}`} value={o.id}>
-//                     <Badge
-//                       variant='dot'
-//                       sx={{
-//                         '': {
-//                           backgroundColor: getUwStatusColor(
-//                             o.status as UwStatus,
-//                           ),
-//                         },
-//                       }}
-//                     >
-//                       {o.display_name}
-//                     </Badge>
-//                   </MenuItem>
-//                 ))}
-//               </field.TextField>
-//             )}
-//           </form.AppField>
-//         </Grid>
-
-//         {/* Client */}
-//         <form.AppField name='clientId'>
-//           {(field) => (
-//             <field.EntitySelect
-//               label='Client'
-//               table='clients'
-//               searchColumns={['company_name', 'last_name', 'first_name']}
-//               getOptionLabel={(r) =>
-//                 (r.company_name as string) ||
-//                 [r.first_name, r.last_name].filter(Boolean).join(' ') ||
-//                 `Client #${r.id}`
-//               }
-//               renderCreateForm={({ defaultName, onCreated, onCancel }) => (
-//                 <NewClientForm
-//                   defaultValues={{ companyName: defaultName }}
-//                   onCreated={onCreated}
-//                   onCancel={onCancel}
-//                 />
-//                 // <ClientCreateBody defaultName={defaultName} onCreated={onCreated} onCancel={onCancel} />
-//               )}
-//             />
-//           )}
-//         </form.AppField>
-
-//         {/* Agent/Agency */}
-//         <form.AppField name='agencyId'>
-//           {(field) => (
-//             <field.EntitySelect
-//               label='Agent'
-//               table='agencies'
-//               searchColumns={['entity_name', 'last_name', 'first_name']}
-//               getOptionLabel={(r) =>
-//                 (r.display_name as string) || `Agent #${r.id}`
-//               }
-//               renderCreateForm={({ defaultName, onCreated, onCancel }) => (
-//                 <NewAgencyForm
-//                   defaultValues={{ entityName: defaultName }}
-//                   onCreated={onCreated}
-//                   onCancel={onCancel}
-//                 />
-//               )}
-//             />
-//           )}
-//         </form.AppField>
-
-//         {/* Policy */}
-//         <Grid size={12}>
-//           <Typography variant='overline' color='textMuted'>
-//             Policy
-//           </Typography>
-//         </Grid>
-//         <Grid size={6}>
-//           <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
-//             <form.AppField name='policy.effectiveDate'>
-//               {({ DatePicker }) => (
-//                 <DatePicker
-//                   label='Effective date'
-//                   slotProps={{
-//                     textField: {
-//                       size: 'small',
-//                       // sx: compactInputSx,
-//                       required: true,
-//                     },
-//                   }}
-//                 />
-//               )}
-//             </form.AppField>
-//           </Suspense>
-//         </Grid>
-//         <Grid size={6}>
-//           <Suspense fallback={<Skeleton variant='rounded' height={32} />}>
-//             <form.AppField name='policy.expirationDate'>
-//               {({ DatePicker }) => (
-//                 <DatePicker
-//                   label='Expiration date'
-//                   slotProps={{
-//                     textField: {
-//                       size: 'small',
-//                       // sx: compactInputSx,
-//                       required: true,
-//                     },
-//                   }}
-//                 />
-//               )}
-//             </form.AppField>
-//           </Suspense>
-//         </Grid>
-//       </Grid>
-//     );
-//   },
-// });
-
-// export const NewBusinessForm = withForm({
-//   ...newBusinessFormOpts,
-//   props: {
-//     spacing: 2,
-//     rowSpacing: undefined as number | undefined,
-//     columnSpacing: undefined as number | undefined,
-//   },
-//   render: function Render({ form, spacing }) {
-//     return (
-//       <Grid container spacing={spacing}>
-//         <Grid size={12}>
-//           <form.AppField
-//             name='companyName'
-//             children={(field) => <field.TextField label='Name' />}
-//           />
-//         </Grid>
-//       </Grid>
-//     );
-//   },
-// });
+// Registry-facing default export (props are a superset of EntityFormProps).
+export default NewBusinessForm as unknown as ComponentType<EntityFormProps>;

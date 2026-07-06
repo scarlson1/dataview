@@ -1,7 +1,7 @@
+import { useFieldContext } from '@/hooks/formContext';
 import type { TextFieldProps as MuiTextFieldProps } from '@mui/material';
 import { TextField as MuiTextField } from '@mui/material';
 import { useSelector } from '@tanstack/react-store';
-import { useFieldContext } from '@/hooks/formContext';
 
 type TextFieldProps = Omit<MuiTextFieldProps, 'onChange' | 'onBlur' | 'error'>;
 
@@ -15,7 +15,7 @@ export function TextField(props: TextFieldProps) {
       variant='outlined'
       color='primary'
       {...props}
-      defaultValue={state.value}
+      value={state.value}
       onChange={(e) => handleChange(e.target.value)}
       onBlur={handleBlur}
       error={state.meta.isTouched && !state.meta.isValid}

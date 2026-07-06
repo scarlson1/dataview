@@ -102,6 +102,7 @@ export const NewClientForm = ({
           industry: '',
         };
         await mutateAsync(row);
+        return;
       } catch (err) {
         console.log(err);
       }
@@ -182,9 +183,8 @@ export const NewClientForm = ({
           <Grid size={4}>
             <form.AppField
               name='phone'
-              // TODO: format mask
               children={(field) => (
-                <field.TextField label='Phone' size='small' />
+                <field.MaskInput label='Phone' size='small' />
               )}
             />
           </Grid>

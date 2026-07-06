@@ -1,3 +1,4 @@
+import { NewBusinessForm } from '#/components/NewBusinessForm';
 import {
   Box,
   CircularProgress,
@@ -9,7 +10,6 @@ import {
 } from '@mui/material';
 import { X } from 'lucide-react';
 import { Suspense } from 'react';
-import { NewBusinessForm } from '#/components/NewBusinessForm';
 
 interface NewBusinessDrawerProps {
   open: boolean;
@@ -76,7 +76,7 @@ export const NewBusinessDrawer = ({
         }
       >
         <NewBusinessForm
-          onSuccess={() => {
+          onSaved={() => {
             onCreated?.();
             onClose();
           }}

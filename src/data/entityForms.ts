@@ -38,6 +38,12 @@ const lazyForm = (
 ): LazyExoticComponent<ComponentType<EntityFormProps>> => lazy(loader);
 
 export const ENTITY_FORMS: Record<string, EntityFormEntry> = {
+  new_business_submissions: {
+    relation: 'new_business_submissions',
+    createTitle: 'New Submission',
+    editTitle: 'Edit Submission',
+    component: lazyForm(() => import('#/components/NewBusinessForm')),
+  },
   clients: {
     relation: 'clients',
     createTitle: 'New Client',

@@ -1,5 +1,6 @@
 import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
+import { zPhoneOptional } from '#/lib/phone';
 
 export const underwriterStatus = z.enum(['active', 'inactive', 'on_leave']);
 
@@ -8,7 +9,7 @@ export const newUnderwriterValues = z.object({
   lastName: z.string().min(1, 'Required'),
   titleRole: z.string(),
   email: z.string(),
-  phone: z.string(),
+  phone: zPhoneOptional,
   status: z.string(),
 });
 export type NewUnderwriterValues = z.infer<typeof newUnderwriterValues>;

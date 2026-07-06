@@ -1,18 +1,18 @@
-import { Alert, Box, Button, Collapse, Grid, Stack } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { AddressFieldGroup } from '#/components/AddressFieldGroup';
 import {
   carrierStatus,
   carrierType,
-  type NewCarrierValues,
   newCarrierFormOpts,
+  type NewCarrierValues,
 } from '#/constants/newCarrierForm';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
+import { Alert, Box, Button, Collapse, Grid, Stack } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 type CarrierRow = Tables<'carriers'>;
 type CarrierInsert = TablesInsert<'carriers'>;
@@ -201,12 +201,12 @@ export const NewCarrierForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='phone'>
-              {(field) => <field.TextField label='Phone' />}
+              {(field) => <field.MaskInput label='Phone' size='small' />}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='claimsPhone'>
-              {(field) => <field.TextField label='Claims phone' />}
+              {(field) => <field.MaskInput label='Claims phone' />}
             </form.AppField>
           </Grid>
         </Grid>
