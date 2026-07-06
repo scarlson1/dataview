@@ -1,6 +1,3 @@
-import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import {
   type NewUnderwriterValues,
   newUnderwriterFormOpts,
@@ -11,6 +8,9 @@ import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { emptyToNull } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
+import { Alert, Button, Collapse, Grid, Stack } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 type UwRow = Tables<'underwriters'>;
 type UwInsert = TablesInsert<'underwriters'>;
@@ -124,7 +124,7 @@ export const NewUnderwriterForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='phone'>
-              {(field) => <field.TextField label='Phone' />}
+              {(field) => <field.MaskInput label='Phone' />}
             </form.AppField>
           </Grid>
         </Grid>

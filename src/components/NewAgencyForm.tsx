@@ -1,18 +1,27 @@
-import { Alert, Button, Collapse, Grid, MenuItem, Stack } from '@mui/material';
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import type { ComponentType } from 'react';
 import { AddressFieldGroup } from '#/components/AddressFieldGroup';
 import {
   agentLevel,
   billingEntity,
   licenseeType,
-  type NewAgencyValues,
   newAgencyFormOpts,
+  type NewAgencyValues,
 } from '#/constants/newAgentForm';
+import { GoogleMapsProvider } from '#/context/GoogleMapsContext';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
 import { supabase } from '#/supabaseClient';
+import {
+  Alert,
+  Button,
+  Collapse,
+  Grid,
+  MenuItem,
+  Skeleton,
+  Stack,
+} from '@mui/material';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { Suspense, type ComponentType } from 'react';
 
 type AgencyRowInsert = TablesInsert<'agencies'>;
 type AgencyRow = Tables<'agencies'>;
@@ -122,6 +131,7 @@ export const NewAgencyForm = ({
         };
 
         await mutateAsync(agency);
+        return;
       } catch (err) {
         console.log(err);
       }
@@ -132,12 +142,12 @@ export const NewAgencyForm = ({
     // <Box component='form' onSubmit={() => {}}>
     <form.AppForm>
       <Stack direction='column' spacing={2}>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{ pt: 1 }}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField
               name='agentLevel'
               children={(field) => (
-                <field.TextField label='Agent level' select>
+                <field.TextField label='Agency level' select>
                   <MenuItem value=''>
                     <em>None</em>
                   </MenuItem>
@@ -167,26 +177,60 @@ export const NewAgencyForm = ({
               )}
             />
           </Grid>
-          <Grid size={12}>
+
+          <form.Subscribe
+            selector={(state) => state.values.licenseeType}
+            children={(licensee) =>
+              licensee === 'individual' ? (
+                <>
+                  <Grid size={6}>
+                    <form.AppField
+                      name='firstName'
+                      children={(field) => (
+                        <field.TextField label='First name' />
+                      )}
+                    />
+                  </Grid>
+                  <Grid size={6}>
+                    <form.AppField
+                      name='lastName'
+                      children={(field) => (
+                        <field.TextField label='Last name' />
+                      )}
+                    />
+                  </Grid>
+                </>
+              ) : (
+                <Grid size={12}>
+                  <form.AppField
+                    name='entityName'
+                    children={(field) => (
+                      <field.TextField label='Entity name' />
+                    )}
+                  />
+                </Grid>
+              )
+            }
+          />
+
+          <Grid size={8}>
             <form.AppField
-              name='entityName'
-              children={(field) => <field.TextField label='Entity name' />}
+              name='email'
+              children={(field) => (
+                <field.TextField label='Email' size='small' />
+              )}
             />
           </Grid>
-          <Grid size={12}>
+          <Grid size={4}>
             <form.AppField
-              name='firstName'
-              children={(field) => <field.TextField label='First name' />}
-            />
-          </Grid>
-          <Grid size={12}>
-            <form.AppField
-              name='lastName'
-              children={(field) => <field.TextField label='Last name' />}
+              name='phone'
+              children={(field) => (
+                <field.MaskInput label='Phone' size='small' />
+              )}
             />
           </Grid>
 
-          <Grid size={4}>
+          <Grid size={6}>
             <form.AppField
               name='parentAgencyId'
               children={(field) => (
@@ -203,7 +247,7 @@ export const NewAgencyForm = ({
               )}
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={6}>
             <form.AppField
               name='billingEntity'
               children={(field) => (
@@ -221,14 +265,20 @@ export const NewAgencyForm = ({
             />
           </Grid>
         </Grid>
-        <AddressFieldGroup
-          form={form}
-          fields='address'
-          spacing={2}
-          rowSpacing={undefined}
-          columnSpacing={undefined}
-          inputSize='small'
-        />
+
+        <Suspense fallback={<Skeleton variant='rounded' height={40} />}>
+          <GoogleMapsProvider>
+            <AddressFieldGroup
+              form={form}
+              fields='address'
+              spacing={2}
+              rowSpacing={undefined}
+              columnSpacing={undefined}
+              inputSize='small'
+            />
+          </GoogleMapsProvider>
+        </Suspense>
+
         <Collapse in={isError}>
           <Alert severity='error'>
             {error?.message ?? 'An error occurred'}

@@ -1,19 +1,22 @@
 import { createFormHook } from '@tanstack/react-form';
 // import { WizardNavButtons } from '../components/forms/WizardNavButtons';
 import { lazy } from 'react';
-// import { MaskInput } from '../components/forms/MaskInput';
 import { SubmitButton } from '#/components/forms/SubmitButton';
 import { fieldContext, formContext } from './formContext';
 
 const TextField = lazy(() => import('../components/forms/TextField.tsx'));
 const DatePicker = lazy(() => import('../components/forms/DatePicker.tsx'));
 const Autocomplete = lazy(() => import('../components/forms/Autocomplete.tsx'));
+const AddressAutocomplete = lazy(
+  () => import('../components/forms/AddressAutocomplete.tsx'),
+);
 const ToggleButtonGroup = lazy(
   () => import('../components/forms/ToggleButtonGroup.tsx'),
 );
 const EntitySelect = lazy(() => import('../components/forms/EntitySelect.tsx'));
 const Checkbox = lazy(() => import('../components/forms/Checkbox.tsx'));
 const Select = lazy(() => import('../components/forms/Select.tsx'));
+const MaskInput = lazy(() => import('../components/forms/MaskInput.tsx'));
 
 // TODO: create other reusable input types (number input, select, masked fields etc.)
 
@@ -25,9 +28,10 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     Select,
     DatePicker,
     Autocomplete,
+    AddressAutocomplete,
     EntitySelect,
     ToggleButtonGroup,
-    // MaskInput,
+    MaskInput,
   },
   formComponents: {
     SubmitButton,

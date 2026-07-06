@@ -1,16 +1,16 @@
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { FormBoundary } from '#/components/FormBoundary';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { Download, Plus, RefreshCw, Rows3, Workflow } from 'lucide-react';
-import { Suspense, useState } from 'react';
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { useAuth } from '#/context/AuthContext';
-import { getEntityForm } from '#/data/entityForms';
-import { MONO_FONT } from '#/theme/tokens';
+import { Plus, Rows3, Workflow } from 'lucide-react';
+import { useState } from 'react';
 import type { TableDef } from '../../data/tables';
 import { TableIcon } from '../TableIcon';
 import { DataTab } from './DataTab';
@@ -108,7 +108,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
             flexShrink: 0,
           }}
         >
-          <Button
+          {/* <Button
             variant='outlined'
             onClick={onRefresh}
             startIcon={<RefreshCw size={18} />}
@@ -122,7 +122,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
             sx={{ height: 40 }}
           >
             Export
-          </Button>
+          </Button> */}
           {entityForm && canCreate && (
             <Button
               variant='contained'
@@ -130,7 +130,8 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
               startIcon={
                 <Plus size={18} color={'var(--variant-containedColor)'} />
               }
-              sx={{ height: 40 }}
+              size='small'
+              // sx={{ height: 40 }}
             >
               New
             </Button>
@@ -185,13 +186,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
           title={entityForm.createTitle}
           onClose={() => setCreateOpen(false)}
         >
-          <Suspense
-            fallback={
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                <CircularProgress size={24} />
-              </Box>
-            }
-          >
+          <FormBoundary>
             <FormComponent
               onSaved={() => {
                 setCreateOpen(false);
@@ -199,7 +194,7 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
               }}
               onCancel={() => setCreateOpen(false)}
             />
-          </Suspense>
+          </FormBoundary>
         </EntityDrawer>
       )}
     </>

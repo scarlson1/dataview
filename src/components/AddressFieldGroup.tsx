@@ -1,6 +1,6 @@
-import { Grid } from '@mui/material';
 import { stateOptions } from '#/constants/usStates';
 import { withFieldGroup } from '#/hooks/form';
+import { Grid } from '@mui/material';
 
 export const AddressFieldGroup = withFieldGroup({
   // withForm({
@@ -35,7 +35,16 @@ export const AddressFieldGroup = withFieldGroup({
           <group.AppField
             name='addressLine1'
             children={(field) => (
-              <field.TextField label='Address line 1' size={inputSize} />
+              <field.AddressAutocomplete
+                label='Address'
+                // size={inputSize}
+                onAddressSelect={(a) => {
+                  field.handleChange(a.line1);
+                  group.setFieldValue('city', a.city);
+                  group.setFieldValue('state', a.state);
+                  group.setFieldValue('postal', a.postal);
+                }}
+              />
             )}
           />
         </Grid>

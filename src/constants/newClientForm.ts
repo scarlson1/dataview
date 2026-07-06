@@ -1,25 +1,6 @@
 import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
-
-const phoneRegex = new RegExp(
-  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/,
-);
-
-// export const zPhoneNumber = z.string().transform((value, ctx) => {
-// const phoneNumber = parsePhoneNumber(value, {
-//     defaultCountry: "FI",
-// });
-
-// if (!phoneNumber?.isValid()) {
-//     ctx.addIssue({
-//     code: z.ZodIssueCode.custom,
-//     message: "Invalid phone number",
-//     });
-//     return z.NEVER;
-// }
-
-// return phoneNumber.formatInternational();
-// });
+import { zPhone } from '#/lib/phone';
 
 export const clientType = z.enum([
   'business',
@@ -45,12 +26,12 @@ export const newClientValues = //addressValues.and(
       firstName: z.string(),
       lastName: z.string(),
       email: z.email(),
-      phone: z.string().regex(phoneRegex, 'Invalid Number!'),
+      phone: zPhone,
       address: addressValues,
     })
     .refine(
       (data) => {
-        if (data.clientType === 'individual') return data.firstName.length < 1;
+        if (data.clientType === 'individual') return data.firstName.length > 1;
         return true;
       },
       {
