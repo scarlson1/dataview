@@ -2,6 +2,7 @@ import { EntityDrawer } from '#/components/EntityDrawer';
 import { FormBoundary } from '#/components/FormBoundary';
 import { useAuth } from '#/context/AuthContext';
 import { getEntityForm } from '#/data/entityForms';
+import { getTableViews } from '#/data/tableViews';
 import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -16,7 +17,7 @@ import { TableIcon } from '../TableIcon';
 import { DataTab } from './DataTab';
 import { SchemaTab } from './SchemaTab';
 
-export type ViewerTab = 'data' | 'schema';
+export type ViewerTab = 'data' | 'schema' | (string & {});
 
 interface TableViewerProps {
   table: TableDef;
@@ -28,6 +29,8 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
   const [tab, setTab] = useState<ViewerTab>('data');
   const [createOpen, setCreateOpen] = useState(false);
   const entityForm = getEntityForm(table.name);
+  const tableViews = getTableViews(table.name);
+  const activeView = tableViews.find((v) => v.id === tab);
   const FormComponent = entityForm?.component;
   // Hide create UI for roles that can't write this table (RLS enforces it too).
   const canCreate = can(table.name, 'write');
@@ -171,12 +174,26 @@ export const TableViewer = ({ table, onRefresh }: TableViewerProps) => {
             label='Schema'
             sx={{ gap: '8px' }}
           />
+          {tableViews.map((view) => (
+            <Tab
+              key={view.id}
+              value={view.id}
+              iconPosition='start'
+              icon={<view.icon size={20} />}
+              label={view.label}
+              sx={{ gap: '8px' }}
+            />
+          ))}
         </Tabs>
 
-        {tab === 'data' ? (
-          <DataTab table={table} />
-        ) : (
+        {activeView ? (
+          <FormBoundary>
+            <activeView.component />
+          </FormBoundary>
+        ) : tab === 'schema' ? (
           <SchemaTab table={table} />
+        ) : (
+          <DataTab table={table} />
         )}
       </Paper>
 

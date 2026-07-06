@@ -101,10 +101,15 @@ total_term_premium → total_term_prem_fees`, commission rates/amounts) must be 
   is staged (commented) at the bottom of the migration:
   - `term_days` = transaction term (`txn_exp/eff`) falling back to policy term.
   - "chain" for `current_policy_exp_date` = `COALESCE(parent_policy_id, id)`.
-  - SL resolution (`sl_licensee_name`, `sl_eligible_licensees`) approximated to
-    the license's own `agent_id` + `home_state`; the agency vertical-chain walk
-    still needs refinement. `sl_licensee_name` now correctly pulls
-    `agencies.display_name` via `license.agent_id` (LIC has no name column).
+  - SL resolution (`sl_licensee_name`, `sl_eligible_licensees`) — **corrected in
+    `20260706120000_fix_sl_licensee_resolution.sql`** to match the workbook's
+    `POL!AE`/`POL!AF`: matches on the billing group (`agencies.billing_id`, the
+    one-hop "Billing AGT-ID" roll-up), filters `license_type='Surplus Lines'`,
+    and returns the override agency's name directly when the override is set.
+    The prior version matched the raw producing `agent_id` (missing licenses held
+    by a billing parent). The entity/individual `SL_STATE_RULES` flags are
+    advisory only and deliberately not applied. Verified by
+    `supabase/tests/sl_licensee_test.sql`.
 
 ## binder (binder) — `20260701100600_create_binder.sql`
 
@@ -147,6 +152,10 @@ total_term_premium → total_term_prem_fees`, commission rates/amounts) must be 
   State." "Agency chain" is not a stored column, so the partial unique index
   `license_one_default_sl_per_agent_state` enforces **per (agent_id, state)**
   instead. True chain-level enforcement needs a chain/root column or app logic.
+  Residual caveat: SL resolution now matches on the **billing group**
+  (`billing_id`), but this index is per `agent_id`, so two agents in the same
+  billing group could each hold a state default; resolution takes `LIMIT 1`. The
+  workbook's `Dup Check` guards this per billing group at data-entry time.
 - `license.state` is NOT a FK to `surplus_lines_state_rules` (spec doesn't ask;
   adding one would require all referenced states to be seeded first). Optional.
 
@@ -353,8 +362,10 @@ Every top-level entity now has a stored generated `*_ref` column
   `license.status` (which doesn't exist — status lives in `license_computed`);
   replaced with an inline `exp_date >= current_date` "active" check.
   **Assumptions still to confirm:** term_days = transaction term (fallback policy
-  term); chain = `COALESCE(parent_policy_id, id)`; SL resolution approximated to
-  the license's own `agent_id`.
+  term); chain = `COALESCE(parent_policy_id, id)`. **SL resolution was corrected**
+  in `20260706120000_fix_sl_licensee_resolution.sql` to match on `billing_id`
+  (one-hop billing group), filter `license_type='Surplus Lines'`, and honor the
+  override as a direct name — see the `license` section above.
 - **`lob_defaults`** reference table (`line_of_business` PK,
   `default_renew_prob_pct`) seeded per LOB — supplies the previously-missing
   renewal-probability source.
