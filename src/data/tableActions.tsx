@@ -14,6 +14,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import type { InvoicePdfSource } from '#/components/pdf/invoicePdfDownload';
 import type { PermAction } from '#/context/AuthContext';
 import type { TableName } from '#/data/tables';
 import { supabase } from '#/supabaseClient';
@@ -47,6 +48,25 @@ export interface RowAction {
 }
 
 const TABLE_ACTIONS: Partial<Record<TableName, RowAction[]>> = {
+  invoices: [
+    {
+      id: 'download-pdf',
+      label: 'PDF',
+      variant: 'outlined',
+      permission: 'read',
+      run: async (row) => {
+        // Dynamic import keeps @react-pdf/renderer code-split out of the main
+        // bundle until a PDF is actually requested. The grid queries the base
+        // invoices table with select('*'), so the row carries every field the
+        // document + its name lookups need.
+        const { downloadInvoicePdf } = await import(
+          '#/components/pdf/invoicePdfDownload'
+        );
+        await downloadInvoicePdf(row as unknown as InvoicePdfSource);
+        toast.success('Invoice PDF downloaded');
+      },
+    },
+  ],
   new_business_submissions: [
     {
       id: 'bind',

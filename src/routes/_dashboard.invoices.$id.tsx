@@ -14,9 +14,10 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Receipt, ScrollText } from 'lucide-react';
+import { ArrowLeft, FileDown, Receipt, ScrollText } from 'lucide-react';
+import { toast } from 'sonner';
 import { StatusChip } from '#/components/StatusChip';
 import { labelize, money, pct } from '#/lib/money';
 import { supabase } from '#/supabaseClient';
@@ -111,6 +112,19 @@ function InvoiceDetail() {
     },
   });
 
+  const pdfDownload = useMutation({
+    mutationFn: async (inv: InvoiceRow) => {
+      // Dynamic import keeps @react-pdf/renderer (and this orchestrator)
+      // code-split out of the main bundle until a PDF is actually requested.
+      const { downloadInvoicePdf } = await import(
+        '#/components/pdf/invoicePdfDownload'
+      );
+      await downloadInvoicePdf(inv);
+    },
+    onSuccess: () => toast.success('Invoice PDF downloaded'),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const inv = query.data;
   const title = inv?.inv_ref ?? `Invoice #${id}`;
   const hasOther = Number(inv?.other_fees) > 0;
@@ -161,6 +175,14 @@ function InvoiceDetail() {
               )}
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant='outlined'
+                startIcon={<FileDown size={16} />}
+                disabled={pdfDownload.isPending}
+                onClick={() => pdfDownload.mutate(inv)}
+              >
+                PDF
+              </Button>
               {inv.policy_id != null && (
                 <Button
                   variant='outlined'

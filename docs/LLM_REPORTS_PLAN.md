@@ -1,6 +1,10 @@
 # LLM-Generated Custom Reports — Plan
 
-Status: **proposed (not started).** Referenced from [ROADMAP.md](ROADMAP.md).
+Status: **approved, implementation starting.** Referenced from [ROADMAP.md](ROADMAP.md).
+Already in the tree: `supabase/functions/generate-report/` (withSupabase scaffold +
+`deno.json`), an empty `supabase/functions/_shared/reportExecutor.ts`, the
+`[functions.generate-report]` entry in `config.toml` (a `run-report` entry is still
+needed), and `@ai-sdk/react@^4.0.17` in `package.json`.
 
 A user describes a report in plain English ("open AR by client, bucketed by
 month, only surplus-lines policies"); an LLM agent inspects the live Postgres
@@ -70,6 +74,16 @@ Two edge functions, one shared executor:
   `renewals_computed`, … are prime substrate — much of the report logic already
   exists as views). A constrained AST would fight that. Safety comes from the
   execution sandbox, not from restricting the query language.
+- **Not an MCP server** — considered exposing the schema/SQL tools as a
+  Supabase-hosted MCP server ([byo-mcp guide](https://supabase.com/docs/guides/ai-tools/byo-mcp)).
+  Rejected for now: the guide's MCP-on-Edge-Functions pattern currently ships
+  **without auth** — re-verified 2026-07-07: it mandates
+  `supabase functions deploy --no-verify-jwt mcp` and states "Auth support for
+  MCP on Edge Functions is coming soon," using `WebStandardStreamableHTTPServerTransport`
+  (SSE) with the official `@modelcontextprotocol/sdk`. This feature is per-user
+  RLS end to end, so the in-function agent loop with a verified JWT is the right
+  shape today; revisit MCP once its auth lands if we ever want users' own agents
+  querying these tools.
 
 ## Database changes (one migration + seed rows)
 
@@ -161,13 +175,62 @@ Single module used by both edge functions. Per execution:
    error `{ code, message, hint, position }` — never throw raw driver errors
    at the model or the UI.
 
+## RLS / RBAC enforcement (verified against the repo)
+
+The generated SQL runs **as the requesting user**, not as a privileged role.
+Verified specifics:
+
+- **Claims must be the caller's verified JWT claims, verbatim.** Both edge
+  functions use `withSupabase({ auth: ["user"] })`, which verifies the incoming
+  access token. The executor takes that *verified* token's full claim set and
+  passes it into `set_config('request.jwt.claims', <claims json>, true)` inside
+  the transaction. Never build a claims object by hand and never accept claims
+  from the request body — two claims matter and both ride in the real token:
+  - `sub` → `auth.uid()` — every ownership-scoped RLS policy.
+  - `user_role` → `authorize()` — the RBAC function
+    (`20260703021911_rbac.sql`) reads `auth.jwt() ->> 'user_role'`, a custom
+    claim injected by the access-token auth hook. A hand-built `{sub}` object
+    would silently make `authorize()` return false everywhere (or worse, a
+    hand-built `user_role` would forge it).
+- **`SET LOCAL ROLE authenticated`** scopes table/view GRANTs identically to
+  PostgREST, so the LLM's SQL can't touch anything the app itself can't.
+- **Views**: Postgres views bypass RLS by default (they run as their owner).
+  Audited: all 7 views in `20260702100000_reporting_export_views.sql` and the
+  other report views (`create_policies`, `aging_expose_id`, `create_binder_part`,
+  `create_license`) are `security_invoker = true`, so RLS + `authorize()` hold
+  through the view substrate. **Pre-launch checklist item**: audit *every*
+  `public` view (`select viewname from pg_views where schemaname='public'`
+  cross-checked against `security_invoker`) and run `supabase db advisors` /
+  MCP `get_advisors` — a single definer view would be an RLS hole reachable by
+  LLM-generated SQL.
+- **New tables**: `reports` and `report_generation_log` get RLS enabled in the
+  same migration that creates them, policies via the existing
+  `authorize('reports', …)` pattern with explicit `TO authenticated`, and the
+  UPDATE policy carries **both `USING` and `WITH CHECK`** (without `WITH CHECK`
+  a user could reassign rows; and note UPDATE silently no-ops without a SELECT
+  policy). `report_generation_log` is service-role-write, admin-read only.
+- **Claims freshness caveat**: `user_role` is as fresh as the access token — a
+  demoted user keeps their old role until token refresh (the app already
+  refreshes on role change via the Realtime subscription in `AuthContext`).
+  Acceptable here; noted so nobody "fixes" it with a DB lookup that bypasses
+  the hook.
+- **Secrets**: the Anthropic key and `REPORT_DB_URL` are edge-function secrets;
+  the browser only ever holds the publishable key. `report_generation_log`
+  writes use `ctx.supabaseAdmin` (service role) — never exposed client-side.
+
 ## The agent (`generate-report`)
 
-- **SDK/model**: `@anthropic-ai/sdk` (npm specifier in Deno),
-  `claude-opus-4-8`, `thinking: {type: "adaptive"}`, streaming, manual tool
-  loop (not the beta tool runner — we want per-step SSE progress events and a
-  hard step cap). System prompt + tool defs are stable → `cache_control`
-  breakpoint after them so retry loops hit the prompt cache.
+- **SDK/model**: Vercel AI SDK on the server — `ai` + `@ai-sdk/anthropic`
+  (npm specifiers in Deno), `claude-opus-4-8`. The client already has
+  `@ai-sdk/react@^4.0.17`, which locks in the AI SDK stream protocol, so the
+  server emits it natively (`streamText` → UI-message stream response) instead
+  of a hand-rolled SSE format: tool-loop, per-step callbacks (progress events,
+  usage accounting), and a hard step cap are all first-class. **Match the
+  server `ai` package major to the installed `@ai-sdk/react` major and verify
+  exact API names against that version's docs, not memory** — the SDK renames
+  these across majors. Keep the Anthropic prompt-cache breakpoint after the
+  stable system prompt + tool defs (provider options), so retry loops hit the
+  prompt cache.
 - **Tools** (all read-only):
   | Tool | Returns |
   |---|---|
@@ -176,6 +239,16 @@ Single module used by both edge functions. Per execution:
   | `sample_rows` | up to 5 rows through the guarded executor (RLS applies), so the model sees real value formats (status strings, date shapes) |
   | `run_sql` | guarded executor at the 200-row preview cap; success → first rows + row count; failure → the structured Postgres error |
   | `submit_report` | terminal tool: `{name, description, sql, columns[]}` (strict schema); the loop ends when called |
+- **Schema tool results are cached.** `list_tables` and `get_table_schema` hit
+  `information_schema`, which is identical for every user and changes only on
+  migration — cache them in a module-scope Map (edge-function isolates stay
+  warm across invocations) with a ~5-minute TTL, keyed by tool + table name,
+  plus per-loop dedupe (a repeated `get_table_schema("policies")` in one
+  generation returns the cached JSON without a DB round-trip). **Repair mode
+  busts the cache** — schema drift is exactly when stale schema would poison
+  the fix. `sample_rows` and `run_sql` are NEVER cached: their results are
+  user-specific (RLS) and caching them would leak rows across users sharing a
+  warm isolate.
 - **Failure recovery**: `run_sql` errors go back as `tool_result` with
   `is_error: true` and the full Postgres message/hint/position — the model
   fixes and retries. Caps: **12 loop steps**, **4 consecutive failed
@@ -188,10 +261,14 @@ Single module used by both edge functions. Per execution:
     `response.usage`), step count, and outcome — admin-visible spend ledger.
   - `max_tokens` ~8k per step; wall-clock budget under the edge-function limit
     (abort the loop at ~90s and return the best candidate).
-- **Streaming to the UI**: SSE events — `step` ("inspecting schema",
+- **Streaming to the UI**: the AI SDK UI-message stream, consumed by
+  `@ai-sdk/react` in the builder with a custom transport (`fetch` to the
+  function URL + `Authorization: Bearer <session access token>` —
+  `supabase.functions.invoke` doesn't expose streaming bodies). Progress
+  surfaces as custom data parts on the stream: `step` ("inspecting schema",
   "running query (attempt 2)"), `sql` (current candidate), `preview` (rows),
-  `done` / `error`. The browser calls the function with `fetch` + the session
-  access token (`supabase.functions.invoke` doesn't expose streaming bodies).
+  terminal `done` / `error`. Client renders those parts; it never needs the
+  raw assistant text.
 - **Modes**: `create` (prompt only), `refine` (existing report + instruction —
   seeds the conversation with current SQL), `repair` (existing report + the
   runtime error it now throws — for schema drift after migrations).
@@ -208,6 +285,34 @@ Single module used by both edge functions. Per execution:
   `CsvColumn` mapping, Refine / Repair buttons (re-enter builder in that mode).
 - Write actions gated on `useAuth().role` like the rest of the app; DB is the
   real boundary.
+
+## Observability / monitoring / tracing (after the feature works)
+
+Phase 1 ships with the built-in floor: `report_generation_log` (spend ledger:
+model, tokens, steps, outcome per invocation), structured executor rejections
+(cost gate / caps / timeouts distinguishable from SQL errors), and Supabase
+edge-function logs. Recommendations to layer on once the feature is live:
+
+- **LLM tracing** — the AI SDK has built-in OpenTelemetry instrumentation
+  (`experimental_telemetry` or its current equivalent); pointing it at
+  **Langfuse** (self-hostable) or **Braintrust** gives per-generation traces:
+  every tool call, SQL candidate, Postgres error, retry, and token count in
+  one waterfall. This is the single highest-value add — "why did this report
+  take 9 steps" is unanswerable from logs alone.
+- **Error tracking** — Sentry's Deno SDK in both edge functions (they're the
+  only new backend surface); tag events with `report_id` / mode so repair-loop
+  failures cluster.
+- **Database side** — enable `pg_stat_statements` filtered to the
+  `report_runner` role for slow-query review; run `supabase db advisors`
+  (or MCP `get_advisors`) in CI so a future non-invoker view or missing RLS
+  policy gets caught before the LLM can find it.
+- **Alerting** — a scheduled check (or log drain alert) on: daily token spend
+  above budget, quota-exceeded spikes (someone scripting the endpoint), and
+  executor rejection rate (schema drift breaking saved reports en masse after
+  a migration).
+- **`report_runs` audit table** (already phase 3) — who ran what, duration,
+  row count, error; joins the ledger to answer "which saved reports are dead
+  weight".
 
 ## Phasing
 

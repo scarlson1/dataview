@@ -109,6 +109,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "accounts_receivable_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "accounts_receivable_inv_id_fkey"
             columns: ["inv_id"]
             isOneToOne: true
@@ -552,6 +559,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "air_exposure_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
@@ -871,6 +885,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "capacity_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "capacity_inv_id_fkey"
             columns: ["inv_id"]
             isOneToOne: false
@@ -1094,6 +1115,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "claims_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "claims_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
@@ -1119,7 +1147,6 @@ export type Database = {
           company_name: string | null
           country: string | null
           created_at: string
-          date_added: string | null
           email: string | null
           first_name: string | null
           id: number
@@ -1141,7 +1168,6 @@ export type Database = {
           company_name?: string | null
           country?: string | null
           created_at?: string
-          date_added?: string | null
           email?: string | null
           first_name?: string | null
           id?: number
@@ -1163,7 +1189,6 @@ export type Database = {
           company_name?: string | null
           country?: string | null
           created_at?: string
-          date_added?: string | null
           email?: string | null
           first_name?: string | null
           id?: number
@@ -1601,6 +1626,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "new_business_submissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "new_business_submissions_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
@@ -1671,6 +1703,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
             referencedColumns: ["id"]
           },
           {
@@ -1894,6 +1933,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "policies_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "policies_parent_policy_id_fkey"
             columns: ["parent_policy_id"]
             isOneToOne: false
@@ -2069,6 +2115,133 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_generation_log: {
+        Row: {
+          created_at: string
+          id: number
+          input_tokens: number | null
+          model: string | null
+          outcome: string | null
+          output_tokens: number | null
+          prompt: string | null
+          report_id: string | null
+          steps: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          input_tokens?: number | null
+          model?: string | null
+          outcome?: string | null
+          output_tokens?: number | null
+          prompt?: string | null
+          report_id?: string | null
+          steps?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          input_tokens?: number | null
+          model?: string | null
+          outcome?: string | null
+          output_tokens?: number | null
+          prompt?: string | null
+          report_id?: string | null
+          steps?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_generation_log_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          id: number
+          report_id: string | null
+          row_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          report_id?: string | null
+          row_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          report_id?: string | null
+          row_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_runs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          archived_at: string | null
+          columns: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          prompt: string | null
+          sql: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          columns?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          prompt?: string | null
+          sql: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          columns?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          prompt?: string | null
+          sql?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       role_permissions: {
         Row: {
@@ -2363,6 +2536,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "accounts_receivable_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "accounts_receivable_inv_id_fkey"
             columns: ["inv_id"]
             isOneToOne: true
@@ -2564,6 +2744,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "air_exposure_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "air_exposure_policy_id_fkey"
             columns: ["policy_id"]
             isOneToOne: false
@@ -2676,6 +2863,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "capacity_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "capacity_inv_id_fkey"
             columns: ["inv_id"]
             isOneToOne: false
@@ -2707,6 +2901,75 @@ export type Database = {
           total_mga_net_com: number | null
           total_premium: number | null
           transaction_count: number | null
+        }
+        Relationships: []
+      }
+      clients_computed: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          client_type: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string | null
+          date_added: string | null
+          email: string | null
+          first_name: string | null
+          id: number | null
+          industry: string | null
+          last_name: string | null
+          phone: string | null
+          postal: string | null
+          ref_year: number | null
+          state: string | null
+          status: Database["public"]["Enums"]["clientstatus"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          client_type?: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_added?: never
+          email?: string | null
+          first_name?: string | null
+          id?: number | null
+          industry?: string | null
+          last_name?: string | null
+          phone?: string | null
+          postal?: string | null
+          ref_year?: number | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["clientstatus"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          client_type?: Database["public"]["Enums"]["clienttype"] | null
+          clt_ref?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string | null
+          date_added?: never
+          email?: string | null
+          first_name?: string | null
+          id?: number | null
+          industry?: string | null
+          last_name?: string | null
+          phone?: string | null
+          postal?: string | null
+          ref_year?: number | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["clientstatus"] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2923,6 +3186,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients_computed"
             referencedColumns: ["id"]
           },
           {
@@ -3238,7 +3508,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "underwriter" | "accounting" | "viewer"
       clientstatus: "active" | "inactive" | "prospect"
-      clienttype: "commercial" | "individual" | "non_profit" | "government"
+      clienttype:
+        | "business"
+        | "individual"
+        | "non_profit"
+        | "government"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3371,7 +3646,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "underwriter", "accounting", "viewer"],
       clientstatus: ["active", "inactive", "prospect"],
-      clienttype: ["commercial", "individual", "non_profit", "government"],
+      clienttype: [
+        "business",
+        "individual",
+        "non_profit",
+        "government",
+        "other",
+      ],
     },
   },
 } as const
