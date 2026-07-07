@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "postgres": "npm:postgres@^3",
+    "@supabase/server": "npm:@supabase/server@^1",
+    "@db/postgres": "jsr:@db/postgres@^0.13.0"
+  }
+}

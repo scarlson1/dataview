@@ -1,6 +1,10 @@
 {
   "imports": {
     "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
-    "@supabase/server": "npm:@supabase/server@^1"
+    "@supabase/server": "npm:@supabase/server@^1",
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^4",
+    "@db/postgres": "jsr:@db/postgres@^0.13.0",
+    "ai": "npm:ai@^7",
+    "zod": "npm:zod@^4"
   }
 }

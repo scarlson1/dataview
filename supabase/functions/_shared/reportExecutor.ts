@@ -7,7 +7,7 @@
 // it in parallel. Do not rename or reshape ReportSqlResult / executeReportSql /
 // runIntrospectionQuery / ROW_CAPS.
 
-import postgres from 'npm:postgres@^3';
+import postgres from 'postgres';
 
 export interface ReportSqlSuccess {
   ok: true;
