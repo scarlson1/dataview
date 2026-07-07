@@ -35,6 +35,9 @@ pnpm reset:db:local
 
 # Start the dev server (http://localhost:3000)
 pnpm dev
+
+# Start edge functions
+pnpm supabase functions serve
 ```
 
 Create a `.env.local` file with your local Supabase credentials (URL and anon key from `pnpm supabase status`).
@@ -83,8 +86,3 @@ See the [`docs/`](docs/) directory for details:
 - [SUPABASE_QUICKSTART.md](docs/SUPABASE_QUICKSTART.md) — Supabase setup
 
 ## TODO
-
-- DataGrid actions (bind, etc.)
-- ReactPDF document generation
-- email notifications
-- LLM generated reports

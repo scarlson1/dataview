@@ -169,7 +169,7 @@ const TableRow = ({
                 }}
               >
                 <Pin
-                  size={8}
+                  size={13}
                   fill={pinned ? 'currentColor' : 'none'}
                   style={{
                     transform: pinned ? 'rotate(45deg)' : 'none',
