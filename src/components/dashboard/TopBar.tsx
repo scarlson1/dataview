@@ -1,3 +1,7 @@
+import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { ToggleDarkMode } from '#/components/ToggleDarkMode';
+import { useAuth } from '#/context/AuthContext';
+import { MONO_FONT } from '#/theme/tokens';
 import {
   Dialog,
   DialogContent,
@@ -13,10 +17,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { ChevronRight, PanelLeft, UserRoundPlus, X } from 'lucide-react';
 import { useState } from 'react';
-import { InviteUserForm } from '#/components/auth/InviteUserForm';
-import { ToggleDarkMode } from '#/components/ToggleDarkMode';
-import { useAuth } from '#/context/AuthContext';
-import { MONO_FONT } from '#/theme/tokens';
 
 interface TopBarProps {
   activeName: string;
@@ -144,7 +144,7 @@ function AddUser() {
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
-        <UserRoundPlus />
+        <UserRoundPlus size={20} />
       </IconButton>
       <Dialog
         open={open}

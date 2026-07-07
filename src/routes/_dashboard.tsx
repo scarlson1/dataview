@@ -1,3 +1,5 @@
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
 import {
   CircularProgress,
   Drawer,
@@ -15,8 +17,6 @@ import {
 } from '@tanstack/react-router';
 import { Menu } from 'lucide-react';
 import { Suspense, useState } from 'react';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { TopBar } from '../components/dashboard/TopBar';
 import { getTable, type TableName } from '../data/tables';
@@ -141,7 +141,7 @@ function DashboardLayout() {
             zIndex: (t) => t.zIndex.speedDial,
           }}
         >
-          <Menu />
+          <Menu size={20} />
         </Fab>
       )}
     </Box>
