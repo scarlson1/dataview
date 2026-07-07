@@ -99,21 +99,17 @@ const applyFilterItem = (
   }
 };
 
-const fetchPage = async (
+/**
+ * Apply the grid's sort model, structured filters and quick-filter search to a
+ * query. Shared by the paged fetch and the full export so both honor the exact
+ * same criteria.
+ */
+const applyQueryState = (
+  query: PostgresFilter,
   table: TableDef,
-  state: TableQueryState,
-): Promise<TablePage> => {
-  const { paginationModel, sortModel, filterModel } = state;
-  const from = paginationModel.page * paginationModel.pageSize;
-  const to = from + paginationModel.pageSize - 1;
-
-  // `table.source` is a dynamic, schema-driven relation name that isn't
-  // necessarily one of the literal tables/views baked into the generated
-  // `Database` type (e.g. migrations not yet reflected in `gen:types`).
-  let query = supabase
-    .from(table.source as never)
-    .select('*', { count: 'exact' })
-    .range(from, to) as unknown as PostgresFilter;
+  state: Pick<TableQueryState, 'sortModel' | 'filterModel'>,
+): PostgresFilter => {
+  const { sortModel, filterModel } = state;
 
   for (const s of sortModel) {
     query = query.order(s.field, { ascending: s.sort !== 'desc' });
@@ -144,12 +140,75 @@ const fetchPage = async (
     if (ors.length) query = query.or(ors.join(','));
   }
 
-  const { data, count, error } = await query;
+  return query;
+};
+
+const fetchPage = async (
+  table: TableDef,
+  state: TableQueryState,
+): Promise<TablePage> => {
+  const { paginationModel } = state;
+  const from = paginationModel.page * paginationModel.pageSize;
+  const to = from + paginationModel.pageSize - 1;
+
+  // `table.source` is a dynamic, schema-driven relation name that isn't
+  // necessarily one of the literal tables/views baked into the generated
+  // `Database` type (e.g. migrations not yet reflected in `gen:types`).
+  let query = supabase
+    .from(table.source as never)
+    .select('*', { count: 'exact' }) as unknown as PostgresFilter;
+  query = applyQueryState(query, table, state);
+
+  const { data, count, error } = await query.range(from, to);
   if (error) throw error;
   return {
     rows: (data ?? []) as Record<string, unknown>[],
     rowCount: count ?? 0,
   };
+};
+
+// PostgREST caps each response at a fixed row limit (Supabase default 1000), so
+// exporting every matching row means paging through in batches.
+const EXPORT_BATCH = 1000;
+
+/**
+ * Fetch *every* row matching the current sort/filter — the basis for CSV export.
+ *
+ * MUI's built-in export only sees the rows already loaded into the grid (one
+ * page), so a faithful "export all filtered records" has to re-query Postgres.
+ * Rows are pulled in {@link EXPORT_BATCH}-sized pages and concatenated; a stable
+ * order (the caller's sort, else the primary key) keeps batches from
+ * overlapping or dropping rows.
+ */
+export const fetchAllRows = async (
+  table: TableDef,
+  state: Pick<TableQueryState, 'sortModel' | 'filterModel'>,
+): Promise<Record<string, unknown>[]> => {
+  const hasStableSort = state.sortModel.some((s) =>
+    table.primaryKeys.includes(s.field),
+  );
+
+  const all: Record<string, unknown>[] = [];
+  for (let offset = 0; ; offset += EXPORT_BATCH) {
+    let query = supabase
+      .from(table.source as never)
+      .select('*') as unknown as PostgresFilter;
+    query = applyQueryState(query, table, state);
+    // Guarantee a deterministic order across batches; the caller's sort alone
+    // can tie on non-unique columns and shuffle rows between requests.
+    if (!hasStableSort)
+      for (const key of table.primaryKeys) query = query.order(key);
+
+    const { data, error } = await query.range(
+      offset,
+      offset + EXPORT_BATCH - 1,
+    );
+    if (error) throw error;
+    const batch = (data ?? []) as Record<string, unknown>[];
+    all.push(...batch);
+    if (batch.length < EXPORT_BATCH) break;
+  }
+  return all;
 };
 
 export const useTableData = (table: TableDef, state: TableQueryState) =>

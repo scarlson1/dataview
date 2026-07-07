@@ -34,8 +34,15 @@ export interface TableDef {
   kind: 'table' | 'view';
   /** Columns of the `source` relation, in ordinal order. */
   columns: TableColumn[];
-  /** Column used as the DataGrid row id. */
+  /** First primary-key column — used to seed a deterministic sort order. */
   primaryKey: string;
+  /**
+   * All primary-key columns, in order. A single-column PK has one entry;
+   * composite PKs (e.g. role_permissions' `(role, resource)`) have several.
+   * The DataGrid row id is built by joining these so composite-key rows stay
+   * unique.
+   */
+  primaryKeys: string[];
   /** Columns hidden from the data grid (still shown in the Schema tab). */
   hidden: string[];
 }
@@ -46,11 +53,14 @@ export type TableName = string;
 const isComputedView = (name: string): boolean =>
   COMPUTED_VIEW_SUFFIXES.some((suffix) => name.endsWith(suffix));
 
-const pickPrimaryKey = (base: SchemaTable, columns: TableColumn[]): string => {
-  const pk = base.columns.find((c) => c.key === 'PK');
-  if (pk) return pk.field;
-  if (columns.some((c) => c.field === 'id')) return 'id';
-  return columns[0]?.field ?? 'id';
+const pickPrimaryKeys = (
+  base: SchemaTable,
+  columns: TableColumn[],
+): string[] => {
+  const pks = base.columns.filter((c) => c.key === 'PK').map((c) => c.field);
+  if (pks.length > 0) return pks;
+  if (columns.some((c) => c.field === 'id')) return ['id'];
+  return [columns[0]?.field ?? 'id'];
 };
 
 /**
@@ -93,6 +103,7 @@ const buildTable = (base: SchemaTable): TableDef => {
       : base.name;
   const sourceSchema = SCHEMA[source as keyof typeof SCHEMA] as SchemaTable;
   const columns = mergeColumns(base, sourceSchema);
+  const primaryKeys = pickPrimaryKeys(base, columns);
 
   return {
     name: base.name,
@@ -102,7 +113,8 @@ const buildTable = (base: SchemaTable): TableDef => {
     source,
     kind: base.kind,
     columns,
-    primaryKey: pickPrimaryKey(base, columns),
+    primaryKey: primaryKeys[0],
+    primaryKeys,
     hidden: overlay.hidden ?? [],
   };
 };
