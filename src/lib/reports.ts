@@ -77,5 +77,5 @@ export const runReport = async (
       error ?? { code: 'unknown', message: `Request failed (${res.status}).` },
     );
   }
-  return json;
+  return json as RunReportSuccess;
 };

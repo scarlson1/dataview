@@ -9,6 +9,22 @@
  * `{ mode, prompt, reportId, runtimeError }` and drops the messages entirely.
  */
 
+import { useAuth } from '#/context/AuthContext';
+import { columnsFromMeta } from '#/data/columns';
+import type { Json } from '#/data/database.types';
+import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
+import { supabase } from '#/supabaseClient';
+import { MONO_FONT } from '#/theme/tokens';
+import type {
+  FailureData,
+  PreviewData,
+  ReportColumn,
+  ReportData,
+  ReportDataParts,
+  ReportMode,
+  SqlData,
+  StepData,
+} from '#/types/reports';
 import { useChat } from '@ai-sdk/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -33,21 +49,6 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import { columnsFromMeta } from '#/data/columns';
-import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
-import { supabase } from '#/supabaseClient';
-import { MONO_FONT } from '#/theme/tokens';
-import type {
-  FailureData,
-  PreviewData,
-  ReportColumn,
-  ReportData,
-  ReportDataParts,
-  ReportMode,
-  SqlData,
-  StepData,
-} from '#/types/reports';
 import { SqlBlock } from './SqlBlock';
 
 type UIReportMessage = UIMessage<unknown, ReportDataParts>;
@@ -224,7 +225,7 @@ export const ReportBuilder = ({
             description: finalDescription || null,
             prompt: prompt.trim() || null,
             sql: finalSql,
-            columns,
+            columns: columns as unknown as Json, // as Json[],
             created_by: user?.id ?? null,
           })
           .select('id')
@@ -239,7 +240,7 @@ export const ReportBuilder = ({
           name: finalName,
           description: finalDescription || null,
           sql: finalSql,
-          columns,
+          columns: columns as unknown as Json,
         })
         .eq('id', reportId);
       if (updateError) throw new Error(updateError.message);

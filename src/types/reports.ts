@@ -6,6 +6,7 @@
  */
 
 import type { ColumnKind } from '#/data/schema.generated';
+import type { UIDataTypes } from 'ai';
 
 export type ReportMode = 'create' | 'refine' | 'repair';
 
@@ -53,7 +54,14 @@ export interface FailureData {
  * so `onData` / `message.parts` are typed (`{ type: 'data-step'; data: StepData }`
  * etc.).
  */
-export interface ReportDataParts {
+// export interface ReportDataParts {
+//   step: StepData;
+//   sql: SqlData;
+//   preview: PreviewData;
+//   report: ReportData;
+//   failure: FailureData;
+// }
+export interface ReportDataParts extends UIDataTypes {
   step: StepData;
   sql: SqlData;
   preview: PreviewData;
