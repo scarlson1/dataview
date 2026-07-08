@@ -129,7 +129,9 @@ function ReportsList() {
         {canWrite && !building && (
           <Button
             variant='contained'
-            startIcon={<Plus size={16} />}
+            startIcon={
+              <Plus size={16} color={'var(--variant-containedColor)'} />
+            }
             onClick={() => setBuilding(true)}
           >
             New report

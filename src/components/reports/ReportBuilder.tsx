@@ -427,7 +427,9 @@ export const ReportBuilder = ({
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
                 variant='contained'
-                startIcon={<Save size={16} />}
+                startIcon={
+                  <Save size={16} color={'var(--variant-containedColor)'} />
+                }
                 disabled={!name.trim() || save.isPending}
                 onClick={() =>
                   save.mutate({
@@ -576,16 +578,36 @@ export const ReportBuilder = ({
             variant='contained'
             startIcon={
               started ? (
-                <Send size={16} color={'var(--variant-containedColor)'} />
+                <Send
+                  size={16}
+                  color={
+                    busy || !draft.trim()
+                      ? 'var(--palette-action-disabled)'
+                      : 'var(--variant-containedColor)'
+                  }
+                />
               ) : (
-                <Sparkles size={16} color={'var(--variant-containedColor)'} />
+                <Sparkles
+                  size={16}
+                  color={
+                    busy || !draft.trim()
+                      ? 'var(--palette-action-disabled)'
+                      : 'var(--variant-containedColor)'
+                  }
+                />
               )
             }
             endIcon={
               <Typography
                 variant='body2'
-                color='textMuted'
-                sx={{ fontSize: '0.75rem !important', lineHeight: 'inherit' }}
+                sx={{
+                  fontSize: '0.75rem !important',
+                  lineHeight: 'inherit',
+                  color:
+                    busy || !draft.trim()
+                      ? 'var(--palette-action-disabled)'
+                      : 'var(--palette-primary-contrastText)',
+                }}
               >
                 {submitShortcutDisplay}
               </Typography>

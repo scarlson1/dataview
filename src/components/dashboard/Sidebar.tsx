@@ -256,7 +256,7 @@ export const Sidebar = ({
             color: 'primary.contrastText',
           }}
         >
-          <Database size={20} />
+          <Database size={20} color='var(--palette-primary-contrastText)' />
         </Box>
         {!collapsed && (
           <Typography
