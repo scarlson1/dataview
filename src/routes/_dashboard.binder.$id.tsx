@@ -7,6 +7,14 @@
  * registered entity forms in a drawer, seeded with the parent key.
  */
 
+import { EntityDrawer } from '#/components/EntityDrawer';
+import { StampPrintDialog } from '#/components/StampPrintDialog';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { getEntityForm } from '#/data/entityForms';
+import { labelize, money, pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -21,17 +29,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Pencil, Plus, Printer } from 'lucide-react';
 import { Suspense, useState } from 'react';
-import { EntityDrawer } from '#/components/EntityDrawer';
-import { StampPrintDialog } from '#/components/StampPrintDialog';
-import { StatusChip } from '#/components/StatusChip';
-import { useAuth } from '#/context/AuthContext';
-import { getEntityForm } from '#/data/entityForms';
-import { labelize, money, pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/binder/$id')({
   component: BinderDetail,
+  loader: ({ params }) => ({ crumb: params.id }),
 });
 
 interface BinderRow {

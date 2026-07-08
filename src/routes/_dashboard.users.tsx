@@ -1,13 +1,13 @@
+import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { useAuth } from '#/context/AuthContext';
+import { roleFromSession } from '#/lib/authRole';
+import { supabase } from '#/supabaseClient';
 import { Box, Chip, Grid, Paper, Typography } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
-import { InviteUserForm } from '#/components/auth/InviteUserForm';
-import { useAuth } from '#/context/AuthContext';
-import { roleFromSession } from '#/lib/authRole';
-import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/users')({
   // Admin-only surface. The parent _dashboard route already ensures a session
@@ -21,6 +21,7 @@ export const Route = createFileRoute('/_dashboard/users')({
     }
   },
   component: RouteComponent,
+  loader: () => ({ crumb: 'team' }),
 });
 
 // Keep in sync with the public.app_role enum (20260703021911_rbac.sql).
@@ -113,7 +114,7 @@ function RouteComponent() {
             <Chip
               size='small'
               label={label}
-              color={value ? ROLE_CHIP_COLOR[value] ?? 'default' : 'default'}
+              color={value ? (ROLE_CHIP_COLOR[value] ?? 'default') : 'default'}
               variant={value ? 'filled' : 'outlined'}
             />
           );
@@ -200,9 +201,10 @@ function RouteComponent() {
                     fontWeight: 600,
                     fontSize: 13,
                   },
-                  '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
-                    outline: 'none',
-                  },
+                  '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within':
+                    {
+                      outline: 'none',
+                    },
                 })}
               />
             </Paper>

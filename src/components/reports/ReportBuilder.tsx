@@ -39,7 +39,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { useHotkey } from '@tanstack/react-hotkeys';
+import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { DefaultChatTransport, type UIMessage } from 'ai';
@@ -56,6 +56,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { SqlBlock } from './SqlBlock';
+
+// TODO: on save -> invalidate reports tanstack query cache
 
 type UIReportMessage = UIMessage<unknown, ReportDataParts>;
 
@@ -221,6 +223,7 @@ export const ReportBuilder = ({
   // Submit the composer with Cmd+Enter (Ctrl+Enter on Windows/Linux). `Mod`
   // resolves per-platform, and the listener is scoped to the composer textarea.
   useHotkey('Mod+Enter', () => send(), { target: composerRef });
+  const submitShortcutDisplay = formatForDisplay('Mod+Enter');
 
   // Retry the last turn after a transient failure (e.g. a dropped model
   // connection). regenerate() keeps a trailing user message and re-runs it.
@@ -577,6 +580,15 @@ export const ReportBuilder = ({
               ) : (
                 <Sparkles size={16} color={'var(--variant-containedColor)'} />
               )
+            }
+            endIcon={
+              <Typography
+                variant='body2'
+                color='textMuted'
+                sx={{ fontSize: '0.75rem !important', lineHeight: 'inherit' }}
+              >
+                {submitShortcutDisplay}
+              </Typography>
             }
             disabled={busy || !draft.trim()}
             onClick={send}

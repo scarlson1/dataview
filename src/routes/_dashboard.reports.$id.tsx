@@ -5,6 +5,15 @@
  * in that mode; a run error surfaces a Repair affordance.
  */
 
+import { ReportBuilder } from '#/components/reports/ReportBuilder';
+import { SqlBlock } from '#/components/reports/SqlBlock';
+import { useAuth } from '#/context/AuthContext';
+import { columnsFromMeta } from '#/data/columns';
+import { downloadCsv } from '#/lib/csv';
+import { type RunReportError, runReport } from '#/lib/reports';
+import { supabase } from '#/supabaseClient';
+import { MONO_FONT } from '#/theme/tokens';
+import type { ReportColumn, RunReportSuccess } from '#/types/reports';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -17,18 +26,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Download, Play, Sparkles, Wrench } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { ReportBuilder } from '#/components/reports/ReportBuilder';
-import { SqlBlock } from '#/components/reports/SqlBlock';
-import { useAuth } from '#/context/AuthContext';
-import { columnsFromMeta } from '#/data/columns';
-import { downloadCsv } from '#/lib/csv';
-import { type RunReportError, runReport } from '#/lib/reports';
-import { supabase } from '#/supabaseClient';
-import { MONO_FONT } from '#/theme/tokens';
-import type { ReportColumn, RunReportSuccess } from '#/types/reports';
 
 export const Route = createFileRoute('/_dashboard/reports/$id')({
   component: ReportDetail,
+  loader: ({ params }) => ({ crumb: params.id }),
 });
 
 interface ReportRow {

@@ -4,6 +4,9 @@
  * / archive) are hidden for the viewer role; RLS is the real boundary.
  */
 
+import { ReportBuilder } from '#/components/reports/ReportBuilder';
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -22,12 +25,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Archive, MoreVertical, Pencil, Plus, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ReportBuilder } from '#/components/reports/ReportBuilder';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/reports/')({
   component: ReportsList,
+  loader: () => ({ crumb: 'reports' }),
 });
 
 interface ReportRow {

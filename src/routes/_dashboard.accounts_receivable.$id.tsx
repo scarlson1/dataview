@@ -5,6 +5,12 @@
  * of an AR file. Reads accounts_receivable_computed for the live balance.
  */
 
+import { RecordPaymentDialog } from '#/components/RecordPaymentDialog';
+import { StatusChip } from '#/components/StatusChip';
+import { useAuth } from '#/context/AuthContext';
+import { labelize, money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -19,15 +25,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, FileText, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { RecordPaymentDialog } from '#/components/RecordPaymentDialog';
-import { StatusChip } from '#/components/StatusChip';
-import { useAuth } from '#/context/AuthContext';
-import { labelize, money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/accounts_receivable/$id')({
   component: ArDetail,
+  loader: ({ params }) => ({ crumb: params.id }),
 });
 
 interface ArRow {

@@ -5,6 +5,10 @@
  * fees vs. commission build-up, which is what an invoice is.
  */
 
+import { StatusChip } from '#/components/StatusChip';
+import { labelize, money, pct } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,13 +22,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, FileDown, Receipt, ScrollText } from 'lucide-react';
 import { toast } from 'sonner';
-import { StatusChip } from '#/components/StatusChip';
-import { labelize, money, pct } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
 
 export const Route = createFileRoute('/_dashboard/invoices/$id')({
   component: InvoiceDetail,
+  loader: ({ params }) => ({ crumb: params.id }),
 });
 
 interface InvoiceRow {
@@ -116,9 +117,8 @@ function InvoiceDetail() {
     mutationFn: async (inv: InvoiceRow) => {
       // Dynamic import keeps @react-pdf/renderer (and this orchestrator)
       // code-split out of the main bundle until a PDF is actually requested.
-      const { downloadInvoicePdf } = await import(
-        '#/components/pdf/invoicePdfDownload'
-      );
+      const { downloadInvoicePdf } =
+        await import('#/components/pdf/invoicePdfDownload');
       await downloadInvoicePdf(inv);
     },
     onSuccess: () => toast.success('Invoice PDF downloaded'),

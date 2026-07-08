@@ -4,6 +4,16 @@
  * renewal pipeline) and provides quick jumps into the reports and data tables.
  */
 
+import { TableIcon } from '#/components/TableIcon';
+import { useAuth } from '#/context/AuthContext';
+import {
+  formatTableLabel,
+  TABLE_GROUPS,
+  TABLES,
+  type TableName,
+} from '#/data/tables';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material/styles';
@@ -20,19 +30,12 @@ import {
   TrendingUp,
   Workflow,
 } from 'lucide-react';
-import { TableIcon } from '#/components/TableIcon';
-import { useAuth } from '#/context/AuthContext';
-import {
-  formatTableLabel,
-  TABLE_GROUPS,
-  TABLES,
-  type TableName,
-} from '#/data/tables';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/')({
   component: Home,
+  // loader: () => ({
+  //   crumb: <HomeIcon fontSize={16} />,
+  // }),
 });
 
 const num = (v: number | null | undefined): number => Number(v) || 0;

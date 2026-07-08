@@ -1,3 +1,4 @@
+import { useAuth } from '#/context/AuthContext';
 import { Skeleton, useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -19,7 +20,6 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '#/context/AuthContext';
 import {
   formatTableLabel,
   TABLE_GROUPS,
