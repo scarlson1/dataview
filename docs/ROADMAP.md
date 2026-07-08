@@ -1,5 +1,6 @@
 # FEATURE ROADMAP & TODOS
 
+- [] fix table name & reports view router file name conflict
 - [x] AI/LLM generated SQL queries / reports — plan: [LLM_REPORTS_PLAN.md](LLM_REPORTS_PLAN.md)
   - [] tracing (langfuse)
   - [] format streaming text into logical messages (currently giant text blob; one paragraph)

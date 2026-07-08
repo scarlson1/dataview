@@ -26,7 +26,7 @@ import { Archive, MoreVertical, Pencil, Plus, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export const Route = createFileRoute('/_dashboard/reports/')({
+export const Route = createFileRoute('/_dashboard/gen-reports/')({
   component: ReportsList,
   loader: () => ({ crumb: 'reports' }),
 });
@@ -150,7 +150,9 @@ function ReportsList() {
           <ReportBuilder
             mode='create'
             onCancel={() => setBuilding(false)}
-            onSaved={(id) => navigate({ to: '/reports/$id', params: { id } })}
+            onSaved={(id) =>
+              navigate({ to: '/gen-reports/$id', params: { id } })
+            }
           />
         </Paper>
       )}
@@ -179,7 +181,7 @@ function ReportsList() {
             <Box
               key={report.id}
               onClick={() =>
-                navigate({ to: '/reports/$id', params: { id: report.id } })
+                navigate({ to: '/gen-reports/$id', params: { id: report.id } })
               }
               sx={(t) => ({
                 display: 'flex',

@@ -5,6 +5,23 @@
  * in that mode; a run error surfaces a Repair affordance.
  */
 
+import { ReportBuilder } from '#/components/reports/ReportBuilder';
+import {
+  ReportParamsForm,
+  type ReportParamsFormHandle,
+} from '#/components/reports/ReportParamsForm';
+import { SqlBlock } from '#/components/reports/SqlBlock';
+import { useAuth } from '#/context/AuthContext';
+import { columnsFromMeta } from '#/data/columns';
+import { downloadCsv } from '#/lib/csv';
+import { runReport, type RunReportError } from '#/lib/reports';
+import { supabase } from '#/supabaseClient';
+import { MONO_FONT } from '#/theme/tokens';
+import type {
+  ReportColumn,
+  ReportParam,
+  RunReportSuccess,
+} from '#/types/reports';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -17,25 +34,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Download, Play, Sparkles, Wrench } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { ReportBuilder } from '#/components/reports/ReportBuilder';
-import {
-  ReportParamsForm,
-  type ReportParamsFormHandle,
-} from '#/components/reports/ReportParamsForm';
-import { SqlBlock } from '#/components/reports/SqlBlock';
-import { useAuth } from '#/context/AuthContext';
-import { columnsFromMeta } from '#/data/columns';
-import { downloadCsv } from '#/lib/csv';
-import { type RunReportError, runReport } from '#/lib/reports';
-import { supabase } from '#/supabaseClient';
-import { MONO_FONT } from '#/theme/tokens';
-import type {
-  ReportColumn,
-  ReportParam,
-  RunReportSuccess,
-} from '#/types/reports';
 
-export const Route = createFileRoute('/_dashboard/reports/$id')({
+export const Route = createFileRoute('/_dashboard/gen-reports/$id')({
   component: ReportDetail,
   loader: ({ params }) => ({ crumb: params.id }),
 });
@@ -151,7 +151,7 @@ function ReportDetail() {
   if (report.isError || !data) {
     return (
       <Box sx={{ maxWidth: 900 }}>
-        <BackButton onClick={() => navigate({ to: '/reports' })} />
+        <BackButton onClick={() => navigate({ to: '/gen-reports' })} />
         <Typography color='error'>
           {(report.error as Error)?.message ?? 'Report not found.'}
         </Typography>
@@ -161,7 +161,7 @@ function ReportDetail() {
 
   return (
     <Box sx={{ maxWidth: 1100 }}>
-      <BackButton onClick={() => navigate({ to: '/reports' })} />
+      <BackButton onClick={() => navigate({ to: '/gen-reports' })} />
 
       <Box
         sx={{

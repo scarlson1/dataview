@@ -423,7 +423,7 @@ export const Sidebar = ({
           icon={<FileBarChart2 size={20} />}
           label='Reports'
           collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/reports' }))}
+          onClick={() => go(() => navigate({ to: '/gen-reports' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}

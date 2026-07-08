@@ -13,6 +13,22 @@
  * The server reads `{ mode, reportId, runtimeError, messages }` from the body.
  */
 
+import { useAuth } from '#/context/AuthContext';
+import type { Json } from '#/data/database.types';
+import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
+import { supabase } from '#/supabaseClient';
+import { MONO_FONT } from '#/theme/tokens';
+import type {
+  FailureData,
+  PreviewData,
+  ReportColumn,
+  ReportData,
+  ReportDataParts,
+  ReportMode,
+  ReportParam,
+  SqlData,
+  StepData,
+} from '#/types/reports';
 import { useChat } from '@ai-sdk/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -49,22 +65,6 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import type { Json } from '#/data/database.types';
-import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
-import { supabase } from '#/supabaseClient';
-import { MONO_FONT } from '#/theme/tokens';
-import type {
-  FailureData,
-  PreviewData,
-  ReportColumn,
-  ReportData,
-  ReportDataParts,
-  ReportMode,
-  ReportParam,
-  SqlData,
-  StepData,
-} from '#/types/reports';
 import { Prose } from './Prose';
 import { SqlBlock } from './SqlBlock';
 
@@ -338,7 +338,7 @@ export const ReportBuilder = ({
     onSuccess: (id) => {
       toast.success('Report saved');
       if (onSaved) onSaved(id);
-      else navigate({ to: '/reports/$id', params: { id } });
+      else navigate({ to: '/gen-reports/$id', params: { id } });
     },
     onError: (e: Error) => toast.error(e.message),
   });
