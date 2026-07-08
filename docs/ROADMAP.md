@@ -4,6 +4,7 @@
   - [] tracing (langfuse)
   - [] chat thread persistence (supabase table, etc.)
   - [] Trim large historical tool results (`list_tables`/`run_query` outputs) to cut token burn. start with prompt caching; optimize if context growth bites.
+  - [] verify running existing report template also honors RBAC
   - [] Use SQL editor for syntax highlighting & validation (monaco ??)
 - fix exports - server side export -> export all rows matching filters, not just current page
 - ReactPDF document generation

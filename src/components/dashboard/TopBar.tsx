@@ -1,7 +1,7 @@
 import { InviteUserForm } from '#/components/auth/InviteUserForm';
+import { Breadcrumbs } from '#/components/dashboard/Breadcrumbs';
 import { ToggleDarkMode } from '#/components/ToggleDarkMode';
 import { useAuth } from '#/context/AuthContext';
-import { MONO_FONT } from '#/theme/tokens';
 import {
   Dialog,
   DialogContent,
@@ -14,19 +14,18 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import { ChevronRight, PanelLeft, UserRoundPlus, X } from 'lucide-react';
+import { PanelLeft, UserRoundPlus, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface TopBarProps {
-  activeName: string;
+  // activeName: string;
   onToggleSidebar: () => void;
   /** Hidden on mobile, where a floating button opens the nav instead. */
   showMenuButton?: boolean;
 }
 
 export const TopBar = ({
-  activeName,
+  // activeName,
   onToggleSidebar,
   showMenuButton = true,
 }: TopBarProps) => {
@@ -59,7 +58,9 @@ export const TopBar = ({
           </Tooltip>
         )}
 
-        <Box
+        <Breadcrumbs />
+
+        {/* <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
@@ -93,7 +94,7 @@ export const TopBar = ({
           >
             {activeName}
           </Typography>
-        </Box>
+        </Box> */}
 
         <Box sx={{ flex: 1 }} />
 

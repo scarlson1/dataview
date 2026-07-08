@@ -2,6 +2,9 @@ import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_dashboard/$table')({
   component: TableLayout,
+  loader: () => ({
+    crumb: 'tables',
+  }),
 });
 
 // Layout for a table's pages: the list lives in `$table.index`, the record

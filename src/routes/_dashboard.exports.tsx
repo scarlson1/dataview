@@ -4,6 +4,8 @@
  * backing view on demand and streams a CSV to the browser.
  */
 
+import { type CsvColumn, downloadCsv } from '#/lib/csv';
+import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -12,11 +14,10 @@ import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { type CsvColumn, downloadCsv } from '#/lib/csv';
-import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/exports')({
   component: ExportCenter,
+  loader: () => ({ crumb: 'exports' }),
 });
 
 interface ExportDef {

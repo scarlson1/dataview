@@ -7,6 +7,9 @@ import { getTable } from '../data/tables';
 
 export const Route = createFileRoute('/_dashboard/$table/')({
   component: TableIndexRoute,
+  loader: ({ params }) => ({
+    crumb: params.table,
+  }),
 });
 
 function TableIndexRoute() {

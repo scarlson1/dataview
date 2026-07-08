@@ -29,6 +29,9 @@ export const Route = createFileRoute('/_dashboard')({
     }
   },
   component: DashboardLayout,
+  // loader: () => ({
+  //   crumb: <HomeIcon size={12} />,
+  // }),
 });
 
 function DashboardLayout() {
@@ -97,7 +100,7 @@ function DashboardLayout() {
         sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}
       >
         <TopBar
-          activeName={table?.label ?? ''}
+          // activeName={table?.label ?? ''}
           showMenuButton={!isMobile}
           onToggleSidebar={() =>
             isMobile ? setMobileOpen((o) => !o) : setCollapsed((c) => !c)

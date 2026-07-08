@@ -5,6 +5,8 @@
  * against actuals from policies_computed and renewals_computed.
  */
 
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
@@ -18,11 +20,10 @@ import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
 
 export const Route = createFileRoute('/_dashboard/budget')({
   component: BudgetProforma,
+  loader: () => ({ crumb: 'budget' }),
 });
 
 interface LobAgg {
