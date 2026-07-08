@@ -412,3 +412,18 @@ column, preserving the view's column order. View-only computed columns have no
 base match and pass through untouched; when `source === base.name` the merge is
 a no-op identity. `schema.generated.ts` stays untouched — the enrichment happens
 only in the registry the UI reads.
+
+### information_schema hides FKs referencing tables the role doesn't own
+
+`information_schema.constraint_column_usage` only exposes referenced tables the
+current role **owns**, so the report agent's `get_table_schema` introspection
+silently omitted every FK pointing at `auth.users` (owned by
+`supabase_auth_admin`): `reports.created_by`, `report_runs.user_id`,
+`report_generation_log.user_id`, `user_roles.user_id`. The `foreign_keys` CTE
+in `supabase/functions/_shared/schemaTools.ts` is now built on `pg_constraint`
+(which has no ownership filter) with `unnest(conkey, confkey) WITH ORDINALITY`
+so composite FKs pair columns positionally instead of cartesian-producting.
+Non-public referenced tables are schema-qualified (`auth.users`) so the model
+doesn't look for them in `public`. Synthetic not-null CHECK rows
+(`<oid>_<attnum>_not_null`) are filtered out of the `checks` output by name
+pattern.

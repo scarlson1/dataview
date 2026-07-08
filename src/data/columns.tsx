@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { StatusChip } from '../components/StatusChip';
 import { MONO_FONT, valueTone } from '../theme/tokens';
-import { capitalize, type TableColumn, type TableDef } from './tables';
+import { type ColumnKind, capitalize, type TableDef } from './tables';
 
 const isEmpty = (v: unknown): boolean =>
   v === undefined || v === null || v === '';
@@ -57,9 +57,9 @@ const MIN_WIDTH: Record<string, number> = {
   text: 150,
 };
 
-const renderCellFor = (
-  column: TableColumn,
-): ((params: GridRenderCellParams) => React.ReactNode) | undefined => {
+const renderCellFor = (column: {
+  kind: ColumnKind;
+}): ((params: GridRenderCellParams) => React.ReactNode) | undefined => {
   switch (column.kind) {
     case 'chip':
       return ({ value }) =>
@@ -105,17 +105,35 @@ const renderCellFor = (
 const gridType = (kind: string): GridColDef['type'] =>
   kind === 'number' ? 'number' : 'string';
 
+/** The minimum column shape needed to render a kind-driven grid column. */
+interface ColumnMeta {
+  field: string;
+  label: string;
+  kind: ColumnKind;
+}
+
+/**
+ * Build a single kind-driven DataGrid column. Shared by `toGridColumns` (schema
+ * tables) and the saved-report grid, which renders stored `{field,label,kind}`
+ * meta through the exact same rendering.
+ */
+const toGridColumn = (c: ColumnMeta): GridColDef => ({
+  field: c.field,
+  headerName: c.label,
+  type: gridType(c.kind),
+  flex: 1,
+  minWidth: MIN_WIDTH[c.kind] ?? 140,
+  headerAlign: c.kind === 'number' ? 'right' : 'left',
+  align: c.kind === 'number' ? 'right' : 'left',
+  renderCell: renderCellFor(c),
+});
+
+/** Build DataGrid columns from a plain column-meta list (e.g. a saved report). */
+export const columnsFromMeta = (columns: ColumnMeta[]): GridColDef[] =>
+  columns.map(toGridColumn);
+
 /** Build DataGrid columns for a table's display source, honoring hidden cols. */
 export const toGridColumns = (table: TableDef): GridColDef[] =>
   table.columns
     .filter((c) => !table.hidden.includes(c.field))
-    .map((c) => ({
-      field: c.field,
-      headerName: c.label,
-      type: gridType(c.kind),
-      flex: 1,
-      minWidth: MIN_WIDTH[c.kind] ?? 140,
-      headerAlign: c.kind === 'number' ? 'right' : 'left',
-      align: c.kind === 'number' ? 'right' : 'left',
-      renderCell: renderCellFor(c),
-    }));
+    .map(toGridColumn);

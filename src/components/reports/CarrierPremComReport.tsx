@@ -19,7 +19,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
-import { downloadCsv } from '#/lib/csv';
+import { useDownloadCsv } from '#/hooks/useDownloadCsv';
 import { money } from '#/lib/money';
 import { supabase } from '#/supabaseClient';
 
@@ -60,6 +60,37 @@ export const CarrierPremComReport = () => {
     { premium: 0, gross: 0, mga: 0, carrier: 0 },
   );
 
+  const { mutate, isPending } = useDownloadCsv();
+
+  // useMutation({
+  //   mutationFn: async ({
+  //     rows,
+  //     uuid,
+  //   }: {
+  //     rows: Record<string, unknown>[];
+  //     uuid: string;
+  //   }) => {
+  //     downloadCsv(
+  //       'carrier-prem-com',
+  //       rows as unknown as Record<string, unknown>[],
+  //     );
+  //     return { rowCount: rows.length, uuid };
+  //   },
+  //   onMutate: async (vars) => {
+  //     toast.loading(`downloading Carrier Premium Commission report...`, {
+  //       id: vars.uuid,
+  //     });
+  //   },
+  //   onSuccess: (data, vars) => {
+  //     toast.success(`Exported ${data.rowCount.toLocaleString()} rows`, {
+  //       id: vars.uuid,
+  //     });
+  //   },
+  //   onError: (e, vars) => {
+  //     toast.error((e as Error).message, { id: vars.uuid });
+  //   },
+  // });
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: '20px' }}>
       <Box
@@ -84,11 +115,14 @@ export const CarrierPremComReport = () => {
           variant='outlined'
           startIcon={<Download size={16} />}
           disabled={rows.length === 0}
+          loading={isPending}
           onClick={() =>
-            downloadCsv(
-              'carrier-prem-com',
-              rows as unknown as Record<string, unknown>[],
-            )
+            mutate({
+              prefix: 'carrier-prem-com',
+              title: 'Carrier Premium Comm.',
+              rows: rows as unknown as Record<string, unknown>[],
+              uuid: crypto.randomUUID(),
+            })
           }
         >
           CSV

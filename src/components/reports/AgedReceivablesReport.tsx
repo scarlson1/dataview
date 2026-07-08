@@ -16,9 +16,10 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
+import { toast } from 'sonner';
 import { StatusChip } from '#/components/StatusChip';
 import { downloadCsv } from '#/lib/csv';
 import { money } from '#/lib/money';
@@ -71,6 +72,35 @@ export const AgedReceivablesReport = () => {
       .reduce((a, r) => a + num(r.balance_due), 0);
   const total = rows.reduce((a, r) => a + num(r.balance_due), 0);
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: async ({
+      rows,
+      uuid = crypto.randomUUID(),
+    }: {
+      rows: Record<string, unknown>[];
+      uuid?: string;
+    }) => {
+      downloadCsv(
+        'aged-receivables',
+        rows as unknown as Record<string, unknown>[],
+      );
+      return { rowCount: rows.length, uuid };
+    },
+    onMutate: async (vars) => {
+      toast.loading(`downloading Aged Receivables report...`, {
+        id: vars.uuid,
+      });
+    },
+    onSuccess: (data, vars) => {
+      toast.success(`Exported ${data.rowCount.toLocaleString()} rows`, {
+        id: vars.uuid,
+      });
+    },
+    onError: (e, vars) => {
+      toast.error((e as Error).message, { id: vars.uuid });
+    },
+  });
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: '20px' }}>
       <Box
@@ -94,11 +124,12 @@ export const AgedReceivablesReport = () => {
           variant='outlined'
           startIcon={<Download size={16} />}
           disabled={rows.length === 0}
+          loading={isPending}
           onClick={() =>
-            downloadCsv(
-              'aged-receivables',
-              rows as unknown as Record<string, unknown>[],
-            )
+            mutate({
+              rows: rows as unknown as Record<string, unknown>[],
+              uuid: crypto.randomUUID(),
+            })
           }
         >
           CSV

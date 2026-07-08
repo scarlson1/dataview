@@ -1,4 +1,3 @@
-import { useAuth } from '#/context/AuthContext';
 import { Skeleton, useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -11,6 +10,7 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   ChevronDown,
   Database,
+  FileBarChart2,
   FileDown,
   LogOut,
   Pin,
@@ -19,6 +19,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '#/context/AuthContext';
 import {
   formatTableLabel,
   TABLE_GROUPS,
@@ -417,6 +418,12 @@ export const Sidebar = ({
           label='Budget'
           collapsed={collapsed}
           onClick={() => go(() => navigate({ to: '/budget' }))}
+        />
+        <FooterItem
+          icon={<FileBarChart2 size={20} />}
+          label='Reports'
+          collapsed={collapsed}
+          onClick={() => go(() => navigate({ to: '/reports' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}

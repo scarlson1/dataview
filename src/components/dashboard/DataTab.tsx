@@ -1,3 +1,6 @@
+import { useAuth } from '#/context/AuthContext';
+import { useDownloadCsv } from '#/hooks/useDownloadCsv';
+import { fetchAllRows, useTableData } from '#/hooks/useTableData';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -17,13 +20,10 @@ import {
   ToolbarButton,
   useGridRootProps,
 } from '@mui/x-data-grid';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import { fetchAllRows, useTableData } from '#/hooks/useTableData';
-import { downloadCsv } from '#/lib/csv';
 import { toGridColumns } from '../../data/columns';
 import { getTableActions, type RowAction } from '../../data/tableActions';
 import type { TableDef } from '../../data/tables';
@@ -252,25 +252,56 @@ export const DataTab = ({ table }: DataTabProps) => {
   // Server-side CSV export. The grid's built-in export only sees the current
   // page, so re-query every row matching the active sort/filter and stream it
   // to a download. Headers/order mirror the visible (non-hidden) columns.
-  const [exporting, setExporting] = useState(false);
+  // const [exporting, setExporting] = useState(false);
   const rowCount = data?.rowCount ?? 0;
 
-  const handleExport = async () => {
-    setExporting(true);
-    try {
+  const { mutateAsync: downloadCsvAsync } = useDownloadCsv({
+    withToast: false,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async ({
+      table,
+      sortModel,
+      filterModel,
+      uuid,
+    }: {
+      table: TableDef;
+      sortModel: GridSortModel;
+      filterModel: GridFilterModel;
+      uuid: string;
+    }) => {
       const rows = await fetchAllRows(table, { sortModel, filterModel });
       const csvColumns = table.columns
         .filter((c) => !table.hidden.includes(c.field))
         .map((c) => ({ field: c.field, label: c.label }));
       const stamp = new Date().toISOString().slice(0, 10);
-      downloadCsv(`${table.name}-${stamp}`, rows, csvColumns);
-      toast.success(`Exported ${rows.length.toLocaleString()} rows`);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setExporting(false);
-    }
-  };
+
+      await downloadCsvAsync({
+        prefix: `${table.name}-${stamp}`,
+        rows,
+        columns: csvColumns,
+        uuid: crypto.randomUUID(),
+      });
+      // downloadCsv(`${table.name}-${stamp}`, rows, csvColumns);
+      return { rowCount: rows.length, uuid };
+    },
+    onMutate: async (vars) => {
+      toast.loading(`generating export...`, { id: vars.uuid });
+    },
+    onSuccess: (data, vars) => {
+      toast.success(`Exported ${data.rowCount.toLocaleString()} rows`, {
+        id: vars.uuid,
+      });
+    },
+    onError: (e, vars) => {
+      toast.error((e as Error).message, { id: vars.uuid });
+    },
+  });
+
+  const handleExport = useCallback(() => {
+    mutate({ table, sortModel, filterModel, uuid: crypto.randomUUID() });
+  }, [table, sortModel, filterModel]);
 
   return (
     <Box>
@@ -299,8 +330,8 @@ export const DataTab = ({ table }: DataTabProps) => {
         slotProps={{
           toolbar: {
             onExport: handleExport,
-            exporting,
-            exportDisabled: exporting || isError || rowCount === 0,
+            exporting: isPending,
+            exportDisabled: isPending || isError || rowCount === 0,
           },
         }}
         onRowClick={(params) =>
