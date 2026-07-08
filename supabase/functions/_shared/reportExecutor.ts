@@ -5,7 +5,8 @@
 //
 // This exported contract is FROZEN — Wave 2 (generate-report) is built against
 // it in parallel. Do not rename or reshape ReportSqlResult / executeReportSql /
-// runIntrospectionQuery / ROW_CAPS.
+// runIntrospectionQuery / ROW_CAPS. (`values` was added later as an OPTIONAL
+// executeReportSql field — additive, existing callers unchanged.)
 
 import postgres from 'postgres';
 
@@ -225,6 +226,12 @@ export const executeReportSql = async (opts: {
   sql: string;
   claims: Record<string, unknown>;
   rowCap: number;
+  /**
+   * Positional bind values for $1..$n in `sql` (parameterized reports — see
+   * reportParams.ts). Bound via the extended protocol on both the EXPLAIN cost
+   * gate and the capped run, so values never appear in the SQL text.
+   */
+  values?: unknown[];
 }): Promise<ReportSqlResult> => {
   const client = getClient();
   if (!client) {
@@ -246,6 +253,7 @@ export const executeReportSql = async (opts: {
   }
 
   const claimsJson = JSON.stringify(opts.claims);
+  const values = (opts.values ?? []) as never[];
   const started = Date.now();
 
   // A single reserved connection so the sequential SET LOCAL / claims GUC apply
@@ -277,7 +285,7 @@ export const executeReportSql = async (opts: {
       try {
         const explainRows = await reserved.unsafe(
           `explain (format json) ${query}`,
-          [],
+          values,
           { prepare: true },
         );
         plan = (explainRows[0] as Record<string, unknown>)?.['QUERY PLAN'];
@@ -295,7 +303,7 @@ export const executeReportSql = async (opts: {
       try {
         raw = (await reserved.unsafe(
           `select * from (${query}\n) _r limit ${cap + 1}`,
-          [],
+          values,
           { prepare: true },
         )) as unknown as Record<string, unknown>[];
       } catch (err) {

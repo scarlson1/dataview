@@ -1,3 +1,4 @@
+import { ToggleDarkMode } from '#/components/ToggleDarkMode';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -6,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Database, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { ToggleDarkMode } from '#/components/ToggleDarkMode';
 import { SignInForm } from '../components/auth/SignInForm';
 // import { useColorMode } from '../theme/ColorModeContext';
 
@@ -65,7 +65,7 @@ function LoginPage() {
               boxShadow: `0 4px 12px ${theme.vars.palette.primary.light}`,
             })}
           >
-            <Database size={28} />
+            <Database size={28} color='var(--palette-primary-contrastText)' />
           </Box>
           <Typography
             sx={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.015em' }}

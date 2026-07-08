@@ -21,6 +21,9 @@
 alter role report_runner password 'report_runner_local';
 
 truncate table
+  public.report_runs,
+  public.report_generation_log,
+  public.reports,
   public.air_equipment,
   public.air_exposure,
   public.budget_targets,

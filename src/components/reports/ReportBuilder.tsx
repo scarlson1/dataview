@@ -13,8 +13,43 @@
  * The server reads `{ mode, reportId, runtimeError, messages }` from the body.
  */
 
+import { useChat } from '@ai-sdk/react';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Collapse from '@mui/material/Collapse';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys';
+import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+import {
+  DefaultChatTransport,
+  type DynamicToolUIPart,
+  getToolName,
+  isToolUIPart,
+  type ToolUIPart,
+  type UIMessage,
+} from 'ai';
+import {
+  ChevronDown,
+  Play,
+  RotateCcw,
+  Save,
+  Send,
+  Sparkles,
+  TriangleAlert,
+  X,
+} from 'lucide-react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '#/context/AuthContext';
-import { columnsFromMeta } from '#/data/columns';
 import type { Json } from '#/data/database.types';
 import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
 import { supabase } from '#/supabaseClient';
@@ -26,35 +61,11 @@ import type {
   ReportData,
   ReportDataParts,
   ReportMode,
+  ReportParam,
   SqlData,
+  StepData,
 } from '#/types/reports';
-import { useChat } from '@ai-sdk/react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Collapse from '@mui/material/Collapse';
-import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
-import { DefaultChatTransport, type UIMessage } from 'ai';
-import {
-  ChevronDown,
-  Play,
-  RotateCcw,
-  Save,
-  Send,
-  Sparkles,
-  TriangleAlert,
-  X,
-} from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { Prose } from './Prose';
 import { SqlBlock } from './SqlBlock';
 
 // TODO: on save -> invalidate reports tanstack query cache
@@ -148,12 +159,13 @@ export const ReportBuilder = ({
   const composerRef = useRef<HTMLElement>(null);
   // Composer draft (repair auto-sends, so start empty there).
   const [draft, setDraft] = useState(mode === 'repair' ? '' : initialPrompt);
-  // Live progress labels for the in-flight turn (data-step is transient — it
-  // arrives via onData and is never persisted to message history).
-  const [steps, setSteps] = useState<string[]>([]);
   // Editable candidate SQL for the failure path, plus a hand-run preview.
   const [editSql, setEditSql] = useState('');
   const [handRun, setHandRun] = useState<PreviewData | null>(null);
+  // Out-of-band progress notices for the in-flight turn (e.g. a model
+  // escalation). Transient — they arrive via onData and never persist to the
+  // thread history, so they're cleared at the start of every turn.
+  const [notices, setNotices] = useState<string[]>([]);
   // Editable name/description for the latest proposed report. Once the user
   // edits a field by hand, later model proposals must not clobber it.
   const [name, setName] = useState('');
@@ -187,7 +199,7 @@ export const ReportBuilder = ({
       onData: (part) => {
         switch (part.type) {
           case 'data-step':
-            setSteps((s) => [...s, (part.data as { label: string }).label]);
+            setNotices((n) => [...n, (part.data as StepData).label]);
             break;
           case 'data-report': {
             const report = part.data as ReportData;
@@ -213,8 +225,8 @@ export const ReportBuilder = ({
   const send = () => {
     const text = draft.trim();
     if (!text || busy) return;
-    setSteps([]);
     setHandRun(null);
+    setNotices([]);
     clearError();
     void sendMessage({ text });
     setDraft('');
@@ -229,7 +241,7 @@ export const ReportBuilder = ({
   // connection). regenerate() keeps a trailing user message and re-runs it.
   const retry = () => {
     if (busy) return;
-    setSteps([]);
+    setNotices([]);
     clearError();
     void regenerate();
   };
@@ -240,7 +252,7 @@ export const ReportBuilder = ({
   useEffect(() => {
     if (mode === 'repair' && !autoSent.current && messages.length === 0) {
       autoSent.current = true;
-      setSteps([]);
+      setNotices([]);
       void sendMessage({ text: 'Repair this report so it runs correctly.' });
     }
   }, [mode, messages.length, sendMessage]);
@@ -281,12 +293,17 @@ export const ReportBuilder = ({
       finalDescription,
       finalSql,
       columns,
+      params,
     }: {
       finalName: string;
       finalDescription: string;
       finalSql: string;
       columns: ReportColumn[];
+      params: ReportParam[];
     }) => {
+      // Store [] as null so a refine that removes all parameters actually
+      // clears them (and unparameterized reports stay params-free).
+      const paramsJson = params.length ? (params as unknown as Json) : null;
       if (mode === 'create') {
         const { data, error: insertError } = await supabase
           .from('reports')
@@ -296,6 +313,7 @@ export const ReportBuilder = ({
             prompt: firstUserText || null,
             sql: finalSql,
             columns: columns as unknown as Json,
+            params: paramsJson,
             created_by: user?.id ?? null,
           })
           .select('id')
@@ -311,6 +329,7 @@ export const ReportBuilder = ({
           description: finalDescription || null,
           sql: finalSql,
           columns: columns as unknown as Json,
+          params: paramsJson,
         })
         .eq('id', reportId);
       if (updateError) throw new Error(updateError.message);
@@ -364,46 +383,58 @@ export const ReportBuilder = ({
             ) : (
               <AssistantTurn
                 key={m.id}
-                view={readTurn(m)}
-                // The newest turn's terminal state renders in the action area
-                // below, so suppress its inline summary to avoid duplication.
+                message={m}
+                // The newest turn stays fully expanded (its terminal state drives
+                // the action area below); earlier turns collapse their steps.
                 isLatest={m.id === lastAssistant?.id}
+                // Transient notices belong to the in-flight (latest) turn only.
+                notices={m.id === lastAssistant?.id ? notices : undefined}
               />
             ),
           )}
         </Stack>
       )}
 
-      {/* In-flight progress for the current turn */}
+      {/* Slim "still working" hint — the per-step detail streams inline in the
+          active turn's timeline above (each tool call shows its own spinner). */}
       {busy && (
-        <Paper variant='outlined' sx={{ borderRadius: 2, p: 2 }}>
-          <LinearProgress sx={{ mb: 1.5, borderRadius: 1 }} />
-          <Stack spacing={0.5}>
-            {steps.map((label, i) => {
-              const latest = i === steps.length - 1;
-              return (
-                <Typography
-                  // Progress log; index is a stable key for an append-only list.
-                  // biome-ignore lint/suspicious/noArrayIndexKey: append-only log
-                  key={i}
-                  sx={{
-                    fontSize: 13,
-                    color: latest ? 'text.primary' : 'text.secondary',
-                    fontWeight: latest ? 600 : 400,
-                  }}
-                >
-                  {label}
-                </Typography>
-              );
-            })}
-          </Stack>
-        </Paper>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 0.5 }}>
+          <CircularProgress size={13} thickness={5} />
+          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+            Working…
+          </Typography>
+          <Box sx={{ flex: 1 }}>
+            <LinearProgress sx={{ borderRadius: 1 }} />
+          </Box>
+        </Box>
       )}
 
       {/* Action area — Save the latest proposed report */}
       {activeReport && (
         <Paper variant='outlined' sx={{ borderRadius: 2, p: 2.5 }}>
           <Stack spacing={2}>
+            {(activeReport.params?.length ?? 0) > 0 && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.75,
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+                  Asks at run time:
+                </Typography>
+                {activeReport.params.map((p) => (
+                  <Chip
+                    key={p.name}
+                    size='small'
+                    variant='outlined'
+                    label={`${p.label} (${p.type === 'entity' ? (p.entity?.table ?? 'entity') : p.type})`}
+                  />
+                ))}
+              </Box>
+            )}
             <TextField
               label='Report name'
               fullWidth
@@ -437,6 +468,8 @@ export const ReportBuilder = ({
                     finalDescription: description,
                     finalSql: activeReport.sql,
                     columns: activeReport.columns,
+                    // `?? []`: threads from before params existed lack the field
+                    params: activeReport.params ?? [],
                   })
                 }
               >
@@ -507,7 +540,9 @@ export const ReportBuilder = ({
                   finalName: name,
                   finalDescription: description,
                   finalSql: editSql,
+                  // Hand-run SQL validated without placeholders → no params.
                   columns: fieldsToColumns(handRun.fields),
+                  params: [],
                 });
               }}
             >
@@ -653,44 +688,239 @@ const UserBubble = ({ text }: { text: string }) => (
   </Box>
 );
 
-// A single assistant turn: any prose, the tested SQL, the preview, and — for
-// earlier turns — a compact terminal summary (the latest turn's terminal state
-// is handled by the interactive action area).
-const AssistantTurn = ({
-  view,
-  isLatest,
-}: {
-  view: TurnView;
-  isLatest: boolean;
-}) => {
-  const gridColumns = view.report
-    ? columnsFromMeta(view.report.columns)
-    : view.preview
-      ? previewColumns(view.preview.fields)
-      : [];
-  return (
-    <Stack spacing={1.25}>
-      {view.text.trim() && (
-        <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
-          {view.text.trim()}
-        </Typography>
-      )}
-      {view.sql && <SqlBlock sql={view.sql} defaultOpen={false} label='SQL' />}
-      {view.preview && (
-        <PreviewGrid
-          title={`Preview — ${view.preview.rowCount} row(s)${view.preview.truncated ? '+' : ''}`}
-          columns={gridColumns}
-          rows={view.preview.rows}
+// Friendly label for a server-executed tool call, shown as a timeline step.
+const toolStepLabel = (part: ToolUIPart | DynamicToolUIPart): string => {
+  const name = getToolName(part);
+  const input =
+    'input' in part
+      ? (part.input as Record<string, unknown> | undefined)
+      : undefined;
+  switch (name) {
+    case 'list_tables':
+      return 'Inspecting the schema';
+    case 'get_table_schema': {
+      const tables = (input?.tables as string[] | undefined)?.join(', ');
+      return tables ? `Reading schema: ${tables}` : 'Reading table schema';
+    }
+    case 'sample_rows': {
+      const table = input?.table as string | undefined;
+      return table ? `Sampling rows from ${table}` : 'Sampling rows';
+    }
+    case 'run_sql':
+      return 'Running the query';
+    default:
+      return String(name);
+  }
+};
+
+// One line in a turn's activity timeline: a spinner while the step runs, a dot
+// once it finishes.
+const StepRow = ({ label, running }: { label: string; running: boolean }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box
+      sx={{
+        width: 14,
+        display: 'flex',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      {running ? (
+        <CircularProgress size={12} thickness={5} />
+      ) : (
+        <Box
+          sx={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            bgcolor: 'text.disabled',
+          }}
         />
       )}
-      {!isLatest && view.report && (
+    </Box>
+    <Typography
+      sx={{
+        fontSize: 12.5,
+        color: running ? 'text.primary' : 'text.secondary',
+        fontWeight: running ? 600 : 400,
+      }}
+    >
+      {label}
+    </Typography>
+  </Box>
+);
+
+// Collapsible wrapper for a finished turn's steps/SQL/preview, so the thread
+// stays scannable while keeping the detail one click away.
+const StepDisclosure = ({ children }: { children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Box>
+      <Box
+        onClick={() => setOpen((o) => !o)}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          cursor: 'pointer',
+        }}
+      >
+        <ChevronDown
+          size={14}
+          style={{
+            transition: 'transform 0.15s ease',
+            transform: open ? 'none' : 'rotate(-90deg)',
+          }}
+        />
+        <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+          {open ? 'Hide steps' : 'Show steps'}
+        </Typography>
+      </Box>
+      <Collapse in={open} timeout='auto' unmountOnExit>
+        <Stack
+          spacing={1.25}
+          sx={(theme) => ({
+            mt: 1,
+            pl: 1.25,
+            borderLeft: `2px solid ${theme.palette.divider}`,
+          })}
+        >
+          {children}
+        </Stack>
+      </Collapse>
+    </Box>
+  );
+};
+
+// A tagged, in-order timeline node built from one assistant message part.
+interface TimelineNode {
+  key: string;
+  // 'prose' stays visible on collapsed turns; 'process' folds into the
+  // Show-steps disclosure.
+  kind: 'prose' | 'process';
+  node: ReactNode;
+}
+
+// A single assistant turn rendered as a chronological timeline: the model's
+// narration (markdown), each tool step, the tested SQL, and previews interleaved
+// in the order they streamed — instead of one flattened blob. The latest turn
+// stays expanded; earlier turns keep their prose but fold the steps away.
+const AssistantTurn = ({
+  message,
+  isLatest,
+  notices,
+}: {
+  message: UIReportMessage;
+  isLatest: boolean;
+  /** Transient out-of-band notices for the in-flight turn (latest only). */
+  notices?: string[];
+}) => {
+  const timeline: TimelineNode[] = [];
+  let reportName: string | null = null;
+  let failureMessage: string | null = null;
+
+  message.parts.forEach((p, i) => {
+    const key = `${message.id}-${i}`;
+    if (p.type === 'text') {
+      const text = p.text.trim();
+      if (text)
+        timeline.push({
+          key,
+          kind: 'prose',
+          node: <Prose key={key} text={text} />,
+        });
+      return;
+    }
+    if (isToolUIPart(p)) {
+      // submit_report's result is the proposal itself (data-report) — no step row.
+      if (getToolName(p) === 'submit_report') return;
+      const running =
+        p.state !== 'output-available' && p.state !== 'output-error';
+      timeline.push({
+        key,
+        kind: 'process',
+        node: <StepRow key={key} label={toolStepLabel(p)} running={running} />,
+      });
+      return;
+    }
+    switch (p.type) {
+      case 'data-sql':
+        timeline.push({
+          key,
+          kind: 'process',
+          node: (
+            <SqlBlock
+              key={key}
+              sql={(p.data as SqlData).sql}
+              defaultOpen={false}
+              label='SQL'
+            />
+          ),
+        });
+        break;
+      case 'data-preview': {
+        const preview = p.data as PreviewData;
+        timeline.push({
+          key,
+          kind: 'process',
+          node: (
+            <PreviewGrid
+              key={key}
+              title={`Preview — ${preview.rowCount} row(s)${preview.truncated ? '+' : ''}`}
+              columns={previewColumns(preview.fields)}
+              rows={preview.rows}
+            />
+          ),
+        });
+        break;
+      }
+      case 'data-report':
+        reportName = (p.data as ReportData).name;
+        break;
+      case 'data-failure':
+        failureMessage = (p.data as FailureData).message;
+        break;
+    }
+  });
+
+  // Latest turn: show the full interleaved timeline (its terminal report/failure
+  // is handled by the action area below, so no summary line here). Transient
+  // notices (e.g. a model escalation) trail the timeline as they arrive.
+  if (isLatest) {
+    return (
+      <Stack spacing={1.25}>
+        {timeline.map((t) => t.node)}
+        {notices?.map((label, i) => (
+          <StepRow
+            // Append-only transient list; index is a stable key.
+            // biome-ignore lint/suspicious/noArrayIndexKey: append-only notices
+            key={`notice-${i}`}
+            label={label}
+            running={false}
+          />
+        ))}
+      </Stack>
+    );
+  }
+
+  // Earlier turn: keep the narration, fold the steps, and end with a one-line
+  // outcome so the thread stays scannable.
+  const prose = timeline.filter((t) => t.kind === 'prose');
+  const process = timeline.filter((t) => t.kind === 'process');
+  return (
+    <Stack spacing={1.25}>
+      {prose.map((t) => t.node)}
+      {process.length > 0 && (
+        <StepDisclosure>{process.map((t) => t.node)}</StepDisclosure>
+      )}
+      {reportName && (
         <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
-          Proposed: {view.report.name}
+          Proposed: {reportName}
         </Typography>
       )}
-      {!isLatest && view.failure && (
+      {failureMessage && (
         <Typography sx={{ fontSize: 13, color: 'warning.main' }}>
-          {view.failure.message}
+          {failureMessage}
         </Typography>
       )}
     </Stack>

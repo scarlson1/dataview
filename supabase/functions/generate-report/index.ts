@@ -1,6 +1,11 @@
 // generate-report: Claude agent loop that turns a natural-language prompt into
 // a tested, read-only SQL report. See docs/LLM_REPORTS_PLAN.md.
 //
+// Sonnet-first: every turn starts on PRIMARY_MODEL; after
+// ESCALATE_AFTER_SQL_FAILURES consecutive run_sql failures the remaining steps
+// of the same thread run on ESCALATION_MODEL (fresh failure budget). The
+// usage-ledger `model` column records whichever model finished the turn.
+//
 // POST JSON API — a CONVERSATIONAL thread. The client sends the full
 // AI-SDK UI-message history each turn; the agent continues the same thread so
 // the user can refine a proposed report ("group by quarter, add a total") before
@@ -14,7 +19,8 @@
 //     data-step    { label }   // transient (progress only, not persisted)
 //     data-sql     { sql }
 //     data-preview { rows, fields, rowCount, truncated }
-//     data-report  { name, description, sql, columns[{field,label,kind}] }
+//     data-report  { name, description, sql, columns[{field,label,kind}],
+//                    params[{name,label,type,required,default?,options?,entity?}] }
 //     data-failure { message, lastError?, candidateSql? }
 //   Quota hit → non-stream 429 { error: { code: 'quota_exceeded', message } }.
 //   Each turn is one invocation (one usage-ledger row, one quota unit).
@@ -29,7 +35,6 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  hasToolCall,
   type ModelMessage,
   stepCountIs,
   streamText,
@@ -40,13 +45,25 @@ import { z } from 'zod';
 import { Database } from '../_shared/database.types.ts';
 import { executeReportSql, ROW_CAPS } from '../_shared/reportExecutor.ts';
 import {
+  compileNamedPlaceholders,
+  crossCheckParams,
+  ENTITY_TABLES,
+  type ReportParam,
+  reportParamsSchema,
+} from '../_shared/reportParams.ts';
+import {
   bustSchemaCache,
   getTableSchema,
   listTables,
   sampleRows,
 } from '../_shared/schemaTools.ts';
 
-const MODEL = 'claude-opus-4-8';
+// Sonnet-first: every turn starts on the primary model; repeated run_sql
+// failures hand the remaining steps (same thread) to the escalation model.
+const PRIMARY_MODEL = 'claude-sonnet-5';
+const ESCALATION_MODEL = 'claude-opus-4-8';
+// Consecutive run_sql failures on the primary model before escalating.
+const ESCALATE_AFTER_SQL_FAILURES = 2;
 // Counted per turn: a multi-turn refinement spends one unit per exchange.
 const DAILY_QUOTA = 50;
 const MAX_STEPS = 12;
@@ -88,6 +105,7 @@ type ReportDataParts = {
     description: string;
     sql: string;
     columns: ReportColumn[];
+    params: ReportParam[];
   };
   failure: { message: string; lastError?: string; candidateSql?: string };
 };
@@ -123,6 +141,16 @@ Rules:
 - Queries run with the requesting user's row-level security. A smaller-than-expected result can be permission scoping — do not try to work around it.
 - Order results sensibly (most recent first for time-based reports) and give output columns clear snake_case aliases.
 
+Run-time parameters:
+- Parameterize the report ONLY when the request implies a run-time input — "for a given carrier", "between two dates", "for a chosen month/status". Otherwise produce plain SQL with no parameters.
+- A parameter appears in the SQL as a {{snake_case}} placeholder with an explicit cast: col >= {{start_date}}::date. A placeholder always stands for one whole SQL value — never inside a string literal or comment, never a table/column name.
+- Date ranges are TWO date params named start_date and end_date.
+- entity params (type 'entity') filter by a row id from one of: ${ENTITY_TABLES.join(', ')}. Declare entity: { table } and compare against the FK column: p.carrier_id = {{carrier_id}}::bigint.
+- select params (type 'select') carry static options — derive them from CHECK constraints or sampled distinct values.
+- An optional "all X" filter is required: false plus a null guard in the SQL: ({{carrier_id}}::bigint is null or p.carrier_id = {{carrier_id}}::bigint).
+- run_sql: pass a realistic test value for EVERY placeholder via the \`params\` input. Test the exact final SQL before submit_report.
+- submit_report: declare every placeholder in \`params\` (name matching the placeholder, label, type: date|text|number|select|entity|boolean, required, optional default/options/entity).
+
 submit_report metadata:
 - name: short title, a few words. description: one or two sentences on what the report shows.
 - columns: one entry per output column, in select-list order.
@@ -144,6 +172,7 @@ interface StoredReport {
   description: string | null;
   prompt: string | null;
   sql: string;
+  params: unknown;
 }
 
 // Anthropic prompt-cache breakpoint. Applied to the LAST assembled message
@@ -163,6 +192,13 @@ const buildSeedContext = (
 ): ModelMessage[] => {
   if (mode === 'create') return [];
 
+  // Existing param declarations ride along so a refine preserves (or
+  // deliberately changes) them instead of silently dropping placeholders.
+  const savedParams =
+    Array.isArray(report?.params) && report.params.length
+      ? `\n\nCurrent parameters:\n${JSON.stringify(report.params, null, 2)}`
+      : '';
+
   let seed: string;
   if (mode === 'refine') {
     seed = `An existing report is being refined. Use the conversation that follows for the specific changes.
@@ -171,7 +207,7 @@ Original request:
 ${report?.prompt ?? '(not recorded)'}
 
 Current SQL:
-${report?.sql}
+${report?.sql}${savedParams}
 
 Adjust the report per the user's instructions. Re-test with run_sql and submit the updated report.`;
   } else {
@@ -181,7 +217,7 @@ Original request:
 ${report?.prompt ?? '(not recorded)'}
 
 Current SQL:
-${report?.sql}
+${report?.sql}${savedParams}
 
 Runtime error:
 ${runtimeError}
@@ -285,12 +321,14 @@ export default {
       prompt ??
       runtimeError ??
       '';
+
     if ((mode === 'refine' || mode === 'repair') && !reportId) {
       return errorResponse(400, {
         code: 'bad_request',
         message: `\`reportId\` is required for mode '${mode}'`,
       });
     }
+
     if (mode === 'repair' && !runtimeError) {
       return errorResponse(400, {
         code: 'bad_request',
@@ -303,7 +341,7 @@ export default {
     if (mode !== 'create') {
       const { data, error } = await ctx.supabase
         .from('reports')
-        .select('name, description, prompt, sql, archived_at')
+        .select('name, description, prompt, sql, params, archived_at')
         .eq('id', reportId as string)
         .maybeSingle();
       if (error) {
@@ -342,6 +380,7 @@ export default {
         userId: claims.sub,
         reportId,
         prompt: latestUserText,
+        model: PRIMARY_MODEL,
         inputTokens: 0,
         outputTokens: 0,
         steps: 0,
@@ -360,6 +399,10 @@ export default {
     const abort = new AbortController();
     const deadline = setTimeout(() => abort.abort(), WALL_CLOCK_MS);
 
+    // Handler scope (not the stream closure): read by prepareStep each step
+    // and by logOnce when the turn winds down.
+    let activeModel: string = PRIMARY_MODEL;
+
     let logged = false;
     const logOnce = (
       outcome: 'succeeded' | 'failed' | 'cancelled',
@@ -373,6 +416,7 @@ export default {
         userId: claims.sub as string,
         reportId,
         prompt: latestUserText,
+        model: activeModel,
         inputTokens: usage?.inputTokens ?? 0,
         outputTokens: usage?.outputTokens ?? 0,
         steps,
@@ -398,7 +442,6 @@ export default {
         let lastSql: string | undefined;
         let lastError: string | undefined;
         let consecutiveSqlFailures = 0;
-        let runAttempt = 0;
         // Set when the consecutive-failure guard aborts the loop, so onAbort
         // can log it as 'failed' instead of 'cancelled' (wall clock).
         let gaveUp = false;
@@ -416,20 +459,29 @@ export default {
           });
         };
 
-        const step = (label: string): void => {
-          // Transient: progress labels render live but must not persist into the
-          // thread history that round-trips back on the next turn.
+        // Out-of-band progress notices (e.g. a model escalation) that have no
+        // tool call of their own. Per-tool progress is NOT emitted here — the
+        // client derives those steps from the streamed tool parts. Transient:
+        // renders live but must not persist into the thread history that
+        // round-trips back on the next turn.
+        const notice = (label: string): void => {
           writer.write({ type: 'data-step', data: { label }, transient: true });
         };
 
         // TEMP TIMING INSTRUMENTATION — remove after measuring list_tables cost.
         const t0 = performance.now();
         const mark = (label: string): void =>
-          console.error(`[timing] +${(performance.now() - t0).toFixed(0)}ms ${label}`);
+          console.error(
+            `[timing] +${(performance.now() - t0).toFixed(0)}ms ${label}`,
+          );
         mark('turn start (streamText called)');
 
         const result = streamText({
-          model: anthropic(MODEL),
+          model: anthropic(PRIMARY_MODEL),
+          // Re-read every step so an escalation flip takes effect on the next
+          // model call without restarting the stream (Opus inherits the full
+          // thread, failed attempts included).
+          prepareStep: () => ({ model: anthropic(activeModel) }),
           system: SYSTEM_PROMPT,
           messages: modelMessages,
           abortSignal: abort.signal,
@@ -438,7 +490,10 @@ export default {
           // TLS handshake to the model API) before the turn surfaces as an error.
           // Kept modest: each retry backs off and eats into WALL_CLOCK_MS.
           maxRetries: 3,
-          stopWhen: [stepCountIs(MAX_STEPS), hasToolCall('submit_report')],
+          // NOT hasToolCall('submit_report'): a submit rejected by the param
+          // cross-check must NOT stop the loop — the model needs the error to
+          // correct itself. `submitted` flips only on an accepted submission.
+          stopWhen: [stepCountIs(MAX_STEPS), () => submitted],
           onStepFinish: (stepResult) => {
             mark(
               `step finished — finishReason=${stepResult.finishReason} toolCalls=${stepResult.toolCalls.map((c) => c.toolName).join(',')}`,
@@ -450,7 +505,6 @@ export default {
                 'List every table and view in the public schema with a short comment. Views encode the business logic — prefer them.',
               inputSchema: z.object({}),
               execute: async () => {
-                step('inspecting schema');
                 mark('list_tables exec start');
                 const r = await listTables();
                 mark('list_tables exec end');
@@ -465,7 +519,6 @@ export default {
                 tables: z.array(z.string()).min(1),
               }),
               execute: async ({ tables }) => {
-                step(`reading schema: ${tables.join(', ')}`);
                 mark(`get_table_schema exec start (${tables.join(',')})`);
                 const r = await getTableSchema(tables);
                 mark('get_table_schema exec end');
@@ -480,7 +533,6 @@ export default {
                 table: z.string(),
               }),
               execute: async ({ table }) => {
-                step(`sampling rows from ${table}`);
                 mark(`sample_rows exec start (${table})`);
                 const r = await sampleRows(table, claimsRecord);
                 mark('sample_rows exec end');
@@ -490,24 +542,42 @@ export default {
 
             run_sql: tool({
               description:
-                'Execute a candidate SELECT through the guarded read-only executor (200-row preview cap). Always test the final SQL here before submit_report.',
+                'Execute a candidate SELECT through the guarded read-only executor (200-row preview cap). Always test the final SQL here before submit_report. If the SQL contains {{placeholder}}s, provide a realistic test value for each via `params`.',
               inputSchema: z.object({
                 sql: z.string(),
+                params: z
+                  .record(
+                    z.string(),
+                    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+                  )
+                  .optional(),
               }),
-              execute: async ({ sql }) => {
-                runAttempt += 1;
-                step(
-                  runAttempt > 1
-                    ? `running query (attempt ${runAttempt})`
-                    : 'running query',
-                );
+              execute: async ({ sql, params }) => {
                 writer.write({ type: 'data-sql', data: { sql } });
                 lastSql = sql;
 
+                // Placeholders → positional binds with the model's test values.
+                // A missing test value is a model mistake, not a SQL failure —
+                // report it without touching the consecutive-failure budget.
+                const compiled = compileNamedPlaceholders(sql);
+                const missing = compiled.order.filter(
+                  (n) => params?.[n] === undefined,
+                );
+                if (missing.length) {
+                  return {
+                    ok: false,
+                    error: {
+                      code: 'missing_param',
+                      message: `Provide a test value in \`params\` for: ${missing.map((n) => `{{${n}}}`).join(', ')}`,
+                    },
+                  };
+                }
+
                 const res = await executeReportSql({
-                  sql,
+                  sql: compiled.sql,
                   claims: claimsRecord,
                   rowCap: ROW_CAPS.agentPreview,
+                  values: compiled.order.map((n) => params?.[n] ?? null),
                 });
 
                 if (res.ok) {
@@ -532,7 +602,20 @@ export default {
 
                 consecutiveSqlFailures += 1;
                 lastError = res.message;
-                if (consecutiveSqlFailures >= MAX_CONSECUTIVE_SQL_FAILURES) {
+                // sonnet -> opus after failures
+                if (
+                  activeModel === PRIMARY_MODEL &&
+                  consecutiveSqlFailures >= ESCALATE_AFTER_SQL_FAILURES
+                ) {
+                  activeModel = ESCALATION_MODEL;
+                  // Fresh failure budget: the escalation model gets the full
+                  // MAX_CONSECUTIVE_SQL_FAILURES before the loop gives up.
+                  consecutiveSqlFailures = 0;
+                  notice('Switching to a more capable model');
+                  mark('escalated to opus');
+                } else if (
+                  consecutiveSqlFailures >= MAX_CONSECUTIVE_SQL_FAILURES
+                ) {
                   gaveUp = true;
                   emitFailure(
                     `Gave up after ${MAX_CONSECUTIVE_SQL_FAILURES} consecutive failed queries. The last error and SQL are below — you can edit the SQL by hand.`,
@@ -555,7 +638,7 @@ export default {
 
             submit_report: tool({
               description:
-                'Finish: deliver the tested report. Call once, only after run_sql succeeds on the exact final SQL.',
+                'Finish: deliver the tested report. Call once, only after run_sql succeeds on the exact final SQL. Declare every {{placeholder}} in `params`.',
               inputSchema: z.object({
                 name: z.string().min(1),
                 description: z.string(),
@@ -569,10 +652,25 @@ export default {
                     }),
                   )
                   .min(1),
+                params: reportParamsSchema.optional(),
               }),
               execute: (submission) => {
+                const params = submission.params ?? [];
+                // Placeholders and declarations must match exactly — a saved
+                // mismatch would make the report unrunnable, so bounce it back
+                // to the model instead of accepting the submit.
+                const mismatch = crossCheckParams(submission.sql, params);
+                if (mismatch) {
+                  return {
+                    ok: false,
+                    error: { code: 'param_mismatch', message: mismatch },
+                  };
+                }
                 submitted = true;
-                writer.write({ type: 'data-report', data: submission });
+                writer.write({
+                  type: 'data-report',
+                  data: { ...submission, params },
+                });
                 return { ok: true };
               },
             }),
@@ -623,6 +721,7 @@ const logGeneration = (
     userId: string;
     reportId?: string;
     prompt: string;
+    model: string;
     inputTokens: number;
     outputTokens: number;
     steps: number;
@@ -635,7 +734,7 @@ const logGeneration = (
       user_id: row.userId,
       report_id: row.reportId ?? null,
       prompt: row.prompt,
-      model: MODEL,
+      model: row.model,
       input_tokens: row.inputTokens,
       output_tokens: row.outputTokens,
       steps: row.steps,
