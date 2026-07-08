@@ -8,9 +8,6 @@
  * tableViews.ts). Kept free of route wiring so it composes inside TableViewer.
  */
 
-import { useDownloadCsv } from '#/hooks/useDownloadCsv';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -22,6 +19,9 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
+import { useDownloadCsv } from '#/hooks/useDownloadCsv';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
 
 interface CarrierRow {
   carrier_id: number;

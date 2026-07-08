@@ -7,11 +7,6 @@
  * tableViews.ts). Kept free of route wiring so it composes inside TableViewer.
  */
 
-import { StatusChip } from '#/components/StatusChip';
-import { downloadCsv } from '#/lib/csv';
-import { money } from '#/lib/money';
-import { supabase } from '#/supabaseClient';
-import { valueTone } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -25,6 +20,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { StatusChip } from '#/components/StatusChip';
+import { downloadCsv } from '#/lib/csv';
+import { money } from '#/lib/money';
+import { supabase } from '#/supabaseClient';
+import { valueTone } from '#/theme/tokens';
 
 interface AgingRow {
   id: number;

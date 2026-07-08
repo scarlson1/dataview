@@ -20,12 +20,14 @@ import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
 import { Route as DashboardUepRouteImport } from './routes/_dashboard.uep'
 import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
 import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
+import { Route as DashboardReportsRouteImport } from './routes/_dashboard.reports'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
 import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard.carrier-prem-com'
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardAgdRouteImport } from './routes/_dashboard.agd'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
+import { Route as DashboardReportsIdRouteImport } from './routes/_dashboard.reports.$id'
 import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
 import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
 import { Route as DashboardAir_exposureIdRouteImport } from './routes/_dashboard.air_exposure.$id'
@@ -86,6 +88,11 @@ const DashboardStampRoute = DashboardStampRouteImport.update({
   path: '/stamp',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardExportsRoute = DashboardExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
@@ -115,6 +122,11 @@ const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardTableRoute,
+} as any)
+const DashboardReportsIdRoute = DashboardReportsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardReportsRoute,
 } as any)
 const DashboardInvoicesIdRoute = DashboardInvoicesIdRouteImport.update({
   id: '/invoices/$id',
@@ -152,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
+  '/reports': typeof DashboardReportsRouteWithChildren
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
   '/uep': typeof DashboardUepRoute
@@ -164,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/reports/$id': typeof DashboardReportsIdRoute
   '/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesByTo {
@@ -173,6 +187,7 @@ export interface FileRoutesByTo {
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
+  '/reports': typeof DashboardReportsRouteWithChildren
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
   '/uep': typeof DashboardUepRoute
@@ -186,6 +201,7 @@ export interface FileRoutesByTo {
   '/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/binder/$id': typeof DashboardBinderIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/reports/$id': typeof DashboardReportsIdRoute
   '/$table': typeof DashboardTableIndexRoute
 }
 export interface FileRoutesById {
@@ -198,6 +214,7 @@ export interface FileRoutesById {
   '/_dashboard/budget': typeof DashboardBudgetRoute
   '/_dashboard/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
+  '/_dashboard/reports': typeof DashboardReportsRouteWithChildren
   '/_dashboard/stamp': typeof DashboardStampRoute
   '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
   '/_dashboard/uep': typeof DashboardUepRoute
@@ -211,6 +228,7 @@ export interface FileRoutesById {
   '/_dashboard/air_exposure/$id': typeof DashboardAir_exposureIdRoute
   '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
   '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
+  '/_dashboard/reports/$id': typeof DashboardReportsIdRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
 }
 export interface FileRouteTypes {
@@ -224,6 +242,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
+    | '/reports'
     | '/stamp'
     | '/subscriptions'
     | '/uep'
@@ -236,6 +255,7 @@ export interface FileRouteTypes {
     | '/air_exposure/$id'
     | '/binder/$id'
     | '/invoices/$id'
+    | '/reports/$id'
     | '/$table/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -245,6 +265,7 @@ export interface FileRouteTypes {
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
+    | '/reports'
     | '/stamp'
     | '/subscriptions'
     | '/uep'
@@ -258,6 +279,7 @@ export interface FileRouteTypes {
     | '/air_exposure/$id'
     | '/binder/$id'
     | '/invoices/$id'
+    | '/reports/$id'
     | '/$table'
   id:
     | '__root__'
@@ -269,6 +291,7 @@ export interface FileRouteTypes {
     | '/_dashboard/budget'
     | '/_dashboard/carrier-prem-com'
     | '/_dashboard/exports'
+    | '/_dashboard/reports'
     | '/_dashboard/stamp'
     | '/_dashboard/subscriptions'
     | '/_dashboard/uep'
@@ -282,6 +305,7 @@ export interface FileRouteTypes {
     | '/_dashboard/air_exposure/$id'
     | '/_dashboard/binder/$id'
     | '/_dashboard/invoices/$id'
+    | '/_dashboard/reports/$id'
     | '/_dashboard/$table/'
   fileRoutesById: FileRoutesById
 }
@@ -372,6 +396,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStampRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/reports': {
+      id: '/_dashboard/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/exports': {
       id: '/_dashboard/exports'
       path: '/exports'
@@ -413,6 +444,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$table/'
       preLoaderRoute: typeof DashboardTableIndexRouteImport
       parentRoute: typeof DashboardTableRoute
+    }
+    '/_dashboard/reports/$id': {
+      id: '/_dashboard/reports/$id'
+      path: '/$id'
+      fullPath: '/reports/$id'
+      preLoaderRoute: typeof DashboardReportsIdRouteImport
+      parentRoute: typeof DashboardReportsRoute
     }
     '/_dashboard/invoices/$id': {
       id: '/_dashboard/invoices/$id'
@@ -466,12 +504,24 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
   DashboardTableRouteChildren,
 )
 
+interface DashboardReportsRouteChildren {
+  DashboardReportsIdRoute: typeof DashboardReportsIdRoute
+}
+
+const DashboardReportsRouteChildren: DashboardReportsRouteChildren = {
+  DashboardReportsIdRoute: DashboardReportsIdRoute,
+}
+
+const DashboardReportsRouteWithChildren =
+  DashboardReportsRoute._addFileChildren(DashboardReportsRouteChildren)
+
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
   DashboardAgdRoute: typeof DashboardAgdRoute
   DashboardBudgetRoute: typeof DashboardBudgetRoute
   DashboardCarrierPremComRoute: typeof DashboardCarrierPremComRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
+  DashboardReportsRoute: typeof DashboardReportsRouteWithChildren
   DashboardStampRoute: typeof DashboardStampRoute
   DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
   DashboardUepRoute: typeof DashboardUepRoute
@@ -490,6 +540,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBudgetRoute: DashboardBudgetRoute,
   DashboardCarrierPremComRoute: DashboardCarrierPremComRoute,
   DashboardExportsRoute: DashboardExportsRoute,
+  DashboardReportsRoute: DashboardReportsRouteWithChildren,
   DashboardStampRoute: DashboardStampRoute,
   DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
   DashboardUepRoute: DashboardUepRoute,
