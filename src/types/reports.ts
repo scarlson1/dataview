@@ -17,6 +17,40 @@ export interface ReportColumn {
   kind: ColumnKind;
 }
 
+// --- run-time parameters (mirror of supabase/functions/_shared/reportParams.ts)
+
+export type ReportParamType =
+  | 'date'
+  | 'text'
+  | 'number'
+  | 'select'
+  | 'entity'
+  | 'boolean';
+
+/** Tables an `entity` param may reference (server-side allowlist). */
+export type ReportEntityTable =
+  | 'carriers'
+  | 'agencies'
+  | 'clients'
+  | 'policies';
+
+/**
+ * One run-time input stored on `reports.params`. The SQL carries a matching
+ * `{{name}}` placeholder; run-report validates the value and binds it as a
+ * positional bind parameter.
+ */
+export interface ReportParam {
+  name: string;
+  label: string;
+  type: ReportParamType;
+  required: boolean;
+  default?: string | number | boolean | null;
+  /** Static choices for `select` params. */
+  options?: { value: string; label: string }[];
+  /** FK target for `entity` params (value = row id). */
+  entity?: { table: ReportEntityTable };
+}
+
 // --- generate-report request --------------------------------------------------
 // The builder is a conversational thread: each turn POSTs the full UI-message
 // history (plus the mode envelope). The server converts it back to model
@@ -58,6 +92,7 @@ export interface ReportData {
   description: string;
   sql: string;
   columns: ReportColumn[];
+  params: ReportParam[];
 }
 
 export interface FailureData {
@@ -94,6 +129,8 @@ export interface RunReportRequest {
   reportId?: string;
   sql?: string;
   cap?: RunCap;
+  /** Values for a parameterized report's `{{placeholder}}`s, keyed by name. */
+  params?: Record<string, unknown>;
 }
 
 export interface RunReportSuccess {

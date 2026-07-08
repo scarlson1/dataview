@@ -8,10 +8,10 @@ local development workflow.
 
 The edge functions read two **custom** secrets via `Deno.env.get()`:
 
-| Var | Read in | Purpose |
-|-----|---------|---------|
-| `ANTHROPIC_API_KEY` | `generate-report/index.ts` | LLM calls for report generation |
-| `REPORT_DB_URL` | `_shared/reportExecutor.ts` | Low-privilege `report_runner` DB connection for the guarded SQL executor |
+| Var                 | Read in                     | Purpose                                                                  |
+| ------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `ANTHROPIC_API_KEY` | `generate-report/index.ts`  | LLM calls for report generation                                          |
+| `REPORT_DB_URL`     | `_shared/reportExecutor.ts` | Low-privilege `report_runner` DB connection for the guarded SQL executor |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are **reserved
 names auto-injected** by the platform on hosted Edge Functions — do not set them
@@ -29,7 +29,7 @@ Set the two custom secrets:
 
 ```bash
 pnpm supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-pnpm supabase secrets set REPORT_DB_URL='postgresql://report_runner:<password>@<pooler-host>:6543/postgres'
+pnpm supabase secrets set REPORT_DB_URL='postgresql://report_runner.<project_ref>:<password>@<pooler-host>:6543/postgres'
 ```
 
 ## The `report_runner` role and REPORT_DB_URL
@@ -45,7 +45,7 @@ PostgREST's environment so RLS + `authorize()` apply to LLM-generated SQL.
 ### Where the password is set
 
 - **Local:** `supabase/seed.sql` runs `alter role report_runner password
-  'report_runner_local';` on every `pnpm supabase db reset`. The local
+'report_runner_local';` on every `pnpm supabase db reset`. The local
   `REPORT_DB_URL` password matches this seed value.
 - **Hosted:** nothing sets it for you. Run it **once** against the hosted DB (SQL
   Editor in the dashboard, or `psql`) with a strong password:
@@ -58,10 +58,10 @@ PostgREST's environment so RLS + `authorize()` apply to LLM-generated SQL.
 
 Format: `postgresql://report_runner:<password>@<host>:<port>/postgres`
 
-| | host | port | password source |
-|---|---|---|---|
-| **Local** | `db` | `5432` | `report_runner_local` (from `seed.sql`) |
-| **Hosted** | transaction pooler host | `6543` | value set via `alter role` |
+|            | host                    | port   | password source                         |
+| ---------- | ----------------------- | ------ | --------------------------------------- |
+| **Local**  | `db`                    | `5432` | `report_runner_local` (from `seed.sql`) |
+| **Hosted** | transaction pooler host | `6543` | value set via `alter role`              |
 
 For hosted, get the pooler host from the dashboard: **Project Settings → Database
 → Connection string → Transaction pooler** (mode `transaction`, port `6543`). It

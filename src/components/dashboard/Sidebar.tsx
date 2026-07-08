@@ -256,7 +256,7 @@ export const Sidebar = ({
             color: 'primary.contrastText',
           }}
         >
-          <Database size={20} />
+          <Database size={20} color='var(--palette-primary-contrastText)' />
         </Box>
         {!collapsed && (
           <Typography
@@ -423,7 +423,7 @@ export const Sidebar = ({
           icon={<FileBarChart2 size={20} />}
           label='Reports'
           collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/reports' }))}
+          onClick={() => go(() => navigate({ to: '/gen-reports' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}

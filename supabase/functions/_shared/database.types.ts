@@ -2211,6 +2211,7 @@ export type Database = {
           id: string
           last_run_at: string | null
           name: string
+          params: Json | null
           prompt: string | null
           sql: string
           updated_at: string
@@ -2224,6 +2225,7 @@ export type Database = {
           id?: string
           last_run_at?: string | null
           name: string
+          params?: Json | null
           prompt?: string | null
           sql: string
           updated_at?: string
@@ -2237,6 +2239,7 @@ export type Database = {
           id?: string
           last_run_at?: string | null
           name?: string
+          params?: Json | null
           prompt?: string | null
           sql?: string
           updated_at?: string

@@ -325,9 +325,17 @@ edge-function logs. Recommendations to layer on once the feature is live:
    + CSV export, RBAC seed rows, nav entry.
 3. **Refine & repair** — refine mode, repair-on-error flow, `report_runs`
    audit, admin usage view over `report_generation_log`.
-4. **Later** — parameterized reports (`{{start_date}}` placeholders prompted at
-   run time), scheduled runs + email delivery (pairs with the roadmap's "email
-   notifications" item), simple chart rendering from `columns` meta.
+4. **Parameterized reports** *(shipped)* — `{{snake_case}}` placeholders in the
+   saved SQL + a `reports.params` jsonb config declared by the model at
+   submit time. Server compiles placeholders to positional bind parameters
+   (never string interpolation) in `_shared/reportParams.ts`; `run-report`
+   validates/coerces values against the saved config; the detail page renders
+   a params form (date pickers with range presets, static selects,
+   EntitySelect pickers over an allowlisted table set) from the config.
+5. **Later** — scheduled runs + email delivery (pairs with the roadmap's "email
+   notifications" item), simple chart rendering from `columns` meta, relative
+   date defaults (e.g. `start_of_current_month`), params inputs on the
+   builder's hand-fix path.
 
 ## Open questions
 

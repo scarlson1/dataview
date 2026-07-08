@@ -5,7 +5,8 @@
     "npm:@supabase/server@1": "1.2.0_@supabase+supabase-js@2.110.0",
     "npm:@supabase/supabase-js@2": "2.110.0",
     "npm:openai@^4.52.5": "4.104.0",
-    "npm:postgres@3": "3.4.9"
+    "npm:postgres@3": "3.4.9",
+    "npm:zod@4": "4.4.3"
   },
   "jsr": {
     "@supabase/functions-js@2.110.0": {
@@ -290,13 +291,17 @@
         "tr46",
         "webidl-conversions"
       ]
+    },
+    "zod@4.4.3": {
+      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
     }
   },
   "workspace": {
     "dependencies": [
       "jsr:@supabase/functions-js@2",
       "npm:@supabase/server@1",
-      "npm:postgres@3"
+      "npm:postgres@3",
+      "npm:zod@4"
     ]
   }
 }

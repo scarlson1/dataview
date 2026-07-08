@@ -6,14 +6,22 @@
  */
 
 import { ReportBuilder } from '#/components/reports/ReportBuilder';
+import {
+  ReportParamsForm,
+  type ReportParamsFormHandle,
+} from '#/components/reports/ReportParamsForm';
 import { SqlBlock } from '#/components/reports/SqlBlock';
 import { useAuth } from '#/context/AuthContext';
 import { columnsFromMeta } from '#/data/columns';
 import { downloadCsv } from '#/lib/csv';
-import { type RunReportError, runReport } from '#/lib/reports';
+import { runReport, type RunReportError } from '#/lib/reports';
 import { supabase } from '#/supabaseClient';
 import { MONO_FONT } from '#/theme/tokens';
-import type { ReportColumn, RunReportSuccess } from '#/types/reports';
+import type {
+  ReportColumn,
+  ReportParam,
+  RunReportSuccess,
+} from '#/types/reports';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -24,10 +32,10 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Download, Play, Sparkles, Wrench } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-export const Route = createFileRoute('/_dashboard/reports/$id')({
+export const Route = createFileRoute('/_dashboard/gen-reports/$id')({
   component: ReportDetail,
   loader: ({ params }) => ({ crumb: params.id }),
 });
@@ -39,6 +47,7 @@ interface ReportRow {
   prompt: string | null;
   sql: string;
   columns: ReportColumn[] | null;
+  params: ReportParam[] | null;
   last_run_at: string | null;
 }
 
@@ -66,7 +75,9 @@ function ReportDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reports')
-        .select('id, name, description, prompt, sql, columns, last_run_at')
+        .select(
+          'id, name, description, prompt, sql, columns, params, last_run_at',
+        )
         .eq('id', id)
         .single();
       if (error) throw new Error(error.message);
@@ -74,8 +85,24 @@ function ReportDetail() {
     },
   });
 
+  // Parameterized reports render an inputs form; Run/CSV read validated
+  // values from it. `undefined` = unparameterized (no `params` in the body).
+  const paramsForm = useRef<ReportParamsFormHandle>(null);
+  const paramsConfig = report.data?.params?.length ? report.data.params : null;
+  const collectParams = (): Record<string, unknown> | undefined | null => {
+    if (!paramsConfig) return undefined;
+    const collected = paramsForm.current?.collect();
+    if (!collected) return undefined;
+    if (!collected.ok) {
+      toast.error(collected.message);
+      return null;
+    }
+    return collected.values;
+  };
+
   const run = useMutation({
-    mutationFn: () => runReport({ reportId: id, cap: 'preview' }),
+    mutationFn: (params?: Record<string, unknown>) =>
+      runReport({ reportId: id, cap: 'preview', params }),
     onSuccess: (res) => {
       setResult(res);
       setRunError(null);
@@ -89,8 +116,8 @@ function ReportDetail() {
   });
 
   const exportCsv = useMutation({
-    mutationFn: async () => {
-      const res = await runReport({ reportId: id, cap: 'export' });
+    mutationFn: async (params?: Record<string, unknown>) => {
+      const res = await runReport({ reportId: id, cap: 'export', params });
       if (res.rows.length === 0) throw new Error('No rows to export');
       const cols = report.data?.columns ?? undefined;
       const csvColumns = cols?.map((c) => ({ field: c.field, label: c.label }));
@@ -124,7 +151,7 @@ function ReportDetail() {
   if (report.isError || !data) {
     return (
       <Box sx={{ maxWidth: 900 }}>
-        <BackButton onClick={() => navigate({ to: '/reports' })} />
+        <BackButton onClick={() => navigate({ to: '/gen-reports' })} />
         <Typography color='error'>
           {(report.error as Error)?.message ?? 'Report not found.'}
         </Typography>
@@ -134,7 +161,7 @@ function ReportDetail() {
 
   return (
     <Box sx={{ maxWidth: 1100 }}>
-      <BackButton onClick={() => navigate({ to: '/reports' })} />
+      <BackButton onClick={() => navigate({ to: '/gen-reports' })} />
 
       <Box
         sx={{
@@ -163,7 +190,10 @@ function ReportDetail() {
             variant='contained'
             startIcon={<Play size={16} />}
             disabled={run.isPending}
-            onClick={() => run.mutate()}
+            onClick={() => {
+              const params = collectParams();
+              if (params !== null) run.mutate(params);
+            }}
           >
             Run
           </Button>
@@ -171,7 +201,10 @@ function ReportDetail() {
             variant='outlined'
             startIcon={<Download size={16} />}
             disabled={exportCsv.isPending}
-            onClick={() => exportCsv.mutate()}
+            onClick={() => {
+              const params = collectParams();
+              if (params !== null) exportCsv.mutate(params);
+            }}
           >
             CSV
           </Button>
@@ -205,6 +238,15 @@ function ReportDetail() {
               queryClient.invalidateQueries({ queryKey: ['report', id] });
             }}
           />
+        </Paper>
+      )}
+
+      {paramsConfig && (
+        <Paper variant='outlined' sx={{ borderRadius: 2, p: 2, mb: 2 }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, mb: 1.5 }}>
+            Parameters
+          </Typography>
+          <ReportParamsForm ref={paramsForm} params={paramsConfig} />
         </Paper>
       )}
 
