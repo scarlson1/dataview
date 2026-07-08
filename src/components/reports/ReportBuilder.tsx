@@ -13,6 +13,21 @@
  * The server reads `{ mode, reportId, runtimeError, messages }` from the body.
  */
 
+import { useAuth } from '#/context/AuthContext';
+import { columnsFromMeta } from '#/data/columns';
+import type { Json } from '#/data/database.types';
+import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
+import { supabase } from '#/supabaseClient';
+import { MONO_FONT } from '#/theme/tokens';
+import type {
+  FailureData,
+  PreviewData,
+  ReportColumn,
+  ReportData,
+  ReportDataParts,
+  ReportMode,
+  SqlData,
+} from '#/types/reports';
 import { useChat } from '@ai-sdk/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -40,21 +55,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import { columnsFromMeta } from '#/data/columns';
-import type { Json } from '#/data/database.types';
-import { functionUrl, reportAuthHeaders, runReport } from '#/lib/reports';
-import { supabase } from '#/supabaseClient';
-import { MONO_FONT } from '#/theme/tokens';
-import type {
-  FailureData,
-  PreviewData,
-  ReportColumn,
-  ReportData,
-  ReportDataParts,
-  ReportMode,
-  SqlData,
-} from '#/types/reports';
 import { SqlBlock } from './SqlBlock';
 
 type UIReportMessage = UIMessage<unknown, ReportDataParts>;
@@ -126,8 +126,10 @@ const previewColumns = (fields: string[]): GridColDef[] =>
     minWidth: 140,
   }));
 
+// `__rid` goes last so a result column literally named `__rid` can't override
+// the synthetic grid row id (duplicate ids crash the DataGrid).
 const withRowIds = (rows: Record<string, unknown>[]) =>
-  rows.map((row, i) => ({ __rid: i, ...row }));
+  rows.map((row, i) => ({ ...row, __rid: i }));
 
 export const ReportBuilder = ({
   mode,
@@ -150,9 +152,12 @@ export const ReportBuilder = ({
   // Editable candidate SQL for the failure path, plus a hand-run preview.
   const [editSql, setEditSql] = useState('');
   const [handRun, setHandRun] = useState<PreviewData | null>(null);
-  // Editable name/description for the latest proposed report.
+  // Editable name/description for the latest proposed report. Once the user
+  // edits a field by hand, later model proposals must not clobber it.
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const nameDirty = useRef(false);
+  const descriptionDirty = useRef(false);
 
   const transport = useMemo(
     () =>
@@ -184,8 +189,8 @@ export const ReportBuilder = ({
             break;
           case 'data-report': {
             const report = part.data as ReportData;
-            setName(report.name);
-            setDescription(report.description);
+            if (!nameDirty.current) setName(report.name);
+            if (!descriptionDirty.current) setDescription(report.description);
             break;
           }
           case 'data-failure':
@@ -201,9 +206,7 @@ export const ReportBuilder = ({
   // response body on `error.message`. Match the specific `quota_exceeded` code —
   // not any message containing "quota" — so unrelated failures like
   // `quota_check_failed` surface their real error instead of a bogus limit notice.
-  const quotaHit = /"code"\s*:\s*"quota_exceeded"|quota_exceeded/.test(
-    error?.message ?? '',
-  );
+  const quotaHit = /quota_exceeded/.test(error?.message ?? '');
 
   const send = () => {
     const text = draft.trim();
@@ -402,7 +405,10 @@ export const ReportBuilder = ({
               label='Report name'
               fullWidth
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                nameDirty.current = true;
+                setName(e.target.value);
+              }}
             />
             <TextField
               label='Description'
@@ -410,7 +416,10 @@ export const ReportBuilder = ({
               multiline
               minRows={1}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                descriptionDirty.current = true;
+                setDescription(e.target.value);
+              }}
             />
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
@@ -462,12 +471,17 @@ export const ReportBuilder = ({
             multiline
             minRows={4}
             value={editSql}
-            onChange={(e) => setEditSql(e.target.value)}
+            onChange={(e) => {
+              setEditSql(e.target.value);
+              // The preview no longer matches the edited SQL — force a re-run
+              // before Save so we never persist unvalidated SQL/stale columns.
+              setHandRun(null);
+            }}
             slotProps={{
               input: { sx: { fontFamily: MONO_FONT, fontSize: 12.5 } },
             }}
           />
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
             <Button
               variant='outlined'
               startIcon={<Play size={15} />}
@@ -479,38 +493,50 @@ export const ReportBuilder = ({
             <Button
               variant='contained'
               startIcon={<Save size={15} />}
-              disabled={!editSql.trim() || !name.trim() || save.isPending}
-              onClick={() =>
+              disabled={
+                !editSql.trim() || !name.trim() || !handRun || save.isPending
+              }
+              onClick={() => {
+                if (!handRun) return;
                 save.mutate({
-                  finalName: name || 'Untitled report',
+                  finalName: name,
                   finalDescription: description,
                   finalSql: editSql,
-                  columns: fieldsToColumns(handRun?.fields ?? []),
-                })
-              }
+                  columns: fieldsToColumns(handRun.fields),
+                });
+              }}
             >
               Save
             </Button>
+            {!handRun && (
+              <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+                Run the SQL to validate it before saving
+              </Typography>
+            )}
           </Box>
-          {(!name.trim() || !handRun) && (
-            <Box sx={{ mt: 1.5 }}>
-              <TextField
-                label='Report name'
-                size='small'
-                fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                sx={{ mb: 1 }}
-              />
-              <TextField
-                label='Description'
-                size='small'
-                fullWidth
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </Box>
-          )}
+          <Box sx={{ mt: 1.5 }}>
+            <TextField
+              label='Report name'
+              size='small'
+              fullWidth
+              value={name}
+              onChange={(e) => {
+                nameDirty.current = true;
+                setName(e.target.value);
+              }}
+              sx={{ mb: 1 }}
+            />
+            <TextField
+              label='Description'
+              size='small'
+              fullWidth
+              value={description}
+              onChange={(e) => {
+                descriptionDirty.current = true;
+                setDescription(e.target.value);
+              }}
+            />
+          </Box>
           {handRun && (
             <Box sx={{ mt: 1.5 }}>
               <PreviewGrid
@@ -545,7 +571,13 @@ export const ReportBuilder = ({
         <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
           <Button
             variant='contained'
-            startIcon={started ? <Send size={16} /> : <Sparkles size={16} />}
+            startIcon={
+              started ? (
+                <Send size={16} color={'var(--variant-containedColor)'} />
+              ) : (
+                <Sparkles size={16} color={'var(--variant-containedColor)'} />
+              )
+            }
             disabled={busy || !draft.trim()}
             onClick={send}
           >

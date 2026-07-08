@@ -53,7 +53,8 @@ type ExecutorCode =
   | 'multi_statement'
   | 'timeout'
   | 'connect_error'
-  | 'empty_sql';
+  | 'empty_sql'
+  | 'forbidden_function';
 
 const fail = (
   code: ExecutorCode | string,
@@ -149,13 +150,15 @@ const mapPgError = (err: unknown): ReportSqlFailure => {
 
 // Byte-cap an already-fetched result set: stop accumulating once the serialized
 // payload passes MAX_RESULT_BYTES, marking the result truncated.
+const byteCapEncoder = new TextEncoder();
+
 const applyByteCap = (
   rows: Record<string, unknown>[],
 ): { rows: Record<string, unknown>[]; truncated: boolean } => {
   let bytes = 0;
   const out: Record<string, unknown>[] = [];
   for (const row of rows) {
-    bytes += new TextEncoder().encode(JSON.stringify(row)).length;
+    bytes += byteCapEncoder.encode(JSON.stringify(row)).length;
     if (bytes > MAX_RESULT_BYTES) {
       return { rows: out, truncated: true };
     }
@@ -233,6 +236,15 @@ export const executeReportSql = async (opts: {
     return fail('empty_sql', 'no SQL to execute');
   }
 
+  // The untrusted SQL runs in the same session where request.jwt.claims was
+  // just set, and READ ONLY does not block set_config — a SELECT could call
+  // set_config('request.jwt.claims', '<forged>', true) in a CTE to escalate
+  // RLS/RBAC for the rest of the query. A plain SELECT can't obfuscate the
+  // function name (no DO/EXECUTE available), so a string check suffices.
+  if (/set_config/i.test(query)) {
+    return fail('forbidden_function', 'set_config is not allowed in report SQL');
+  }
+
   const claimsJson = JSON.stringify(opts.claims);
   const started = Date.now();
 
@@ -276,12 +288,13 @@ export const executeReportSql = async (opts: {
       if (gate) return gate;
 
       // Row cap: fetch cap+1 so we can detect truncation. Wrapping in a
-      // subquery keeps the caller's SELECT intact.
+      // subquery keeps the caller's SELECT intact. The newline before the
+      // closing paren keeps a trailing `-- comment` from swallowing it.
       const cap = opts.rowCap;
       let raw: Record<string, unknown>[];
       try {
         raw = (await reserved.unsafe(
-          `select * from (${query}) _r limit ${cap + 1}`,
+          `select * from (${query}\n) _r limit ${cap + 1}`,
           [],
           { prepare: true },
         )) as unknown as Record<string, unknown>[];

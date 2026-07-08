@@ -3,13 +3,15 @@
  * (candidate + final SQL) and the report detail page.
  */
 
+import { useCopyToClipboard } from '#/hooks/useCopyToClipboard';
+import { MONO_FONT } from '#/theme/tokens';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { Check, ChevronDown, Copy } from 'lucide-react';
-import { useState } from 'react';
-import { MONO_FONT } from '#/theme/tokens';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface SqlBlockProps {
   sql: string;
@@ -24,12 +26,35 @@ export const SqlBlock = ({
 }: SqlBlockProps) => {
   const [open, setOpen] = useState(defaultOpen);
   const [copied, setCopied] = useState(false);
+  // The "copied" reset timer — cleared on unmount so it never fires against an
+  // unmounted component.
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
-  const copy = async () => {
-    await navigator.clipboard.writeText(sql);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  const [copy] = useCopyToClipboard({
+    onSuccess: () => {
+      // toast('copied!')
+      setCopied(true);
+      clearTimeout(copiedTimer.current);
+      copiedTimer.current = setTimeout(() => setCopied(false), 1500);
+    },
+    onError: () => toast.error('copy failed'),
+  });
+
+  // const copy = async () => {
+  //   try {
+  //     await navigator.clipboard.writeText(sql);
+  //   } catch {
+  //     // Clipboard access can be denied (permissions, insecure context).
+  //     toast.error('Copy failed');
+  //     return;
+  //   }
+  //   setCopied(true);
+  //   clearTimeout(copiedTimer.current);
+  //   copiedTimer.current = setTimeout(() => setCopied(false), 1500);
+  // };
 
   return (
     <Box>
@@ -56,7 +81,7 @@ export const SqlBlock = ({
         </Box>
         <Box sx={{ flex: 1 }} />
         <Tooltip title={copied ? 'Copied' : 'Copy SQL'} placement='top'>
-          <IconButton size='small' onClick={copy}>
+          <IconButton size='small' onClick={() => copy(sql)}>
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </IconButton>
         </Tooltip>

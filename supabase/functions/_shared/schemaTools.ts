@@ -113,6 +113,8 @@ export const getTableSchema = async (
           tc.table_name,
           kcu.column_name
       FROM information_schema.table_constraints tc
+      JOIN requested r
+        ON r.table_name = tc.table_name
       JOIN information_schema.key_column_usage kcu
         ON tc.constraint_name = kcu.constraint_name
        AND tc.table_schema = kcu.table_schema
@@ -120,21 +122,35 @@ export const getTableSchema = async (
         AND tc.table_schema = 'public'
   ),
 
+  -- Built from pg_constraint so composite FKs pair columns positionally
+  -- (unnest conkey/confkey WITH ORDINALITY). The information_schema
+  -- kcu-to-ccu join has no ordinal matching and cartesian-products the
+  -- column pairs of a composite foreign key. Unlike information_schema
+  -- (which hides referenced tables the role doesn't own, e.g. auth.users),
+  -- pg_constraint sees every FK — qualify non-public targets so the model
+  -- doesn't go looking for them in public.
   foreign_keys AS (
       SELECT
-          tc.table_name,
-          kcu.column_name,
-          ccu.table_name AS foreign_table,
-          ccu.column_name AS foreign_column
-      FROM information_schema.table_constraints tc
-      JOIN information_schema.key_column_usage kcu
-        ON tc.constraint_name = kcu.constraint_name
-       AND tc.table_schema = kcu.table_schema
-      JOIN information_schema.constraint_column_usage ccu
-        ON ccu.constraint_name = tc.constraint_name
-       AND ccu.constraint_schema = tc.table_schema
-      WHERE tc.constraint_type = 'FOREIGN KEY'
-        AND tc.table_schema = 'public'
+          rel.relname AS table_name,
+          att.attname AS column_name,
+          CASE WHEN fns.nspname = 'public' THEN frel.relname
+               ELSE fns.nspname || '.' || frel.relname
+          END AS foreign_table,
+          fatt.attname AS foreign_column
+      FROM pg_constraint con
+      JOIN pg_class rel ON rel.oid = con.conrelid
+      JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+      JOIN requested r ON r.table_name = rel.relname
+      JOIN pg_class frel ON frel.oid = con.confrelid
+      JOIN pg_namespace fns ON fns.oid = frel.relnamespace
+      CROSS JOIN LATERAL unnest(con.conkey, con.confkey)
+          WITH ORDINALITY AS cols(attnum, fattnum, ord)
+      JOIN pg_attribute att
+        ON att.attrelid = con.conrelid AND att.attnum = cols.attnum
+      JOIN pg_attribute fatt
+        ON fatt.attrelid = con.confrelid AND fatt.attnum = cols.fattnum
+      WHERE con.contype = 'f'
+        AND ns.nspname = 'public'
   ),
 
   checks AS (
@@ -142,10 +158,17 @@ export const getTableSchema = async (
           tc.table_name,
           cc.check_clause
       FROM information_schema.table_constraints tc
+      JOIN requested r
+        ON r.table_name = tc.table_name
       JOIN information_schema.check_constraints cc
         ON cc.constraint_name = tc.constraint_name
+       AND cc.constraint_schema = tc.table_schema
       WHERE tc.constraint_type = 'CHECK'
         AND tc.table_schema = 'public'
+        -- Postgres surfaces every NOT NULL column as a synthetic CHECK row
+        -- named <tableoid>_<attnum>_..._not_null; real user constraints
+        -- never match this numeric pattern.
+        AND cc.constraint_name !~ '^[0-9]+(_[0-9]+)*_not_null$'
   )
 
   SELECT

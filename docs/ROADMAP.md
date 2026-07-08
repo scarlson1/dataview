@@ -2,8 +2,9 @@
 
 - [x] AI/LLM generated SQL queries / reports — plan: [LLM_REPORTS_PLAN.md](LLM_REPORTS_PLAN.md)
   - [] tracing (langfuse)
-  - [] chat persistence (supabase table)
+  - [] chat thread persistence (supabase table, etc.)
   - [] Trim large historical tool results (`list_tables`/`run_query` outputs) to cut token burn. start with prompt caching; optimize if context growth bites.
+  - [] Use SQL editor for syntax highlighting & validation (monaco ??)
 - fix exports - server side export -> export all rows matching filters, not just current page
 - ReactPDF document generation
 - email notifications

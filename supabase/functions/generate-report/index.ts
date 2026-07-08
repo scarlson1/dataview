@@ -51,7 +51,10 @@ const MODEL = 'claude-opus-4-8';
 const DAILY_QUOTA = 50;
 const MAX_STEPS = 12;
 const MAX_CONSECUTIVE_SQL_FAILURES = 4;
-const WALL_CLOCK_MS = 90_000;
+// Supabase edge functions hard-cap wall-clock at 150s; stay ~10s under so our
+// own abort fires first and surfaces the candidate SQL, instead of losing the
+// race to a blunt platform timeout.
+const WALL_CLOCK_MS = 140_000;
 const MAX_OUTPUT_TOKENS = 8_192;
 
 const COLUMN_KINDS = [
@@ -129,6 +132,13 @@ submit_report metadata:
 
 type Ctx = SupabaseContext<Database>;
 
+// Supabase edge-runtime global (keeps the isolate alive for background work).
+// Declared here because the edge-runtime.d.ts import doesn't surface it to the
+// type checker; `| undefined` because plain `deno` runs don't have it.
+declare const EdgeRuntime:
+  | { waitUntil: (p: Promise<unknown>) => void }
+  | undefined;
+
 interface StoredReport {
   name: string;
   description: string | null;
@@ -191,7 +201,12 @@ const assembleMessages = async (
   seedContext: ModelMessage[],
   clientMessages: UIMessage[],
 ): Promise<ModelMessage[]> => {
-  const converted = await convertToModelMessages(clientMessages);
+  // ignoreIncompleteToolCalls: an aborted turn (wall clock / give-up) can leave
+  // a tool part stuck in `input-available` with no result; converting it to a
+  // tool-call without a paired tool-result makes Anthropic 400 the next turn.
+  const converted = await convertToModelMessages(clientMessages, {
+    ignoreIncompleteToolCalls: true,
+  });
   const all = [...seedContext, ...converted];
   const last = all.at(-1);
   if (last) {
@@ -384,6 +399,9 @@ export default {
         let lastError: string | undefined;
         let consecutiveSqlFailures = 0;
         let runAttempt = 0;
+        // Set when the consecutive-failure guard aborts the loop, so onAbort
+        // can log it as 'failed' instead of 'cancelled' (wall clock).
+        let gaveUp = false;
 
         const emitFailure = (message: string): void => {
           if (submitted || failed) return;
@@ -404,6 +422,12 @@ export default {
           writer.write({ type: 'data-step', data: { label }, transient: true });
         };
 
+        // TEMP TIMING INSTRUMENTATION — remove after measuring list_tables cost.
+        const t0 = performance.now();
+        const mark = (label: string): void =>
+          console.error(`[timing] +${(performance.now() - t0).toFixed(0)}ms ${label}`);
+        mark('turn start (streamText called)');
+
         const result = streamText({
           model: anthropic(MODEL),
           system: SYSTEM_PROMPT,
@@ -412,8 +436,14 @@ export default {
           maxOutputTokens: MAX_OUTPUT_TOKENS,
           // A little extra headroom for transient upstream blips (e.g. a dropped
           // TLS handshake to the model API) before the turn surfaces as an error.
-          maxRetries: 4,
+          // Kept modest: each retry backs off and eats into WALL_CLOCK_MS.
+          maxRetries: 3,
           stopWhen: [stepCountIs(MAX_STEPS), hasToolCall('submit_report')],
+          onStepFinish: (stepResult) => {
+            mark(
+              `step finished — finishReason=${stepResult.finishReason} toolCalls=${stepResult.toolCalls.map((c) => c.toolName).join(',')}`,
+            );
+          },
           tools: {
             list_tables: tool({
               description:
@@ -421,7 +451,10 @@ export default {
               inputSchema: z.object({}),
               execute: async () => {
                 step('inspecting schema');
-                return await listTables();
+                mark('list_tables exec start');
+                const r = await listTables();
+                mark('list_tables exec end');
+                return r;
               },
             }),
 
@@ -433,7 +466,10 @@ export default {
               }),
               execute: async ({ tables }) => {
                 step(`reading schema: ${tables.join(', ')}`);
-                return await getTableSchema(tables);
+                mark(`get_table_schema exec start (${tables.join(',')})`);
+                const r = await getTableSchema(tables);
+                mark('get_table_schema exec end');
+                return r;
               },
             }),
 
@@ -445,7 +481,10 @@ export default {
               }),
               execute: async ({ table }) => {
                 step(`sampling rows from ${table}`);
-                return await sampleRows(table, claimsRecord);
+                mark(`sample_rows exec start (${table})`);
+                const r = await sampleRows(table, claimsRecord);
+                mark('sample_rows exec end');
+                return r;
               },
             }),
 
@@ -494,6 +533,7 @@ export default {
                 consecutiveSqlFailures += 1;
                 lastError = res.message;
                 if (consecutiveSqlFailures >= MAX_CONSECUTIVE_SQL_FAILURES) {
+                  gaveUp = true;
                   emitFailure(
                     `Gave up after ${MAX_CONSECUTIVE_SQL_FAILURES} consecutive failed queries. The last error and SQL are below — you can edit the SQL by hand.`,
                   );
@@ -543,7 +583,7 @@ export default {
             emitFailure(
               'Generation ran out of time. The best candidate SQL so far is below — you can edit it by hand.',
             );
-            logOnce('cancelled', undefined, steps.length);
+            logOnce(gaveUp ? 'failed' : 'cancelled', undefined, steps.length);
           },
           onFinish: ({ totalUsage, steps }) => {
             if (!submitted) {
@@ -575,7 +615,7 @@ export default {
   }),
 };
 
-// --- usage ledger (service role; fire-and-forget) ---------------------------
+// --- usage ledger (service role; async, isolate kept alive) -----------------
 
 const logGeneration = (
   ctx: Ctx,
@@ -589,7 +629,7 @@ const logGeneration = (
     outcome: 'succeeded' | 'failed' | 'quota_exceeded' | 'cancelled';
   },
 ): void => {
-  ctx.supabaseAdmin
+  const insert = ctx.supabaseAdmin
     .from('report_generation_log')
     .insert({
       user_id: row.userId,
@@ -608,4 +648,13 @@ const logGeneration = (
       },
       (err: unknown) => console.error('failed to log report generation', err),
     );
+  // onFinish/onAbort fire just as the stream (and isolate) wind down, and the
+  // daily quota is counted from this table — waitUntil keeps the isolate alive
+  // until the insert lands. EdgeRuntime is a Supabase edge-runtime global;
+  // absent under plain `deno`, where fire-and-forget is the best we can do.
+  if (typeof EdgeRuntime !== 'undefined') {
+    // Promise.resolve: the Supabase builder chain is a PromiseLike, and
+    // waitUntil wants a real Promise.
+    EdgeRuntime.waitUntil(Promise.resolve(insert));
+  }
 };

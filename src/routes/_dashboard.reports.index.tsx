@@ -26,7 +26,7 @@ import { ReportBuilder } from '#/components/reports/ReportBuilder';
 import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 
-export const Route = createFileRoute('/_dashboard/reports')({
+export const Route = createFileRoute('/_dashboard/reports/')({
   component: ReportsList,
 });
 

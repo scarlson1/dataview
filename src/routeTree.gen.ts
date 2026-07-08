@@ -20,12 +20,12 @@ import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
 import { Route as DashboardUepRouteImport } from './routes/_dashboard.uep'
 import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
 import { Route as DashboardStampRouteImport } from './routes/_dashboard.stamp'
-import { Route as DashboardReportsRouteImport } from './routes/_dashboard.reports'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
 import { Route as DashboardCarrierPremComRouteImport } from './routes/_dashboard.carrier-prem-com'
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardAgdRouteImport } from './routes/_dashboard.agd'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
+import { Route as DashboardReportsIndexRouteImport } from './routes/_dashboard.reports.index'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
 import { Route as DashboardReportsIdRouteImport } from './routes/_dashboard.reports.$id'
 import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
@@ -88,11 +88,6 @@ const DashboardStampRoute = DashboardStampRouteImport.update({
   path: '/stamp',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardReportsRoute = DashboardReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardExportsRoute = DashboardExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
@@ -118,15 +113,20 @@ const DashboardTableRoute = DashboardTableRouteImport.update({
   path: '/$table',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardReportsIndexRoute = DashboardReportsIndexRouteImport.update({
+  id: '/reports/',
+  path: '/reports/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardTableRoute,
 } as any)
 const DashboardReportsIdRoute = DashboardReportsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => DashboardReportsRoute,
+  id: '/reports/$id',
+  path: '/reports/$id',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardInvoicesIdRoute = DashboardInvoicesIdRouteImport.update({
   id: '/invoices/$id',
@@ -164,7 +164,6 @@ export interface FileRoutesByFullPath {
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
-  '/reports': typeof DashboardReportsRouteWithChildren
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
   '/uep': typeof DashboardUepRoute
@@ -179,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/reports/$id': typeof DashboardReportsIdRoute
   '/$table/': typeof DashboardTableIndexRoute
+  '/reports/': typeof DashboardReportsIndexRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
@@ -187,7 +187,6 @@ export interface FileRoutesByTo {
   '/budget': typeof DashboardBudgetRoute
   '/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/exports': typeof DashboardExportsRoute
-  '/reports': typeof DashboardReportsRouteWithChildren
   '/stamp': typeof DashboardStampRoute
   '/subscriptions': typeof DashboardSubscriptionsRoute
   '/uep': typeof DashboardUepRoute
@@ -203,6 +202,7 @@ export interface FileRoutesByTo {
   '/invoices/$id': typeof DashboardInvoicesIdRoute
   '/reports/$id': typeof DashboardReportsIdRoute
   '/$table': typeof DashboardTableIndexRoute
+  '/reports': typeof DashboardReportsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -214,7 +214,6 @@ export interface FileRoutesById {
   '/_dashboard/budget': typeof DashboardBudgetRoute
   '/_dashboard/carrier-prem-com': typeof DashboardCarrierPremComRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
-  '/_dashboard/reports': typeof DashboardReportsRouteWithChildren
   '/_dashboard/stamp': typeof DashboardStampRoute
   '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
   '/_dashboard/uep': typeof DashboardUepRoute
@@ -230,6 +229,7 @@ export interface FileRoutesById {
   '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
   '/_dashboard/reports/$id': typeof DashboardReportsIdRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
+  '/_dashboard/reports/': typeof DashboardReportsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,7 +242,6 @@ export interface FileRouteTypes {
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
-    | '/reports'
     | '/stamp'
     | '/subscriptions'
     | '/uep'
@@ -257,6 +256,7 @@ export interface FileRouteTypes {
     | '/invoices/$id'
     | '/reports/$id'
     | '/$table/'
+    | '/reports/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
@@ -265,7 +265,6 @@ export interface FileRouteTypes {
     | '/budget'
     | '/carrier-prem-com'
     | '/exports'
-    | '/reports'
     | '/stamp'
     | '/subscriptions'
     | '/uep'
@@ -281,6 +280,7 @@ export interface FileRouteTypes {
     | '/invoices/$id'
     | '/reports/$id'
     | '/$table'
+    | '/reports'
   id:
     | '__root__'
     | '/_dashboard'
@@ -291,7 +291,6 @@ export interface FileRouteTypes {
     | '/_dashboard/budget'
     | '/_dashboard/carrier-prem-com'
     | '/_dashboard/exports'
-    | '/_dashboard/reports'
     | '/_dashboard/stamp'
     | '/_dashboard/subscriptions'
     | '/_dashboard/uep'
@@ -307,6 +306,7 @@ export interface FileRouteTypes {
     | '/_dashboard/invoices/$id'
     | '/_dashboard/reports/$id'
     | '/_dashboard/$table/'
+    | '/_dashboard/reports/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -396,13 +396,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStampRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/reports': {
-      id: '/_dashboard/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof DashboardReportsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/exports': {
       id: '/_dashboard/exports'
       path: '/exports'
@@ -438,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/reports/': {
+      id: '/_dashboard/reports/'
+      path: '/reports'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof DashboardReportsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/$table/': {
       id: '/_dashboard/$table/'
       path: '/'
@@ -447,10 +447,10 @@ declare module '@tanstack/react-router' {
     }
     '/_dashboard/reports/$id': {
       id: '/_dashboard/reports/$id'
-      path: '/$id'
+      path: '/reports/$id'
       fullPath: '/reports/$id'
       preLoaderRoute: typeof DashboardReportsIdRouteImport
-      parentRoute: typeof DashboardReportsRoute
+      parentRoute: typeof DashboardRoute
     }
     '/_dashboard/invoices/$id': {
       id: '/_dashboard/invoices/$id'
@@ -504,24 +504,12 @@ const DashboardTableRouteWithChildren = DashboardTableRoute._addFileChildren(
   DashboardTableRouteChildren,
 )
 
-interface DashboardReportsRouteChildren {
-  DashboardReportsIdRoute: typeof DashboardReportsIdRoute
-}
-
-const DashboardReportsRouteChildren: DashboardReportsRouteChildren = {
-  DashboardReportsIdRoute: DashboardReportsIdRoute,
-}
-
-const DashboardReportsRouteWithChildren =
-  DashboardReportsRoute._addFileChildren(DashboardReportsRouteChildren)
-
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
   DashboardAgdRoute: typeof DashboardAgdRoute
   DashboardBudgetRoute: typeof DashboardBudgetRoute
   DashboardCarrierPremComRoute: typeof DashboardCarrierPremComRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
-  DashboardReportsRoute: typeof DashboardReportsRouteWithChildren
   DashboardStampRoute: typeof DashboardStampRoute
   DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
   DashboardUepRoute: typeof DashboardUepRoute
@@ -532,6 +520,8 @@ interface DashboardRouteChildren {
   DashboardAir_exposureIdRoute: typeof DashboardAir_exposureIdRoute
   DashboardBinderIdRoute: typeof DashboardBinderIdRoute
   DashboardInvoicesIdRoute: typeof DashboardInvoicesIdRoute
+  DashboardReportsIdRoute: typeof DashboardReportsIdRoute
+  DashboardReportsIndexRoute: typeof DashboardReportsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -540,7 +530,6 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBudgetRoute: DashboardBudgetRoute,
   DashboardCarrierPremComRoute: DashboardCarrierPremComRoute,
   DashboardExportsRoute: DashboardExportsRoute,
-  DashboardReportsRoute: DashboardReportsRouteWithChildren,
   DashboardStampRoute: DashboardStampRoute,
   DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
   DashboardUepRoute: DashboardUepRoute,
@@ -551,6 +540,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAir_exposureIdRoute: DashboardAir_exposureIdRoute,
   DashboardBinderIdRoute: DashboardBinderIdRoute,
   DashboardInvoicesIdRoute: DashboardInvoicesIdRoute,
+  DashboardReportsIdRoute: DashboardReportsIdRoute,
+  DashboardReportsIndexRoute: DashboardReportsIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
