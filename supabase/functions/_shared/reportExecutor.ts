@@ -182,6 +182,25 @@ const costGate = (plan: unknown): ReportSqlFailure | null => {
   return null;
 };
 
+// Coerce driver-native values to JSON-safe primitives. postgres.js returns
+// timestamp/timestamptz/date columns as JS `Date` objects and int8 as `bigint`
+// in some configs — neither is a valid `JSONValue`. The generate-report agent
+// hands run_sql/sample_rows output straight back to the AI SDK, which validates
+// the tool result as `JSONValue` when standardizing the next-step prompt; a raw
+// `Date` there throws AI_InvalidPromptError and aborts the whole agent loop
+// (symptom: a report over any table with a timestamp column silently produces
+// no result and no candidate SQL). Normalizing here fixes both the model path
+// and the streamed preview in one place. Date → ISO string (via toJSON),
+// bigint → string; everything else round-trips through JSON unchanged.
+const toJsonSafe = (
+  rows: Record<string, unknown>[],
+): Record<string, unknown>[] =>
+  JSON.parse(
+    JSON.stringify(rows, (_key, value) =>
+      typeof value === 'bigint' ? value.toString() : value,
+    ),
+  );
+
 // Column names in select-list order. postgres.js attaches `.columns` (an array
 // of { name }) to the returned result array; fall back to first-row keys.
 const extractFields = (rows: Record<string, unknown>[]): string[] => {
@@ -285,7 +304,7 @@ export const executeReportSql = async (opts: {
 
       return {
         ok: true,
-        rows: capped.rows,
+        rows: toJsonSafe(capped.rows),
         fields,
         rowCount: capped.rows.length,
         truncated,

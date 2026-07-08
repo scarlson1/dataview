@@ -481,7 +481,11 @@ export default {
                 'The agent stopped before completing a report. The best candidate SQL so far is below.',
               );
             }
-            logOnce(submitted ? 'succeeded' : 'failed', totalUsage, steps.length);
+            logOnce(
+              submitted ? 'succeeded' : 'failed',
+              totalUsage,
+              steps.length,
+            );
           },
         });
 

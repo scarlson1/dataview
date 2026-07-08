@@ -179,9 +179,13 @@ export const ReportBuilder = ({
 
   const busy = status === 'submitted' || status === 'streaming';
 
-  // Surface the quota (429) message clearly. The transport reads the error body
-  // from the failed response and puts it on `error.message`.
-  const quotaHit = /quota_exceeded|25\/day|quota/i.test(error?.message ?? '');
+  // Surface the daily-limit (429) message clearly. The transport puts the failed
+  // response body on `error.message`. Match the specific `quota_exceeded` code —
+  // not any message containing "quota" — so unrelated failures like
+  // `quota_check_failed` surface their real error instead of a bogus limit notice.
+  const quotaHit = /"code"\s*:\s*"quota_exceeded"|quota_exceeded/.test(
+    error?.message ?? '',
+  );
 
   const start = () => {
     if (!prompt.trim()) return;
@@ -284,7 +288,9 @@ export const ReportBuilder = ({
         <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
           <Button
             variant='contained'
-            startIcon={<Sparkles size={16} />}
+            startIcon={
+              <Sparkles size={16} color={'var(--variant-containedColor)'} />
+            }
             disabled={busy || !prompt.trim()}
             onClick={start}
           >
@@ -473,7 +479,9 @@ export const ReportBuilder = ({
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant='contained'
-                startIcon={<Save size={16} />}
+                startIcon={
+                  <Save size={16} color={'var(--variant-containedColor)'} />
+                }
                 disabled={!name.trim() || save.isPending}
                 onClick={() =>
                   save.mutate({

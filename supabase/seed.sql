@@ -11,6 +11,15 @@
 -- the top makes the script idempotent (re-runnable without a full db reset).
 -- ============================================================================
 
+-- Local-only credential for the low-privilege `report_runner` role used by the
+-- generate-report / run-report edge functions. The role is created WITHOUT a
+-- password by migration 20260707100000_llm_reports.sql (the prod password is
+-- set out-of-band and never committed); set the dev password here so it matches
+-- REPORT_DB_URL in supabase/functions/.env. Without this, every schema-tool and
+-- run_sql call in the agent loop fails auth and the report builder returns no
+-- results and no candidate SQL.
+alter role report_runner password 'report_runner_local';
+
 truncate table
   public.air_equipment,
   public.air_exposure,
