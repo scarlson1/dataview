@@ -1,6 +1,9 @@
 # FEATURE ROADMAP & TODOS
 
-- AI/LLM generated SQL queries / reports — plan: [LLM_REPORTS_PLAN.md](LLM_REPORTS_PLAN.md)
+- [x] AI/LLM generated SQL queries / reports — plan: [LLM_REPORTS_PLAN.md](LLM_REPORTS_PLAN.md)
+  - [] tracing (langfuse)
+  - [] chat persistence (supabase table)
+  - [] Trim large historical tool results (`list_tables`/`run_query` outputs) to cut token burn. start with prompt caching; optimize if context growth bites.
 - fix exports - server side export -> export all rows matching filters, not just current page
 - ReactPDF document generation
 - email notifications

@@ -1,19 +1,23 @@
 // generate-report: Claude agent loop that turns a natural-language prompt into
 // a tested, read-only SQL report. See docs/LLM_REPORTS_PLAN.md.
 //
-// POST JSON API. This request/stream contract is FROZEN — the frontend is
-// built against it in parallel.
+// POST JSON API — a CONVERSATIONAL thread. The client sends the full
+// AI-SDK UI-message history each turn; the agent continues the same thread so
+// the user can refine a proposed report ("group by quarter, add a total") before
+// saving.
 //   Request: { mode: 'create' | 'refine' | 'repair';
-//              prompt?: string;        // create + refine
-//              reportId?: string;      // refine + repair
-//              runtimeError?: string } // repair
+//              messages: UIMessage[];  // the full thread (>=1 user turn)
+//              reportId?: string;      // refine + repair (seeds saved context)
+//              runtimeError?: string;  // repair
+//              prompt?: string }       // deprecated: create-mode fallback
 //   Response: AI SDK UI-message stream with custom data parts:
-//     data-step    { label }
+//     data-step    { label }   // transient (progress only, not persisted)
 //     data-sql     { sql }
 //     data-preview { rows, fields, rowCount, truncated }
 //     data-report  { name, description, sql, columns[{field,label,kind}] }
 //     data-failure { message, lastError?, candidateSql? }
 //   Quota hit → non-stream 429 { error: { code: 'quota_exceeded', message } }.
+//   Each turn is one invocation (one usage-ledger row, one quota unit).
 //
 // Saving is the CLIENT's job (insert into `reports` under RLS after the user
 // reviews name/description) — submit_report only emits the data-report part.
@@ -22,6 +26,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import '@supabase/functions-js/edge-runtime.d.ts';
 import { type SupabaseContext, withSupabase } from '@supabase/server';
 import {
+  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   hasToolCall,
@@ -42,7 +47,8 @@ import {
 } from '../_shared/schemaTools.ts';
 
 const MODEL = 'claude-opus-4-8';
-const DAILY_QUOTA = 25;
+// Counted per turn: a multi-turn refinement spends one unit per exchange.
+const DAILY_QUOTA = 50;
 const MAX_STEPS = 12;
 const MAX_CONSECUTIVE_SQL_FAILURES = 4;
 const WALL_CLOCK_MS = 90_000;
@@ -86,6 +92,10 @@ type ReportUIMessage = UIMessage<unknown, ReportDataParts>;
 
 const bodySchema = z.object({
   mode: z.enum(['create', 'refine', 'repair']),
+  // The full UI-message thread. Validated structurally by the AI SDK
+  // (convertToModelMessages); we only assert it's a non-empty array here.
+  messages: z.array(z.any()).optional(),
+  // Deprecated create-mode fallback for a client that hasn't adopted `messages`.
   prompt: z.string().trim().min(1).optional(),
   reportId: z.string().optional(),
   runtimeError: z.string().optional(),
@@ -126,23 +136,26 @@ interface StoredReport {
   sql: string;
 }
 
-// The seed user message carries the Anthropic prompt-cache breakpoint: every
-// loop step resends system + tools + this message, so steps 2..N hit the cache.
+// Anthropic prompt-cache breakpoint. Applied to the LAST assembled message
+// before the current turn's loop runs, so every step (and every follow-up turn)
+// re-hits the cache for system + tools + prior thread.
 const cacheBreakpoint = {
   anthropic: { cacheControl: { type: 'ephemeral' as const } },
 };
 
-const buildMessages = (
+// For refine/repair, prepend a single DB-authoritative context message so the
+// agent grounds on the SAVED prompt + SQL (never client-sent SQL). For create,
+// there's no seed — the thread's own user messages carry the request.
+const buildSeedContext = (
   mode: 'create' | 'refine' | 'repair',
-  prompt: string | undefined,
   runtimeError: string | undefined,
   report: StoredReport | null,
 ): ModelMessage[] => {
+  if (mode === 'create') return [];
+
   let seed: string;
-  if (mode === 'create') {
-    seed = prompt as string;
-  } else if (mode === 'refine') {
-    seed = `An existing report needs to be refined.
+  if (mode === 'refine') {
+    seed = `An existing report is being refined. Use the conversation that follows for the specific changes.
 
 Original request:
 ${report?.prompt ?? '(not recorded)'}
@@ -150,10 +163,7 @@ ${report?.prompt ?? '(not recorded)'}
 Current SQL:
 ${report?.sql}
 
-Refinement instruction:
-${prompt}
-
-Adjust the report accordingly. Re-test with run_sql and submit the updated report.`;
+Adjust the report per the user's instructions. Re-test with run_sql and submit the updated report.`;
   } else {
     seed = `An existing saved report now fails at runtime (likely schema drift after a migration).
 
@@ -169,7 +179,25 @@ ${runtimeError}
 Inspect the current schema, fix the SQL, re-test with run_sql, and submit the repaired report. Keep the report's intent and output shape as close to the original as possible.`;
   }
 
-  return [{ role: 'user', content: seed, providerOptions: cacheBreakpoint }];
+  return [{ role: 'user', content: seed }];
+};
+
+// Assemble the model input: DB seed context (refine/repair) + the client's
+// converted thread. `convertToModelMessages` drops UI-only data-* parts and
+// rebuilds tool-call/result pairs (our tools are server-executed and carry their
+// output on the part, so no tools option is needed). The cache breakpoint rides
+// the last message so every step and every follow-up turn re-hits the cache.
+const assembleMessages = async (
+  seedContext: ModelMessage[],
+  clientMessages: UIMessage[],
+): Promise<ModelMessage[]> => {
+  const converted = await convertToModelMessages(clientMessages);
+  const all = [...seedContext, ...converted];
+  const last = all.at(-1);
+  if (last) {
+    last.providerOptions = { ...last.providerOptions, ...cacheBreakpoint };
+  }
+  return all;
 };
 
 export default {
@@ -206,12 +234,42 @@ export default {
     }
     const { mode, prompt, reportId, runtimeError } = parsed.data;
 
-    if ((mode === 'create' || mode === 'refine') && !prompt) {
+    // The conversation thread. Prefer the client-sent history; fall back to a
+    // single synthesized user message for a legacy `prompt`-only client.
+    const clientMessages: UIMessage[] =
+      parsed.data.messages && parsed.data.messages.length > 0
+        ? (parsed.data.messages as UIMessage[])
+        : prompt
+          ? [
+              {
+                id: crypto.randomUUID(),
+                role: 'user',
+                parts: [{ type: 'text', text: prompt }],
+              },
+            ]
+          : [];
+
+    if (clientMessages.length === 0) {
       return errorResponse(400, {
         code: 'bad_request',
-        message: `\`prompt\` is required for mode '${mode}'`,
+        message: '`messages` (or `prompt`) is required',
       });
     }
+
+    // The latest user turn's text — logged to the usage ledger as this turn's
+    // effective prompt (the thread itself isn't stored).
+    const latestUserText =
+      [...clientMessages]
+        .reverse()
+        .find((m) => m.role === 'user')
+        ?.parts?.filter(
+          (p): p is { type: 'text'; text: string } => p.type === 'text',
+        )
+        .map((p) => p.text)
+        .join('\n') ??
+      prompt ??
+      runtimeError ??
+      '';
     if ((mode === 'refine' || mode === 'repair') && !reportId) {
       return errorResponse(400, {
         code: 'bad_request',
@@ -268,7 +326,7 @@ export default {
       logGeneration(ctx, {
         userId: claims.sub,
         reportId,
-        prompt: prompt ?? runtimeError ?? '',
+        prompt: latestUserText,
         inputTokens: 0,
         outputTokens: 0,
         steps: 0,
@@ -299,13 +357,20 @@ export default {
       logGeneration(ctx, {
         userId: claims.sub as string,
         reportId,
-        prompt: prompt ?? runtimeError ?? '',
+        prompt: latestUserText,
         inputTokens: usage?.inputTokens ?? 0,
         outputTokens: usage?.outputTokens ?? 0,
         steps,
         outcome,
       });
     };
+
+    // Convert the client thread (+ DB seed context) to model messages up front —
+    // convertToModelMessages is async, so it can't live inline in streamText.
+    const modelMessages = await assembleMessages(
+      buildSeedContext(mode, runtimeError, report),
+      clientMessages,
+    );
 
     const stream = createUIMessageStream<ReportUIMessage>({
       onError: (error) => {
@@ -334,15 +399,20 @@ export default {
         };
 
         const step = (label: string): void => {
-          writer.write({ type: 'data-step', data: { label } });
+          // Transient: progress labels render live but must not persist into the
+          // thread history that round-trips back on the next turn.
+          writer.write({ type: 'data-step', data: { label }, transient: true });
         };
 
         const result = streamText({
           model: anthropic(MODEL),
           system: SYSTEM_PROMPT,
-          messages: buildMessages(mode, prompt, runtimeError, report),
+          messages: modelMessages,
           abortSignal: abort.signal,
           maxOutputTokens: MAX_OUTPUT_TOKENS,
+          // A little extra headroom for transient upstream blips (e.g. a dropped
+          // TLS handshake to the model API) before the turn surfaces as an error.
+          maxRetries: 4,
           stopWhen: [stepCountIs(MAX_STEPS), hasToolCall('submit_report')],
           tools: {
             list_tables: tool({
@@ -489,7 +559,15 @@ export default {
           },
         });
 
-        writer.merge(result.toUIMessageStream());
+        // Give the client a stable, user-readable error string (the AI SDK's
+        // default is a bare "An error occurred."). The builder shows this next
+        // to a Retry action; the raw cause is logged server-side above.
+        writer.merge(
+          result.toUIMessageStream({
+            onError: () =>
+              'The report agent lost its connection to the model. Retry to continue.',
+          }),
+        );
       },
     });
 

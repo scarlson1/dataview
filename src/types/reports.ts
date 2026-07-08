@@ -5,8 +5,8 @@
  * stay in sync with the frozen backend contracts.
  */
 
-import type { ColumnKind } from '#/data/schema.generated';
 import type { UIDataTypes } from 'ai';
+import type { ColumnKind } from '#/data/schema.generated';
 
 export type ReportMode = 'create' | 'refine' | 'repair';
 
@@ -17,9 +17,26 @@ export interface ReportColumn {
   kind: ColumnKind;
 }
 
+// --- generate-report request --------------------------------------------------
+// The builder is a conversational thread: each turn POSTs the full UI-message
+// history (plus the mode envelope). The server converts it back to model
+// messages and continues the same conversation. `data-step` is streamed
+// transiently and is NOT part of the persisted history.
+
+export interface GenerateReportRequest {
+  mode: ReportMode;
+  /** The full AI-SDK UI-message thread (>= 1 user turn). */
+  messages?: unknown[];
+  reportId?: string;
+  runtimeError?: string;
+  /** Deprecated create-mode fallback for a `prompt`-only client. */
+  prompt?: string;
+}
+
 // --- generate-report UI-message-stream custom data parts ---------------------
 // Each arrives as a `data-<name>` part on the assistant message (and via the
 // useChat `onData` callback). The `data` payloads below match those parts.
+// `data-step` is emitted as a transient part (live progress only).
 
 export interface StepData {
   label: string;

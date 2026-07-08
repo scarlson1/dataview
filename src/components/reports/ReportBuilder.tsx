@@ -1,14 +1,45 @@
 /**
- * The AI report builder. Streams the `generate-report` agent's progress
- * (`useChat` + a `DefaultChatTransport` pointed at the edge function) and, on
- * terminal success, lets the user name/save the report. Also drives `refine`
- * and `repair` of an existing report (reached from the detail page).
+ * The AI report builder — a conversational thread. Streams the `generate-report`
+ * agent's progress (`useChat` + a `DefaultChatTransport` pointed at the edge
+ * function) and lets the user REFINE a proposed report over multiple turns
+ * ("group by quarter, add a total row") before saving. On any turn that ends in
+ * a report proposal the user can name/save it; a turn that fails leaves an
+ * editable candidate SQL to hand-fix. Also drives `refine` and `repair` of an
+ * existing report (reached from the detail page), which seed the thread from the
+ * saved report server-side.
  *
- * The server reads `prompt` + mode fields from the JSON body, NOT from a
- * messages array — so `prepareSendMessagesRequest` reshapes each request into
- * `{ mode, prompt, reportId, runtimeError }` and drops the messages entirely.
+ * Unlike the old single-shot design, the transport sends the FULL message
+ * history each turn (`prepareSendMessagesRequest`), so the agent keeps context.
+ * The server reads `{ mode, reportId, runtimeError, messages }` from the body.
  */
 
+import { useChat } from '@ai-sdk/react';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Collapse from '@mui/material/Collapse';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { useHotkey } from '@tanstack/react-hotkeys';
+import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import {
+  ChevronDown,
+  Play,
+  RotateCcw,
+  Save,
+  Send,
+  Sparkles,
+  TriangleAlert,
+  X,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '#/context/AuthContext';
 import { columnsFromMeta } from '#/data/columns';
 import type { Json } from '#/data/database.types';
@@ -23,32 +54,7 @@ import type {
   ReportDataParts,
   ReportMode,
   SqlData,
-  StepData,
 } from '#/types/reports';
-import { useChat } from '@ai-sdk/react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Collapse from '@mui/material/Collapse';
-import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
-import { DefaultChatTransport, type UIMessage } from 'ai';
-import {
-  ChevronDown,
-  Play,
-  Save,
-  Sparkles,
-  TriangleAlert,
-  X,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import { SqlBlock } from './SqlBlock';
 
 type UIReportMessage = UIMessage<unknown, ReportDataParts>;
@@ -59,31 +65,58 @@ interface ReportBuilderProps {
   reportId?: string;
   /** For `repair`: the runtime error the saved report now throws. */
   runtimeError?: string;
-  /** Prefill the prompt box (e.g. the report's original prompt for refine). */
+  /** Prefill the composer (e.g. an original prompt for refine). */
   initialPrompt?: string;
   /** Called after a successful save so the caller can navigate / refetch. */
   onSaved?: (reportId: string) => void;
   onCancel?: () => void;
 }
 
-// Data parts accumulated from the stream. The AI SDK exposes them both on the
-// assistant message's `parts` array and via the `onData` callback; the callback
-// is the simplest way to keep the latest of each.
-interface StreamState {
-  steps: string[];
+// The latest of each interesting part within one assistant turn. A turn may run
+// `run_sql` several times (multiple data-sql/data-preview); we keep the last.
+interface TurnView {
+  text: string;
   sql: string | null;
   preview: PreviewData | null;
   report: ReportData | null;
   failure: FailureData | null;
 }
 
-const EMPTY_STREAM: StreamState = {
-  steps: [],
-  sql: null,
-  preview: null,
-  report: null,
-  failure: null,
+const readTurn = (m: UIReportMessage): TurnView => {
+  const view: TurnView = {
+    text: '',
+    sql: null,
+    preview: null,
+    report: null,
+    failure: null,
+  };
+  for (const p of m.parts) {
+    switch (p.type) {
+      case 'text':
+        view.text += p.text;
+        break;
+      case 'data-sql':
+        view.sql = (p.data as SqlData).sql;
+        break;
+      case 'data-preview':
+        view.preview = p.data as PreviewData;
+        break;
+      case 'data-report':
+        view.report = p.data as ReportData;
+        break;
+      case 'data-failure':
+        view.failure = p.data as FailureData;
+        break;
+    }
+  }
+  return view;
 };
+
+const readUserText = (m: UIReportMessage): string =>
+  m.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map((p) => p.text)
+    .join('\n');
 
 const previewColumns = (fields: string[]): GridColDef[] =>
   fields.map((field) => ({
@@ -106,13 +139,18 @@ export const ReportBuilder = ({
 }: ReportBuilderProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [prompt, setPrompt] = useState(initialPrompt);
-  const [stream, setStream] = useState<StreamState>(EMPTY_STREAM);
-  // Editable candidate SQL (failure path — user hand-fixes it) plus a preview
-  // produced by re-running it through run-report.
+  // Composer textarea — the hotkey listener is scoped to this element so
+  // Cmd/Ctrl+Enter only submits while the user is typing in the composer.
+  const composerRef = useRef<HTMLElement>(null);
+  // Composer draft (repair auto-sends, so start empty there).
+  const [draft, setDraft] = useState(mode === 'repair' ? '' : initialPrompt);
+  // Live progress labels for the in-flight turn (data-step is transient — it
+  // arrives via onData and is never persisted to message history).
+  const [steps, setSteps] = useState<string[]>([]);
+  // Editable candidate SQL for the failure path, plus a hand-run preview.
   const [editSql, setEditSql] = useState('');
   const [handRun, setHandRun] = useState<PreviewData | null>(null);
-  // Editable name/description shown once a report is proposed.
+  // Editable name/description for the latest proposed report.
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -121,61 +159,41 @@ export const ReportBuilder = ({
       new DefaultChatTransport<UIReportMessage>({
         api: functionUrl('generate-report'),
         headers: reportAuthHeaders,
-        // The server ignores the messages array — it reads these fields from
-        // the JSON body. Pull the prompt out of the last user message and send
-        // only the mode envelope.
-        prepareSendMessagesRequest: ({ messages, body }) => {
-          const last = messages.at(-1);
-          const text = last?.parts
-            .filter((p) => p.type === 'text')
-            .map((p) => p.text)
-            .join('\n');
-          return {
-            body: {
-              mode,
-              prompt: text,
-              reportId,
-              runtimeError,
-              ...body,
-            },
-          };
-        },
+        // Send the FULL thread; the server reads these fields + `messages` from
+        // the body and continues the conversation.
+        prepareSendMessagesRequest: ({ messages, body }) => ({
+          body: {
+            mode,
+            reportId,
+            runtimeError,
+            messages,
+            ...body,
+          },
+        }),
       }),
     [mode, reportId, runtimeError],
   );
 
-  const { sendMessage, status, error } = useChat<UIReportMessage>({
-    transport,
-    onData: (part) => {
-      switch (part.type) {
-        case 'data-step':
-          setStream((s) => ({
-            ...s,
-            steps: [...s.steps, (part.data as StepData).label],
-          }));
-          break;
-        case 'data-sql':
-          setStream((s) => ({ ...s, sql: (part.data as SqlData).sql }));
-          break;
-        case 'data-preview':
-          setStream((s) => ({ ...s, preview: part.data as PreviewData }));
-          break;
-        case 'data-report': {
-          const report = part.data as ReportData;
-          setStream((s) => ({ ...s, report }));
-          setName(report.name);
-          setDescription(report.description);
-          break;
+  const { messages, sendMessage, regenerate, clearError, status, error } =
+    useChat<UIReportMessage>({
+      transport,
+      onData: (part) => {
+        switch (part.type) {
+          case 'data-step':
+            setSteps((s) => [...s, (part.data as { label: string }).label]);
+            break;
+          case 'data-report': {
+            const report = part.data as ReportData;
+            setName(report.name);
+            setDescription(report.description);
+            break;
+          }
+          case 'data-failure':
+            setEditSql((part.data as FailureData).candidateSql ?? '');
+            break;
         }
-        case 'data-failure': {
-          const failure = part.data as FailureData;
-          setStream((s) => ({ ...s, failure }));
-          setEditSql(failure.candidateSql ?? '');
-          break;
-        }
-      }
-    },
-  });
+      },
+    });
 
   const busy = status === 'submitted' || status === 'streaming';
 
@@ -187,12 +205,54 @@ export const ReportBuilder = ({
     error?.message ?? '',
   );
 
-  const start = () => {
-    if (!prompt.trim()) return;
-    setStream(EMPTY_STREAM);
+  const send = () => {
+    const text = draft.trim();
+    if (!text || busy) return;
+    setSteps([]);
     setHandRun(null);
-    void sendMessage({ text: prompt.trim() });
+    clearError();
+    void sendMessage({ text });
+    setDraft('');
   };
+
+  // Submit the composer with Cmd+Enter (Ctrl+Enter on Windows/Linux). `Mod`
+  // resolves per-platform, and the listener is scoped to the composer textarea.
+  useHotkey('Mod+Enter', () => send(), { target: composerRef });
+
+  // Retry the last turn after a transient failure (e.g. a dropped model
+  // connection). regenerate() keeps a trailing user message and re-runs it.
+  const retry = () => {
+    if (busy) return;
+    setSteps([]);
+    clearError();
+    void regenerate();
+  };
+
+  // Repair needs no user instruction — the server seeds the saved SQL + runtime
+  // error. Auto-send one turn on mount (guarded against StrictMode double-run).
+  const autoSent = useRef(false);
+  useEffect(() => {
+    if (mode === 'repair' && !autoSent.current && messages.length === 0) {
+      autoSent.current = true;
+      setSteps([]);
+      void sendMessage({ text: 'Repair this report so it runs correctly.' });
+    }
+  }, [mode, messages.length, sendMessage]);
+
+  // The original request → stored as the report's `prompt` on create.
+  const firstUserText = useMemo(() => {
+    const first = messages.find((m) => m.role === 'user');
+    return first ? readUserText(first) : '';
+  }, [messages]);
+
+  // The newest assistant terminal state drives the interactive action area.
+  const lastAssistant = useMemo(
+    () => [...messages].reverse().find((m) => m.role === 'assistant'),
+    [messages],
+  );
+  const lastView = lastAssistant ? readTurn(lastAssistant) : null;
+  const activeReport = !busy ? (lastView?.report ?? null) : null;
+  const activeFailure = !busy ? (lastView?.failure ?? null) : null;
 
   // Re-run the hand-edited candidate SQL through run-report for a fresh preview.
   const handRunMutation = useMutation({
@@ -227,9 +287,9 @@ export const ReportBuilder = ({
           .insert({
             name: finalName,
             description: finalDescription || null,
-            prompt: prompt.trim() || null,
+            prompt: firstUserText || null,
             sql: finalSql,
-            columns: columns as unknown as Json, // as Json[],
+            columns: columns as unknown as Json,
             created_by: user?.id ?? null,
           })
           .select('id')
@@ -258,79 +318,66 @@ export const ReportBuilder = ({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const report = stream.report;
-  const gridColumns = useMemo(
-    () => (report ? columnsFromMeta(report.columns) : []),
-    [report],
-  );
+  const started = messages.length > 0;
 
   return (
     <Stack spacing={2.5}>
-      {/* Prompt */}
-      <Box>
-        <TextField
-          fullWidth
-          multiline
-          minRows={2}
-          maxRows={6}
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder={
-            mode === 'refine'
-              ? 'Describe the change (e.g. "add a total row and filter to surplus lines")'
-              : 'Describe the report in plain English (e.g. "open AR by client, bucketed by month")'
-          }
-          disabled={busy}
-          onKeyDown={(e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') start();
-          }}
-        />
-        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-          <Button
-            variant='contained'
-            startIcon={
-              <Sparkles size={16} color={'var(--variant-containedColor)'} />
-            }
-            disabled={busy || !prompt.trim()}
-            onClick={start}
-          >
-            {mode === 'create' ? 'Generate' : 'Regenerate'}
-          </Button>
-          {onCancel && (
-            <Button
-              variant='text'
-              startIcon={<X size={16} />}
-              disabled={busy}
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          )}
-        </Box>
-      </Box>
-
       {quotaHit && (
         <Alert severity='warning'>
-          You've hit the daily report-generation limit (25/day). Try again
-          tomorrow, or run and edit an existing report's SQL.
+          You've hit the daily report-generation limit. Try again tomorrow, or
+          run and edit an existing report's SQL.
         </Alert>
       )}
       {error && !quotaHit && (
-        <Alert severity='error' sx={{ fontFamily: MONO_FONT, fontSize: 13 }}>
-          {error.message}
+        <Alert
+          severity='error'
+          sx={{ fontSize: 13 }}
+          action={
+            <Button
+              color='inherit'
+              size='small'
+              startIcon={<RotateCcw size={15} />}
+              disabled={busy}
+              onClick={retry}
+            >
+              Retry
+            </Button>
+          }
+        >
+          The report agent hit a problem (often a brief connection drop). Your
+          conversation is intact — retry to continue.
         </Alert>
       )}
 
-      {/* Progress steps */}
-      {(busy || stream.steps.length > 0) && (
+      {/* Conversation transcript */}
+      {started && (
+        <Stack spacing={2}>
+          {messages.map((m) =>
+            m.role === 'user' ? (
+              <UserBubble key={m.id} text={readUserText(m)} />
+            ) : (
+              <AssistantTurn
+                key={m.id}
+                view={readTurn(m)}
+                // The newest turn's terminal state renders in the action area
+                // below, so suppress its inline summary to avoid duplication.
+                isLatest={m.id === lastAssistant?.id}
+              />
+            ),
+          )}
+        </Stack>
+      )}
+
+      {/* In-flight progress for the current turn */}
+      {busy && (
         <Paper variant='outlined' sx={{ borderRadius: 2, p: 2 }}>
-          {busy && <LinearProgress sx={{ mb: 1.5, borderRadius: 1 }} />}
+          <LinearProgress sx={{ mb: 1.5, borderRadius: 1 }} />
           <Stack spacing={0.5}>
-            {stream.steps.map((label, i) => {
-              const latest = i === stream.steps.length - 1 && busy;
+            {steps.map((label, i) => {
+              const latest = i === steps.length - 1;
               return (
                 <Typography
-                  // Steps are an append-only log; index is a stable key.
+                  // Progress log; index is a stable key for an append-only list.
                   // biome-ignore lint/suspicious/noArrayIndexKey: append-only log
                   key={i}
                   sx={{
@@ -347,22 +394,50 @@ export const ReportBuilder = ({
         </Paper>
       )}
 
-      {/* Candidate SQL (in-flight) */}
-      {stream.sql && !report && (
-        <SqlBlock sql={stream.sql} defaultOpen={false} label='Candidate SQL' />
+      {/* Action area — Save the latest proposed report */}
+      {activeReport && (
+        <Paper variant='outlined' sx={{ borderRadius: 2, p: 2.5 }}>
+          <Stack spacing={2}>
+            <TextField
+              label='Report name'
+              fullWidth
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              label='Description'
+              fullWidth
+              multiline
+              minRows={1}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Button
+                variant='contained'
+                startIcon={<Save size={16} />}
+                disabled={!name.trim() || save.isPending}
+                onClick={() =>
+                  save.mutate({
+                    finalName: name,
+                    finalDescription: description,
+                    finalSql: activeReport.sql,
+                    columns: activeReport.columns,
+                  })
+                }
+              >
+                Save report
+              </Button>
+              <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+                or ask for another change below
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
       )}
 
-      {/* In-flight preview (plain columns) */}
-      {stream.preview && !report && (
-        <PreviewGrid
-          title={`Preview — ${stream.preview.rowCount} row(s)${stream.preview.truncated ? '+' : ''}`}
-          columns={previewColumns(stream.preview.fields)}
-          rows={stream.preview.rows}
-        />
-      )}
-
-      {/* Graceful failure — let the user hand-fix the candidate SQL */}
-      {stream.failure && !report && (
+      {/* Action area — hand-fix the latest failed turn's SQL */}
+      {activeFailure && (
         <Paper variant='outlined' sx={{ borderRadius: 2, p: 2 }}>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
             <TriangleAlert size={18} color='var(--mui-palette-warning-main)' />
@@ -371,19 +446,17 @@ export const ReportBuilder = ({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
-            {stream.failure.message}
+            {activeFailure.message} You can ask for a fix below, or edit the SQL
+            by hand.
           </Typography>
-          {stream.failure.lastError && (
+          {activeFailure.lastError && (
             <Alert
               severity='error'
               sx={{ fontFamily: MONO_FONT, fontSize: 12.5, mb: 1.5 }}
             >
-              {stream.failure.lastError}
+              {activeFailure.lastError}
             </Alert>
           )}
-          <Typography sx={{ fontSize: 12.5, fontWeight: 600, mb: 0.5 }}>
-            Edit the SQL and run it yourself:
-          </Typography>
           <TextField
             fullWidth
             multiline
@@ -450,61 +523,109 @@ export const ReportBuilder = ({
         </Paper>
       )}
 
-      {/* Terminal success — name/describe + typed preview + save */}
-      {report && (
-        <Paper variant='outlined' sx={{ borderRadius: 2, p: 2.5 }}>
-          <Stack spacing={2}>
-            <TextField
-              label='Report name'
-              fullWidth
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              label='Description'
-              fullWidth
-              multiline
-              minRows={1}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <SqlBlock sql={report.sql} defaultOpen={false} label='SQL' />
-            {stream.preview && (
-              <PreviewGrid
-                title={`Preview — ${stream.preview.rowCount} row(s)${stream.preview.truncated ? '+' : ''}`}
-                columns={gridColumns}
-                rows={stream.preview.rows}
-              />
-            )}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant='contained'
-                startIcon={
-                  <Save size={16} color={'var(--variant-containedColor)'} />
-                }
-                disabled={!name.trim() || save.isPending}
-                onClick={() =>
-                  save.mutate({
-                    finalName: name,
-                    finalDescription: description,
-                    finalSql: report.sql,
-                    columns: report.columns,
-                  })
-                }
-              >
-                Save report
-              </Button>
-              <Button
-                variant='text'
-                startIcon={<X size={16} />}
-                disabled={save.isPending}
-                onClick={() => setStream(EMPTY_STREAM)}
-              >
-                Discard
-              </Button>
-            </Box>
-          </Stack>
-        </Paper>
+      {/* Composer — always available */}
+      <Box>
+        <TextField
+          fullWidth
+          multiline
+          minRows={2}
+          maxRows={6}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={
+            started
+              ? 'Ask for a change (e.g. "group by quarter and add a total row")'
+              : mode === 'refine'
+                ? 'Describe the change (e.g. "add a total row and filter to surplus lines")'
+                : 'Describe the report in plain English (e.g. "open AR by client, bucketed by month")'
+          }
+          disabled={busy}
+          inputRef={composerRef}
+        />
+        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Button
+            variant='contained'
+            startIcon={started ? <Send size={16} /> : <Sparkles size={16} />}
+            disabled={busy || !draft.trim()}
+            onClick={send}
+          >
+            {started ? 'Send' : mode === 'create' ? 'Generate' : 'Start'}
+          </Button>
+          {onCancel && (
+            <Button
+              variant='text'
+              startIcon={<X size={16} />}
+              disabled={busy}
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
+        </Box>
+      </Box>
+    </Stack>
+  );
+};
+
+// A single user turn.
+const UserBubble = ({ text }: { text: string }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <Paper
+      variant='outlined'
+      sx={{
+        borderRadius: 2,
+        px: 1.75,
+        py: 1,
+        maxWidth: '85%',
+        bgcolor: 'paper2',
+      }}
+    >
+      <Typography sx={{ fontSize: 13.5, whiteSpace: 'pre-wrap' }}>
+        {text}
+      </Typography>
+    </Paper>
+  </Box>
+);
+
+// A single assistant turn: any prose, the tested SQL, the preview, and — for
+// earlier turns — a compact terminal summary (the latest turn's terminal state
+// is handled by the interactive action area).
+const AssistantTurn = ({
+  view,
+  isLatest,
+}: {
+  view: TurnView;
+  isLatest: boolean;
+}) => {
+  const gridColumns = view.report
+    ? columnsFromMeta(view.report.columns)
+    : view.preview
+      ? previewColumns(view.preview.fields)
+      : [];
+  return (
+    <Stack spacing={1.25}>
+      {view.text.trim() && (
+        <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
+          {view.text.trim()}
+        </Typography>
+      )}
+      {view.sql && <SqlBlock sql={view.sql} defaultOpen={false} label='SQL' />}
+      {view.preview && (
+        <PreviewGrid
+          title={`Preview — ${view.preview.rowCount} row(s)${view.preview.truncated ? '+' : ''}`}
+          columns={gridColumns}
+          rows={view.preview.rows}
+        />
+      )}
+      {!isLatest && view.report && (
+        <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+          Proposed: {view.report.name}
+        </Typography>
+      )}
+      {!isLatest && view.failure && (
+        <Typography sx={{ fontSize: 13, color: 'warning.main' }}>
+          {view.failure.message}
+        </Typography>
       )}
     </Stack>
   );

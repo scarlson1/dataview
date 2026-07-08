@@ -163,6 +163,14 @@ declare
   v_air_tf_dc   bigint;
   v_air_tf_edge bigint;
   v_air_acme    bigint;
+
+  -- bulk reporting pools (captured from the rows seeded above so the high-volume
+  -- block below can distribute FKs without capturing every generated id).
+  v_client_ids   bigint[];
+  v_agency_ids   bigint[];
+  v_carrier_ids  bigint[];
+  v_uw_ids       bigint[];
+  v_bulk_pol_ids bigint[];
 begin
   -- ==========================================================================
   -- Surplus lines state rules (state is the natural PK)
@@ -759,12 +767,207 @@ begin
     (v_air_tf_edge, 'AI / GPU Compute', 'NVIDIA', 'L40S',         48, 1, date '2025-01-15', 9000.00,
      6, 40000.00, 180000.00, 720, 'Chilled Air', 'Pre-Action Sprinkler', 'Inference edge nodes.');
 
-  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=% claims=% subscriptions=% budget_rows=% air_exposures=% air_equipment=%',
+  -- ==========================================================================
+  -- BULK REPORTING VOLUME
+  --
+  -- The records above are hand-crafted, fully-consistent examples. The block
+  -- below generates higher-volume, lower-fidelity data so the reporting / agent
+  -- SQL has enough rows to aggregate over: production & revenue reports (POL),
+  -- receivables aging (INV/AR + AR payments), installment collections (PMT),
+  -- the new-business pipeline (NBS) and the renewal pipeline (RNW).
+  --
+  -- Strategy: insert the bulk policies first, tagged notes = 'bulk-seed', then
+  -- drive every downstream table with set-based INSERT ... SELECT that joins
+  -- back to those tagged policies. This avoids capturing hundreds of generated
+  -- identity ids into variables. FKs are distributed across the entities seeded
+  -- above (named + the 120-row test pools) via the arrays captured here.
+  -- ==========================================================================
+
+  select array_agg(id) into v_client_ids  from public.clients      where status = 'active';
+  select array_agg(id) into v_agency_ids  from public.agencies     where agency_level = 'retail' and status = 'active';
+  select array_agg(id) into v_carrier_ids from public.carriers     where status = 'active';
+  select array_agg(id) into v_uw_ids      from public.underwriters;
+
+  -- 180 policies spread across ~18 months (Jan 2025 onward), all lines of
+  -- business and transaction types, with a realistic status mix (active /
+  -- expired / cancelled / pending derived from the term dates & row number).
+  with gen as (
+    select
+      g,
+      (date '2025-01-05' + (g * 3))                             as eff_date,
+      (array['GL','Property','Cyber','D&O','Auto','WC','Umbrella'])[1 + (g % 7)]   as lob,
+      (10000 + (g % 20) * 2500)::decimal(14,2)                  as annual_premium,
+      (array[0.30000,0.32500,0.27500])[1 + (g % 3)]::decimal(7,5) as gross_pct,
+      (array[0.12500,0.15000,0.17500])[1 + (g % 3)]::decimal(7,5) as agency_pct,
+      v_client_ids [1 + (g % array_length(v_client_ids, 1))]   as client_id,
+      v_agency_ids [1 + (g % array_length(v_agency_ids, 1))]   as agent_id,
+      v_carrier_ids[1 + (g % array_length(v_carrier_ids, 1))]  as carrier_id,
+      v_uw_ids     [1 + (g % array_length(v_uw_ids, 1))]       as uw_id
+    from generate_series(1, 180) as g
+  )
+  insert into public.policies
+    (client_id, agent_id, carrier_id, transaction_type, status, placement_type,
+     line_of_business, policy_number,
+     policy_eff_date, policy_exp_date, txn_date, txn_eff_date, txn_exp_date,
+     annual_premium, policy_fee, inspection_fee, other_fees,
+     gross_com_pct_override, agency_com_pct, min_earned_prem_pct,
+     cov_a_limit, deductible_amt, deductible_base,
+     jurisdiction, home_state, assigned_to_uw_id, notes)
+  select
+    client_id, agent_id, carrier_id,
+    (array['new_business','new_business','new_business','renewal','endorsement','cancellation'])[1 + (g % 6)],
+    case when g % 6 = 5                     then 'cancelled'
+         when (eff_date + 365) < current_date then 'expired'
+         when g % 11 = 0                    then 'pending'
+         else 'active' end,
+    'single_carrier',
+    lob, lob || '-BULK-' || lpad(g::text, 4, '0'),
+    eff_date, eff_date + 365, eff_date - 5, eff_date, eff_date + 365,
+    annual_premium, 250.00, 150.00, 0.00,
+    gross_pct, agency_pct, 0.25000,
+    (annual_premium * 40)::decimal(16,2), 10000.00, 'per occurrence',
+    (array['California','Texas','New York','Florida','Illinois'])[1 + (g % 5)],
+    (array['CA','TX','NY','FL','IL'])[1 + (g % 5)],
+    uw_id, 'bulk-seed'
+  from gen;
+
+  select array_agg(id order by id) into v_bulk_pol_ids
+  from public.policies where notes = 'bulk-seed';
+
+  -- One invoice per bulk policy (full annual term; premium + fees). The
+  -- outstanding / partial / paid mix is keyed off the policy id so the invoice,
+  -- AR and payment rows for a given policy stay consistent.
+  insert into public.invoices
+    (policy_id, agent_id, transaction_type, invoice_date, due_date,
+     policy_eff_date, policy_exp_date, txn_eff_date, txn_exp_date,
+     annual_premium, term_premium, term_terrorism_premium, total_term_premium,
+     policy_fee, inspection_fee, other_fees, total_term_prem_fees,
+     mga_net_com_pct, mga_net_com_amt, invoice_status)
+  select
+    p.id, p.agent_id, p.transaction_type, p.accounting_date, p.accounting_date + 30,
+    p.policy_eff_date, p.policy_exp_date, p.txn_eff_date, p.txn_exp_date,
+    p.annual_premium, p.annual_premium, 0.00, p.annual_premium,
+    p.policy_fee, p.inspection_fee, p.other_fees,
+    p.annual_premium + p.policy_fee + p.inspection_fee + p.other_fees,
+    (p.gross_com_pct_override - p.agency_com_pct),
+    round(p.annual_premium * (p.gross_com_pct_override - p.agency_com_pct), 2),
+    -- invoice_status has no 'overdue' bucket (that lives on AR); map it to 'outstanding'.
+    (array['paid','partial','outstanding','outstanding','paid'])[1 + (p.id % 5)]
+  from public.policies p
+  where p.notes = 'bulk-seed';
+
+  -- One AR record per bulk invoice. Same id-keyed bucket, but AR keeps the
+  -- 'overdue' status so the aging report has a bucket that's past due.
+  insert into public.accounts_receivable
+    (inv_id, policy_id, client_id, agent_id, invoice_date, due_date, invoice_total, ar_status, collection_notes)
+  select
+    i.id, p.id, p.client_id, p.agent_id, i.invoice_date, i.due_date,
+    i.total_term_prem_fees,
+    (array['paid','partial','outstanding','overdue','paid'])[1 + (p.id % 5)],
+    'Bulk-seed AR.'
+  from public.invoices i
+  join public.policies p on p.id = i.policy_id
+  where p.notes = 'bulk-seed';
+
+  -- Wire each bulk invoice back to its AR row (named invoices already set above).
+  update public.invoices i
+    set ar_id = ar.id
+    from public.accounts_receivable ar
+    where ar.inv_id = i.id and i.ar_id is null;
+
+  -- AR payments only for the collected buckets: full for 'paid', half for 'partial'.
+  insert into public.accounts_receivable_payments
+    (ar_id, payment_date, payment_amount, payment_method, reference_number, created_by)
+  select
+    ar.id, ar.due_date - 2,
+    case ar.ar_status when 'partial' then round(ar.invoice_total * 0.5, 2) else ar.invoice_total end,
+    (array['ach','check','wire','credit_card'])[1 + (ar.id % 4)],
+    'BULK-' || ar.id, 'seed'
+  from public.accounts_receivable ar
+  where ar.collection_notes = 'Bulk-seed AR.'
+    and ar.ar_status in ('paid','partial');
+
+  -- Two installment payments per bulk policy. The first is always paid; the
+  -- second is paid / overdue / outstanding depending on the policy id & due date.
+  insert into public.payments
+    (policy_id, client_id, due_date, payment_date, amount_due, amount_paid,
+     payment_method, invoice_number, status)
+  select
+    p.id, p.client_id,
+    p.policy_eff_date + (n - 1) * 90,
+    case when n = 1 or (p.id % 3) = 0 then p.policy_eff_date + (n - 1) * 90 + 1 else null end,
+    round((p.annual_premium + p.policy_fee + p.inspection_fee) / 2.0, 2),
+    case when n = 1 or (p.id % 3) = 0 then round((p.annual_premium + p.policy_fee + p.inspection_fee) / 2.0, 2) else 0.00 end,
+    case when n = 1 or (p.id % 3) = 0 then (array['ach','check','wire','credit_card'])[1 + (p.id % 4)] else null end,
+    (select inv_ref from public.invoices where policy_id = p.id limit 1),
+    case when n = 1 or (p.id % 3) = 0                          then 'paid'
+         when (p.policy_eff_date + (n - 1) * 90) < current_date then 'overdue'
+         else 'outstanding' end
+  from public.policies p
+  cross join generate_series(1, 2) as n
+  where p.notes = 'bulk-seed';
+
+  -- 80-row new-business pipeline across every stage. Bound submissions point at
+  -- a bulk policy; the rest are still open (policy_id NULL).
+  insert into public.new_business_submissions
+    (submission_number, policy_id, stage, priority, assigned_to, submission_date,
+     quote_due_date, quote_received, bind_order_date, bound_date,
+     client_id, agent_id, carrier_id,
+     line_of_business, policy_eff_date, policy_exp_date,
+     jurisdiction, home_state, annual_premium, agency_com_pct, notes)
+  select
+    'SUB-BULK-' || lpad(g::text, 4, '0'),
+    case when g % 7 = 4 then v_bulk_pol_ids[1 + (g % array_length(v_bulk_pol_ids, 1))] else null end,
+    (array['prospect','submitted','quoted','bind_order','bound','lost','declined'])[1 + (g % 7)],
+    (array['high','medium','low'])[1 + (g % 3)],
+    v_uw_ids[1 + (g % array_length(v_uw_ids, 1))],
+    date '2026-01-01' + (g % 180),
+    date '2026-01-15' + (g % 180),
+    case when g % 7 >= 2 then date '2026-01-12' + (g % 180) else null end,
+    case when g % 7 >= 3 then date '2026-01-20' + (g % 180) else null end,
+    case when g % 7 =  4 then date '2026-01-25' + (g % 180) else null end,
+    v_client_ids [1 + (g % array_length(v_client_ids, 1))],
+    v_agency_ids [1 + (g % array_length(v_agency_ids, 1))],
+    v_carrier_ids[1 + (g % array_length(v_carrier_ids, 1))],
+    (array['GL','Property','Cyber','D&O','Auto'])[1 + (g % 5)],
+    date '2026-02-01' + (g % 180), date '2027-02-01' + (g % 180),
+    (array['California','Texas','New York','Florida','Illinois'])[1 + (g % 5)],
+    (array['CA','TX','NY','FL','IL'])[1 + (g % 5)],
+    (35000 + (g % 15) * 3000)::decimal(14,2),
+    (array[0.12500,0.15000,0.17500])[1 + (g % 3)]::decimal(7,5),
+    'Bulk-seed submission.'
+  from generate_series(1, 80) as g;
+
+  -- Renewal pipeline for every third bulk policy, across all renewal statuses.
+  insert into public.renewals
+    (policy_id, renewal_status, assigned_to, txn_type,
+     new_policy_number, new_policy_eff_date, new_policy_exp_date,
+     annual_premium, agency_com_pct, min_earned_prem_pct,
+     inspection_fee, other_fees, common_named_insured, notes)
+  select
+    p.id,
+    (array['pending','in_progress','quoted','bind_order','bound','non-renewed','lost'])
+      [1 + (row_number() over (order by p.id)::int % 7)],
+    v_uw_ids[1 + (p.id % array_length(v_uw_ids, 1))],
+    'renewal',
+    p.policy_number || 'R', p.policy_exp_date, p.policy_exp_date + 365,
+    round(p.annual_premium * 1.08, 2), p.agency_com_pct, 0.25000,
+    150.00, 0.00, 'Bulk-seed renewal', 'Bulk-seed renewal pipeline.'
+  from public.policies p
+  where p.notes = 'bulk-seed' and (p.id % 3) = 0;
+
+  raise notice 'Seed complete: agencies=% carriers=% clients=% policies=% claims=% invoices=% ar=% ar_payments=% payments=% submissions=% renewals=% subscriptions=% budget_rows=% air_exposures=% air_equipment=%',
     (select count(*) from public.agencies),
     (select count(*) from public.carriers),
     (select count(*) from public.clients),
     (select count(*) from public.policies),
     (select count(*) from public.claims),
+    (select count(*) from public.invoices),
+    (select count(*) from public.accounts_receivable),
+    (select count(*) from public.accounts_receivable_payments),
+    (select count(*) from public.payments),
+    (select count(*) from public.new_business_submissions),
+    (select count(*) from public.renewals),
     (select count(*) from public.subscription),
     (select count(*) from public.budget_targets),
     (select count(*) from public.air_exposure),

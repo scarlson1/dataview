@@ -4,17 +4,18 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import '../styles.css';
 
+import { AuthProvider } from '#/context/AuthContext';
+import { queryClient } from '#/queryClient';
+import { theme } from '#/theme/theme';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TanStackDevtools } from '@tanstack/react-devtools';
+import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { Toaster } from 'sonner';
-import { AuthProvider } from '#/context/AuthContext';
-import { queryClient } from '#/queryClient';
-import { theme } from '#/theme/theme';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -38,6 +39,7 @@ function RootComponent() {
                   name: 'TanStack Query',
                   render: <ReactQueryDevtoolsPanel />,
                 },
+                hotkeysDevtoolsPlugin(),
                 // {
                 //   name: 'TanStack Router',
                 //   render: <TanStackRouterDevtoolsPanel router={getRouter()} />,
