@@ -427,3 +427,25 @@ Non-public referenced tables are schema-qualified (`auth.users`) so the model
 doesn't look for them in `public`. Synthetic not-null CHECK rows
 (`<oid>_<attnum>_not_null`) are filtered out of the `checks` output by name
 pattern.
+
+### raters / rater_runs: JSONB definition as single source of truth
+
+The rater builder (migration `20260708150000_raters.sql`) stores the entire
+logic DSL — `schema_version`, typed `inputs`, and the step tree — in one
+`raters.definition` jsonb column, and every execution snapshots it into
+`rater_runs.definition_snapshot`. This is deliberate: v1 has one mutable
+definition per rater, but runs stay auditable after edits, and a later
+draft→published `rater_versions` table can be added by lifting the column
+(backfill `insert … select id, 1, definition from raters`) without touching
+the DSL. The canonical Zod schema + expression evaluator + interpreter live in
+`supabase/functions/_shared/rater/` and are imported by the frontend via the
+`#rater-shared/*` subpath alias (package.json `imports` + tsconfig `paths`) —
+no reports-style manual type mirroring. Two RBAC departures from the reports
+tables: `raters` write is admin/underwriter only (accounting can run but not
+edit), and `rater_runs` is readable by **all four roles** (runs history is a
+user-facing feature on the rater detail page, unlike admin-only
+`report_runs`). Service-role grants (`insert` on rater_runs, `select, update`
+on raters) are in the migration itself — see the
+`20260708120000_grant_service_role_report_tables.sql` lesson. Raters get
+dedicated `/raters` routes; the tables are intentionally NOT in
+`tableMeta.ts`/the generic `/$table` browser.

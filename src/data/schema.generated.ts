@@ -5463,6 +5463,175 @@ export const SCHEMA = {
       }
     ]
   },
+  "rater_runs": {
+    "name": "rater_runs",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "bigint",
+        "nullable": false,
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "rater_id",
+        "label": "Rater ID",
+        "type": "uuid",
+        "nullable": true,
+        "key": "FK",
+        "references": "raters",
+        "kind": "mono"
+      },
+      {
+        "field": "user_id",
+        "label": "User ID",
+        "type": "uuid",
+        "nullable": false,
+        "key": "FK",
+        "kind": "mono"
+      },
+      {
+        "field": "inputs",
+        "label": "Inputs",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "outputs",
+        "label": "Outputs",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "definition_snapshot",
+        "label": "Definition Snapshot",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "trace",
+        "label": "Trace",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "source_record",
+        "label": "Source Record",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "duration_ms",
+        "label": "Duration Ms",
+        "type": "integer",
+        "nullable": true,
+        "kind": "number"
+      },
+      {
+        "field": "error",
+        "label": "Error",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      }
+    ]
+  },
+  "raters": {
+    "name": "raters",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "uuid",
+        "nullable": false,
+        "def": "gen_random_uuid()",
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "name",
+        "label": "Name",
+        "type": "text",
+        "nullable": false,
+        "kind": "text"
+      },
+      {
+        "field": "description",
+        "label": "Description",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "definition",
+        "label": "Definition",
+        "type": "jsonb",
+        "nullable": false,
+        "kind": "json"
+      },
+      {
+        "field": "record_mapping",
+        "label": "Record Mapping",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
+      },
+      {
+        "field": "created_by",
+        "label": "Created By",
+        "type": "uuid",
+        "nullable": true,
+        "key": "FK",
+        "kind": "mono"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "last_run_at",
+        "label": "Last Run At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      },
+      {
+        "field": "archived_at",
+        "label": "Archived At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      }
+    ]
+  },
   "renewals": {
     "name": "renewals",
     "kind": "table",
@@ -6138,6 +6307,13 @@ export const SCHEMA = {
         "type": "timestamptz",
         "nullable": true,
         "kind": "datetime"
+      },
+      {
+        "field": "params",
+        "label": "Params",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
       }
     ]
   },

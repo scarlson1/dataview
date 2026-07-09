@@ -9,6 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from '@tanstack/react-router';
 import {
+  Calculator,
   ChevronDown,
   Database,
   FileBarChart2,
@@ -424,6 +425,12 @@ export const Sidebar = ({
           label='Reports'
           collapsed={collapsed}
           onClick={() => go(() => navigate({ to: '/gen-reports' }))}
+        />
+        <FooterItem
+          icon={<Calculator size={20} />}
+          label='Raters'
+          collapsed={collapsed}
+          onClick={() => go(() => navigate({ to: '/raters' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}
