@@ -14,6 +14,7 @@ import {
   Database,
   Flag,
   GitBranch,
+  OctagonX,
   SlidersHorizontal,
   Table2,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ const ICONS: Record<RaterFlowNode['data']['stepType'], ReactNode> = {
   lookup: <Table2 size={13} />,
   fetch: <Database size={13} />,
   branch: <GitBranch size={13} />,
+  decision: <OctagonX size={13} />,
   output: <Flag size={13} />,
 };
 
@@ -36,6 +38,8 @@ export const RaterStepNode = memo(
     const dimmed = data.status === 'skipped';
     const isError = data.status === 'error';
     const emphasized = data.stepType === 'output' || data.stepType === 'inputs';
+    // A decision that fired (has an outcome badge) is a terminal stop.
+    const fired = data.stepType === 'decision' && data.badge !== undefined;
 
     return (
       <Box
@@ -43,7 +47,7 @@ export const RaterStepNode = memo(
           width: NODE_WIDTH,
           borderRadius: 1.5,
           border: `1.5px solid ${
-            isError
+            isError || fired
               ? t.palette.error.main
               : data.status === 'ok'
                 ? t.palette.success.main
@@ -53,7 +57,7 @@ export const RaterStepNode = memo(
           px: 1.25,
           py: 0.75,
           opacity: dimmed ? 0.4 : 1,
-          boxShadow: emphasized ? t.shadows[1] : 'none',
+          boxShadow: emphasized || fired ? t.shadows[1] : 'none',
         })}
       >
         <Handle
@@ -82,7 +86,7 @@ export const RaterStepNode = memo(
             <Chip
               label={data.badge}
               size='small'
-              color='success'
+              color={fired ? 'error' : 'success'}
               variant='outlined'
               sx={{ height: 18, fontSize: 10.5, fontFamily: MONO_FONT }}
             />

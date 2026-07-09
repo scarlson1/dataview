@@ -10,6 +10,7 @@ export type {
   BranchStep,
   CalcStep,
   DbFetchStep,
+  DecisionStep,
   FetchStep,
   HttpFetchStep,
   LookupMatch,
@@ -19,6 +20,7 @@ export type {
   RaterDefinition,
   RaterInput,
   RaterInputType,
+  RaterOutcome,
   RaterOutputValue,
   RaterRunResult,
   RaterStep,
@@ -44,6 +46,7 @@ export type {
 export { validateRaterDefinition } from '#rater-shared/validate.ts';
 
 import type {
+  RaterOutcome,
   RaterOutputValue,
   RaterRunResult,
   TraceStep,
@@ -76,6 +79,7 @@ export interface RunRaterRequest {
 
 export interface RunRaterSuccess {
   outputs: Record<string, RaterOutputValue>;
+  outcome: RaterOutcome | null;
   trace: RaterRunResult['trace'];
   durationMs: number;
 }

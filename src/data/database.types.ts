@@ -414,6 +414,7 @@ export type Database = {
           occupancy_code: string | null
           policy_id: number | null
           policy_limit: number | null
+          postal: string | null
           primary_construction_class: string | null
           ref_year: number
           roof_shape: string | null
@@ -430,7 +431,6 @@ export type Database = {
           unit_ref: string | null
           wind_speed_design: string | null
           year_built: number | null
-          zip_code: string | null
         }
         Insert: {
           air_ref?: string | null
@@ -462,6 +462,7 @@ export type Database = {
           occupancy_code?: string | null
           policy_id?: number | null
           policy_limit?: number | null
+          postal?: string | null
           primary_construction_class?: string | null
           ref_year?: number
           roof_shape?: string | null
@@ -478,7 +479,6 @@ export type Database = {
           unit_ref?: string | null
           wind_speed_design?: string | null
           year_built?: number | null
-          zip_code?: string | null
         }
         Update: {
           air_ref?: string | null
@@ -510,6 +510,7 @@ export type Database = {
           occupancy_code?: string | null
           policy_id?: number | null
           policy_limit?: number | null
+          postal?: string | null
           primary_construction_class?: string | null
           ref_year?: number
           roof_shape?: string | null
@@ -526,7 +527,6 @@ export type Database = {
           unit_ref?: string | null
           wind_speed_design?: string | null
           year_built?: number | null
-          zip_code?: string | null
         }
         Relationships: [
           {
@@ -1954,6 +1954,42 @@ export type Database = {
           },
         ]
       }
+      rater_lookup_tables: {
+        Row: {
+          archived_at: string | null
+          columns: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          rows: Json
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          columns: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rows: Json
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          columns?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rows?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rater_runs: {
         Row: {
           created_at: string
@@ -1962,6 +1998,7 @@ export type Database = {
           error: string | null
           id: number
           inputs: Json | null
+          outcome: Json | null
           outputs: Json | null
           rater_id: string | null
           source_record: Json | null
@@ -1975,6 +2012,7 @@ export type Database = {
           error?: string | null
           id?: never
           inputs?: Json | null
+          outcome?: Json | null
           outputs?: Json | null
           rater_id?: string | null
           source_record?: Json | null
@@ -1988,6 +2026,7 @@ export type Database = {
           error?: string | null
           id?: never
           inputs?: Json | null
+          outcome?: Json | null
           outputs?: Json | null
           rater_id?: string | null
           source_record?: Json | null
@@ -2787,6 +2826,7 @@ export type Database = {
           occupancy_code: string | null
           policy_id: number | null
           policy_limit: number | null
+          postal: string | null
           primary_construction_class: string | null
           ref_year: number | null
           roof_shape: string | null
@@ -2804,7 +2844,6 @@ export type Database = {
           unit_ref: string | null
           wind_speed_design: string | null
           year_built: number | null
-          zip_code: string | null
         }
         Relationships: [
           {

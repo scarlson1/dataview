@@ -15,7 +15,7 @@ import type {
   BranchStep,
   DbFetchStep,
   HttpFetchStep,
-  LookupStep,
+  InlineLookupStep,
   RaterDefinition,
   RaterOutputValue,
   RaterRunResult,
@@ -66,6 +66,7 @@ export const executeRater = async (
   const trace: TraceStep[] = [];
   const outputs: Record<string, RaterOutputValue> = {};
   let error: RaterRunResult['error'] = null;
+  let outcome: RaterRunResult['outcome'] = null;
 
   const evalExpr = (stepId: string, what: string, src: string): unknown => {
     try {
@@ -88,7 +89,11 @@ export const executeRater = async (
     }
   };
 
-  const runLookup = (step: LookupStep): { value: unknown; detail: Record<string, unknown> } => {
+  // `step` is always the inline shape here: ref lookups are materialized into
+  // inline steps (columns + rows) before execution — see materialize.ts.
+  const runLookup = (
+    step: InlineLookupStep,
+  ): { value: unknown; detail: Record<string, unknown> } => {
     const colIndex = new Map(step.columns.map((c, i) => [c.name, i]));
     const rowToObject = (row: (typeof step.rows)[number]): Record<string, unknown> =>
       Object.fromEntries(step.columns.map((c, i) => [c.name, row[i]]));
@@ -242,13 +247,67 @@ export const executeRater = async (
 
   const runSteps = async (steps: RaterStep[]): Promise<void> => {
     for (const [index, step] of steps.entries()) {
-      if (error) {
+      // A prior error OR a fired decision halts everything below it.
+      if (error || outcome) {
         recordSkipped(steps.slice(index));
         return;
       }
 
       const started = now();
       try {
+        // Decision: a terminal step. Fires when `when` is absent or truthy;
+        // sets the run outcome and halts. A falsy `when` falls through.
+        if (step.type === 'decision') {
+          let fires = true;
+          if (step.when !== undefined) {
+            const cond = evalExpr(step.id, 'condition', step.when);
+            if (typeof cond !== 'boolean') {
+              throw new StepError(
+                step.id,
+                `condition must be true/false, got ${JSON.stringify(cond)}`,
+              );
+            }
+            fires = cond;
+          }
+
+          if (!fires) {
+            trace.push({
+              id: step.id,
+              type: 'decision',
+              label: step.label,
+              status: 'ok',
+              ms: Math.round(now() - started),
+              detail: { fired: false },
+            });
+            continue;
+          }
+
+          const reason =
+            step.reason !== undefined
+              ? (() => {
+                  const r = evalExpr(step.id, 'reason', step.reason);
+                  return r === null || r === undefined ? null : String(r);
+                })()
+              : null;
+
+          outcome = {
+            decision: step.outcome,
+            reason,
+            stepId: step.id,
+            ...(step.label ? { label: step.label } : {}),
+          };
+          trace.push({
+            id: step.id,
+            type: 'decision',
+            label: step.label,
+            status: 'ok',
+            ms: Math.round(now() - started),
+            detail: { fired: true, outcome: step.outcome, reason },
+          });
+          recordSkipped(steps.slice(index + 1));
+          return;
+        }
+
         if (step.type === 'branch') {
           const branch = step as BranchStep;
           let taken: number | 'else' | null = null;
@@ -299,6 +358,14 @@ export const executeRater = async (
             value = evalExpr(step.id, 'expression', step.expr);
             break;
           case 'lookup': {
+            if (step.source === 'ref') {
+              // Should never reach the interpreter: the run path materializes
+              // ref lookups into inline steps first. Fail closed if it didn't.
+              throw new StepError(
+                step.id,
+                'unresolved shared lookup table reference (resolve it before running)',
+              );
+            }
             const r = runLookup(step);
             value = r.value;
             detail = r.detail;
@@ -347,5 +414,5 @@ export const executeRater = async (
 
   await runSteps(definition.steps);
 
-  return { outputs, trace: { steps: trace }, error };
+  return { outputs, outcome, trace: { steps: trace }, error };
 };

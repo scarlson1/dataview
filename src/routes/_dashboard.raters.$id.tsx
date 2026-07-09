@@ -19,6 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Pencil, Play } from 'lucide-react';
 import { lazy, Suspense, useRef, useState } from 'react';
+import { OutcomeBanner } from '#/components/raters/OutcomeBanner';
 import { formatOutput, OutputCards } from '#/components/raters/OutputCards';
 import {
   RaterInputsForm,
@@ -35,6 +36,7 @@ import { RunRaterError, runRater } from '#/lib/raters';
 import { supabase } from '#/supabaseClient';
 import {
   type RaterDefinition,
+  type RaterOutcome,
   type RaterOutputValue,
   type RecordMapping,
   raterDefinitionSchema,
@@ -65,6 +67,7 @@ interface RunRow {
   id: number;
   inputs: Record<string, unknown> | null;
   outputs: Record<string, RaterOutputValue> | null;
+  outcome: RaterOutcome | null;
   definition_snapshot: unknown;
   trace: { steps: TraceStep[] } | null;
   duration_ms: number | null;
@@ -74,6 +77,7 @@ interface RunRow {
 
 interface RunState {
   outputs: Record<string, RaterOutputValue> | null;
+  outcome: RaterOutcome | null;
   trace: TraceStep[] | null;
   error: string | null;
 }
@@ -92,6 +96,7 @@ function RaterDetail() {
   } | null>(null);
   const [runState, setRunState] = useState<RunState>({
     outputs: null,
+    outcome: null,
     trace: null,
     error: null,
   });
@@ -119,7 +124,7 @@ function RaterDetail() {
       const { data, error } = await supabase
         .from('rater_runs')
         .select(
-          'id, inputs, outputs, definition_snapshot, trace, duration_ms, error, created_at',
+          'id, inputs, outputs, outcome, definition_snapshot, trace, duration_ms, error, created_at',
         )
         .eq('rater_id', id)
         .order('created_at', { ascending: false })
@@ -143,6 +148,7 @@ function RaterDetail() {
     onSuccess: (result) => {
       setRunState({
         outputs: result.outputs,
+        outcome: result.outcome,
         trace: result.trace.steps,
         error: null,
       });
@@ -151,7 +157,7 @@ function RaterDetail() {
     onError: (e: Error) => {
       const trace =
         e instanceof RunRaterError ? (e.trace?.steps ?? null) : null;
-      setRunState({ outputs: null, trace, error: e.message });
+      setRunState({ outputs: null, outcome: null, trace, error: e.message });
       queryClient.invalidateQueries({ queryKey: ['rater_runs', id] });
     },
   });
@@ -283,6 +289,7 @@ function RaterDetail() {
               {runState.error && (
                 <Alert severity='error'>{runState.error}</Alert>
               )}
+              {runState.outcome && <OutcomeBanner outcome={runState.outcome} />}
               {runState.outputs && Object.keys(runState.outputs).length > 0 && (
                 <OutputCards outputs={runState.outputs} />
               )}
@@ -350,14 +357,17 @@ function RaterDetail() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        color: r.error ? 'error.main' : undefined,
+                        color:
+                          r.error || r.outcome ? 'error.main' : undefined,
                       }}
                     >
                       {r.error
                         ? r.error
-                        : Object.values(r.outputs ?? {})
-                            .map((o) => `${o.label}: ${formatOutput(o)}`)
-                            .join(' · ') || '—'}
+                        : r.outcome
+                          ? `${r.outcome.decision.toUpperCase()}${r.outcome.reason ? ` — ${r.outcome.reason}` : ''}`
+                          : Object.values(r.outputs ?? {})
+                              .map((o) => `${o.label}: ${formatOutput(o)}`)
+                              .join(' · ') || '—'}
                     </Typography>
                     {r.duration_ms !== null && (
                       <Typography
@@ -403,6 +413,9 @@ function RaterDetail() {
             <Stack spacing={2} sx={{ pt: 0.5 }}>
               {viewingRun.error && (
                 <Alert severity='error'>{viewingRun.error}</Alert>
+              )}
+              {viewingRun.outcome && (
+                <OutcomeBanner outcome={viewingRun.outcome} />
               )}
               {viewingRun.inputs &&
                 Object.keys(viewingRun.inputs).length > 0 && (

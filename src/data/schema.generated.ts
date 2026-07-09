@@ -1106,8 +1106,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip_code",
-        "label": "Zip Code",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
@@ -1440,8 +1440,8 @@ export const SCHEMA = {
         "kind": "chip"
       },
       {
-        "field": "zip_code",
-        "label": "Zip Code",
+        "field": "postal",
+        "label": "Postal",
         "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
@@ -5562,6 +5562,13 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      },
+      {
+        "field": "outcome",
+        "label": "Outcome",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
       }
     ]
   },

@@ -196,6 +196,8 @@ export const referencingSteps = (
             ];
       case 'branch':
         return step.cases.map((c) => c.when);
+      case 'decision':
+        return [step.when, step.reason].filter((s): s is string => Boolean(s));
     }
   };
 
@@ -285,6 +287,13 @@ export const newStep = (
         type: 'branch',
         cases: [{ label: 'Case 1', when: '', steps: [] }],
         else: [],
+      };
+    case 'decision':
+      return {
+        id: freshStepId(definition, 'decision'),
+        type: 'decision',
+        outcome: 'decline',
+        when: '',
       };
     case 'output':
       return {

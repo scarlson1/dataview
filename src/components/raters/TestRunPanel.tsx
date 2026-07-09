@@ -17,15 +17,18 @@ import { useRef, useState } from 'react';
 import { RunRaterError, runRater } from '#/lib/raters';
 import type {
   RaterDefinition,
+  RaterOutcome,
   RaterOutputValue,
   TraceStep,
 } from '#/types/raters';
 import { OutputCards } from './OutputCards';
+import { OutcomeBanner } from './OutcomeBanner';
 import { RaterInputsForm, type RaterInputsFormHandle } from './RaterInputsForm';
 import { TracePanel } from './TracePanel';
 
 export interface TestRunState {
   outputs: Record<string, RaterOutputValue> | null;
+  outcome: RaterOutcome | null;
   trace: TraceStep[] | null;
   error: string | null;
 }
@@ -45,6 +48,7 @@ export const TestRunPanel = ({
   const formRef = useRef<RaterInputsFormHandle>(null);
   const [state, setState] = useState<TestRunState>({
     outputs: null,
+    outcome: null,
     trace: null,
     error: null,
   });
@@ -64,6 +68,7 @@ export const TestRunPanel = ({
     onSuccess: (result) => {
       update({
         outputs: result.outputs,
+        outcome: result.outcome,
         trace: result.trace.steps,
         error: null,
       });
@@ -71,7 +76,7 @@ export const TestRunPanel = ({
     onError: (e: Error) => {
       const trace =
         e instanceof RunRaterError ? (e.trace?.steps ?? null) : null;
-      update({ outputs: null, trace, error: e.message });
+      update({ outputs: null, outcome: null, trace, error: e.message });
     },
   });
 

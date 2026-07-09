@@ -25,6 +25,7 @@ import {
   Database,
   Flag,
   GitBranch,
+  OctagonX,
   Plus,
   Table2,
   Trash2,
@@ -41,6 +42,7 @@ import {
 import { BranchStepEditor } from './steps/BranchStepEditor';
 import { CalcStepEditor } from './steps/CalcStepEditor';
 import { FetchStepEditor } from './steps/FetchStepEditor';
+import { DecisionStepEditor } from './steps/DecisionStepEditor';
 import { LookupStepEditor } from './steps/LookupStepEditor';
 import { OutputStepEditor } from './steps/OutputStepEditor';
 
@@ -67,6 +69,7 @@ const STEP_META: Record<RaterStep['type'], { label: string; icon: ReactNode }> =
     lookup: { label: 'Lookup', icon: <Table2 size={14} /> },
     fetch: { label: 'Fetch', icon: <Database size={14} /> },
     branch: { label: 'Branch', icon: <GitBranch size={14} /> },
+    decision: { label: 'Decision', icon: <OctagonX size={14} /> },
     output: { label: 'Output', icon: <Flag size={14} /> },
   };
 
@@ -75,6 +78,7 @@ const ADDABLE: RaterStep['type'][] = [
   'lookup',
   'fetch',
   'branch',
+  'decision',
   'output',
 ];
 
@@ -91,6 +95,8 @@ const summarize = (step: RaterStep): string => {
         : step.url || 'external API';
     case 'branch':
       return `${step.cases.length} case${step.cases.length === 1 ? '' : 's'}${step.else?.length ? ' + else' : ''}`;
+    case 'decision':
+      return `${step.outcome}${step.when ? ` when ${step.when}` : ' (always)'}`;
   }
 };
 
@@ -295,6 +301,13 @@ export const StepListEditor = ({
                       definition={definition}
                       path={path}
                       handlers={handlers}
+                    />
+                  )}
+                  {step.type === 'decision' && (
+                    <DecisionStepEditor
+                      step={step}
+                      onChange={(s) => handlers.onReplace(path, s)}
+                      availableBindings={available}
                     />
                   )}
                   {step.type === 'output' && (

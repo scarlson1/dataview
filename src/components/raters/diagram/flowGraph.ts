@@ -50,6 +50,8 @@ const summarize = (step: RaterStep): string | undefined => {
       return step.source === 'db' ? step.table : 'external API';
     case 'branch':
       return undefined;
+    case 'decision':
+      return step.when ? `${step.outcome} if…` : `${step.outcome} (always)`;
   }
 };
 
@@ -99,27 +101,28 @@ export const definitionToFlow = (
     nodeSeq += 1;
     const key = `n${nodeSeq}_${stepId}`;
 
+    const t = executed.get(stepId);
     let status: RaterNodeStatus = 'none';
     if (hasTrace) {
-      const t = executed.get(stepId);
       if (pathDimmed || !t) status = 'skipped';
       else status = t.status === 'error' ? 'error' : 'ok';
+    }
+
+    // Decisions carry no bound value; a FIRED decision badges its outcome.
+    let badge: string | undefined;
+    if (status === 'ok') {
+      if (stepType === 'decision') {
+        badge = t?.detail?.fired === true ? String(t.detail.outcome) : undefined;
+      } else if (stepType !== 'branch' && stepType !== 'inputs') {
+        badge = badgeFor(t?.value);
+      }
     }
 
     nodes.push({
       id: key,
       type: 'raterStep',
       position: { x: 0, y: 0 },
-      data: {
-        stepType,
-        title,
-        subtitle,
-        status,
-        badge:
-          status === 'ok' && stepType !== 'branch' && stepType !== 'inputs'
-            ? badgeFor(executed.get(stepId)?.value)
-            : undefined,
-      },
+      data: { stepType, title, subtitle, status, badge },
     });
     return key;
   };

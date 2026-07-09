@@ -490,7 +490,10 @@ Deno.test('validate: output required on every path', () => {
     ],
   };
   const { errors } = validateRaterDefinition(onlyInBranch);
-  assertEquals(errors.some((e) => e.message.includes('output step must run on every path')), true);
+  assertEquals(
+    errors.some((e) => e.message.includes('every path must end in an output')),
+    true,
+  );
 });
 
 Deno.test('validate: reserved names rejected', () => {
@@ -504,4 +507,129 @@ Deno.test('validate: reserved names rejected', () => {
   };
   const { errors } = validateRaterDefinition(def);
   assertEquals(errors.some((e) => e.message.includes('reserved name')), true);
+});
+
+// --- decision (terminal) steps -------------------------------------------------
+
+Deno.test('decision: conditional knock-out fires and halts with an outcome', async () => {
+  const def: RaterDefinition = {
+    schema_version: 1,
+    inputs: [{ name: 'score', label: 'Score', type: 'number', required: true }],
+    steps: [
+      {
+        id: 'decline_low_score',
+        type: 'decision',
+        outcome: 'decline',
+        label: 'Score too low',
+        when: 'inputs.score < 600',
+        reason: "concat('Score ', string(inputs.score), ' below 600')",
+      },
+      { id: 'premium', type: 'calc', expr: 'inputs.score * 10' },
+      { id: 'out', type: 'output', label: 'Premium', expr: 'premium', format: 'money' },
+    ],
+  };
+
+  assertEquals(validateRaterDefinition(def).errors, []);
+
+  const declined = await executeRater(def, { score: 500 }, noDb);
+  assertEquals(declined.error, null);
+  assertEquals(declined.outcome?.decision, 'decline');
+  assertEquals(declined.outcome?.reason, 'Score 500 below 600');
+  assertEquals(declined.outcome?.stepId, 'decline_low_score');
+  assertEquals(Object.keys(declined.outputs), []); // premium never computed
+  assertEquals(
+    declined.trace.steps.map((s) => `${s.id}:${s.status}`),
+    ['decline_low_score:ok', 'premium:skipped', 'out:skipped'],
+  );
+
+  // above the threshold, the decision falls through to normal rating
+  const quoted = await executeRater(def, { score: 720 }, noDb);
+  assertEquals(quoted.outcome, null);
+  assertEquals(quoted.outputs.out.value, 7200);
+  const gate = quoted.trace.steps.find((s) => s.id === 'decline_low_score');
+  assertEquals(gate?.detail?.fired, false);
+});
+
+Deno.test('decision: unconditional decision is a terminal (no output needed)', () => {
+  const def: RaterDefinition = {
+    schema_version: 1,
+    inputs: [],
+    steps: [{ id: 'refer', type: 'decision', outcome: 'refer', label: 'Manual review' }],
+  };
+  // Validates without any output step — the decision terminates every path.
+  assertEquals(validateRaterDefinition(def).errors, []);
+});
+
+Deno.test('decision: unconditional decision inside a branch case halts the whole run', async () => {
+  const def: RaterDefinition = {
+    schema_version: 1,
+    inputs: [{ name: 'state', label: 'State', type: 'text', required: true }],
+    steps: [
+      {
+        id: 'gate',
+        type: 'branch',
+        cases: [
+          {
+            label: 'Excluded state',
+            when: "upper(inputs.state) == 'FL'",
+            steps: [
+              { id: 'decline', type: 'decision', outcome: 'decline', reason: "'State not written'" },
+            ],
+          },
+        ],
+        else: [{ id: 'base', type: 'calc', expr: '100' }],
+      },
+      { id: 'premium', type: 'calc', expr: 'base * 2' },
+      { id: 'out', type: 'output', label: 'Premium', expr: 'premium', format: 'money' },
+    ],
+  };
+
+  // 'base' is only set on the else path → referencing it after the branch warns,
+  // but doesn't block (the FL path halts before reaching it).
+  assertEquals(validateRaterDefinition(def).errors, []);
+
+  const declined = await executeRater(def, { state: 'FL' }, noDb);
+  assertEquals(declined.outcome?.decision, 'decline');
+  assertEquals(declined.error, null);
+  // steps after the fired decision — across the branch boundary — are skipped
+  assertEquals(
+    declined.trace.steps
+      .filter((s) => ['premium', 'out'].includes(s.id))
+      .map((s) => s.status),
+    ['skipped', 'skipped'],
+  );
+
+  const quoted = await executeRater(def, { state: 'TX' }, noDb);
+  assertEquals(quoted.outcome, null);
+  assertEquals(quoted.outputs.out.value, 200);
+});
+
+Deno.test('validate: a conditional-only decision does not guarantee a result', () => {
+  const def: RaterDefinition = {
+    schema_version: 1,
+    inputs: [{ name: 'x', label: 'X', type: 'number', required: true }],
+    steps: [
+      { id: 'maybe_decline', type: 'decision', outcome: 'decline', when: 'inputs.x < 0' },
+      // no output and no unconditional terminal → invalid
+    ],
+  };
+  const { errors } = validateRaterDefinition(def);
+  assertEquals(
+    errors.some((e) => e.message.includes('every path must end in an output')),
+    true,
+  );
+});
+
+Deno.test('validate: steps after an unconditional decision warn as unreachable', () => {
+  const def: RaterDefinition = {
+    schema_version: 1,
+    inputs: [],
+    steps: [
+      { id: 'decline', type: 'decision', outcome: 'decline' },
+      { id: 'dead', type: 'calc', expr: '1' },
+    ],
+  };
+  const { errors, warnings } = validateRaterDefinition(def);
+  assertEquals(errors, []);
+  assertEquals(warnings.some((w) => w.message.includes('unreachable')), true);
 });

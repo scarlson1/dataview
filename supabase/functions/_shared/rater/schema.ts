@@ -108,12 +108,49 @@ export const calcStepSchema = z.object({
 
 export type CalcStep = z.infer<typeof calcStepSchema>;
 
-// Lookup: an inline reference table. `match` entries AND together; the first
-// row satisfying all of them wins (row order matters). The step binds the
-// matched row as an object, e.g. `base_rate.rate`.
+// Lookup: a reference table matched against probe values. `match` entries AND
+// together; the first row satisfying all of them wins (row order matters). The
+// step binds the matched row as an object, e.g. `base_rate.rate`. The grid is
+// either carried inline on the step (source: 'inline') or references a shared
+// rater_lookup_tables row (source: 'ref'), resolved to inline at run time.
 export const LOOKUP_COLUMN_TYPES = ['text', 'number', 'boolean'] as const;
 
-const lookupCell = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+export const lookupCell = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+export type LookupCell = z.infer<typeof lookupCell>;
+
+export const lookupColumnSchema = z.object({
+  name: bindingName,
+  type: z.enum(LOOKUP_COLUMN_TYPES),
+});
+export type LookupColumn = z.infer<typeof lookupColumnSchema>;
+
+// The grid body shared by an inline lookup step and a saved rater_lookup_tables
+// row: typed columns × cell rows, with structural checks (unique column names,
+// uniform row width). Reused so both storage paths enforce the same shape.
+export const lookupTableContentSchema = z
+  .object({
+    columns: z
+      .array(lookupColumnSchema)
+      .min(1)
+      .max(RATER_LIMITS.maxLookupColumns),
+    rows: z.array(z.array(lookupCell)).max(RATER_LIMITS.maxLookupRows),
+  })
+  .superRefine((table, ctx) => {
+    const colNames = new Set(table.columns.map((c) => c.name));
+    if (colNames.size !== table.columns.length) {
+      ctx.addIssue({ code: 'custom', message: 'duplicate column names' });
+    }
+    for (const [i, row] of table.rows.entries()) {
+      if (row.length !== table.columns.length) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `row ${i + 1} has ${row.length} cells, expected ${table.columns.length}`,
+        });
+      }
+    }
+  });
+
+export type LookupTableContent = z.infer<typeof lookupTableContentSchema>;
 
 export const lookupMatchSchema = z.discriminatedUnion('mode', [
   z.object({
@@ -133,18 +170,43 @@ export const lookupMatchSchema = z.discriminatedUnion('mode', [
 
 export type LookupMatch = z.infer<typeof lookupMatchSchema>;
 
-export const lookupStepSchema = z
+// Fields shared by both lookup variants: how a probe finds its row and what to
+// do on a miss.
+const lookupMatchFields = {
+  match: z.array(lookupMatchSchema).min(1),
+  onMiss: z.enum(['error', 'default']).default('error'),
+  defaultRow: z.record(z.string(), lookupCell).optional(),
+};
+
+// A defaultRow is required when onMiss is 'default' (both variants).
+const requireDefaultRow = (
+  step: { id: string; onMiss: 'error' | 'default'; defaultRow?: unknown },
+  ctx: z.RefinementCtx,
+): void => {
+  if (step.onMiss === 'default' && !step.defaultRow) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `lookup '${step.id}' has onMiss 'default' but no defaultRow`,
+    });
+  }
+};
+
+// Inline: the grid lives on the step. Match columns are validated against the
+// step's own columns here (a ref step can't be — its columns are only known
+// once the shared table is resolved server-side).
+export const inlineLookupStepSchema = z
   .object({
     ...stepBase,
     type: z.literal('lookup'),
+    // Optional (not defaulted) so every pre-existing saved definition — which
+    // has no `source` field — still parses as inline. Absent ⇒ inline.
+    source: z.literal('inline').optional(),
     columns: z
-      .array(z.object({ name: bindingName, type: z.enum(LOOKUP_COLUMN_TYPES) }))
+      .array(lookupColumnSchema)
       .min(1)
       .max(RATER_LIMITS.maxLookupColumns),
     rows: z.array(z.array(lookupCell)).max(RATER_LIMITS.maxLookupRows),
-    match: z.array(lookupMatchSchema).min(1),
-    onMiss: z.enum(['error', 'default']).default('error'),
-    defaultRow: z.record(z.string(), lookupCell).optional(),
+    ...lookupMatchFields,
   })
   .superRefine((step, ctx) => {
     const colNames = new Set(step.columns.map((c) => c.name));
@@ -170,15 +232,35 @@ export const lookupStepSchema = z
         }
       }
     }
-    if (step.onMiss === 'default' && !step.defaultRow) {
-      ctx.addIssue({
-        code: 'custom',
-        message: `lookup '${step.id}' has onMiss 'default' but no defaultRow`,
-      });
-    }
+    requireDefaultRow(step, ctx);
   });
 
-export type LookupStep = z.infer<typeof lookupStepSchema>;
+export type InlineLookupStep = z.infer<typeof inlineLookupStepSchema>;
+
+// Ref: the grid is a shared rater_lookup_tables row referenced by id. The
+// run-rater edge function resolves it to an inline step (validating match
+// columns against the resolved table) before execution.
+export const refLookupStepSchema = z
+  .object({
+    ...stepBase,
+    type: z.literal('lookup'),
+    source: z.literal('ref'),
+    tableId: z.string().uuid(),
+    ...lookupMatchFields,
+  })
+  .superRefine(requireDefaultRow);
+
+export type RefLookupStep = z.infer<typeof refLookupStepSchema>;
+
+// Order: inline (the common case, and the shape of every pre-source saved
+// definition) first; a ref object fails inline's `source` literal + required
+// `columns` and falls through to the ref schema.
+export const lookupStepSchema = z.union([
+  inlineLookupStepSchema,
+  refLookupStepSchema,
+]);
+
+export type LookupStep = InlineLookupStep | RefLookupStep;
 
 // Fetch (db): a declarative PostgREST query executed via the user-scoped
 // client — RLS is the gate on what a rater can read. Filter values are
@@ -263,6 +345,23 @@ export const outputStepSchema = z.object({
 
 export type OutputStep = z.infer<typeof outputStepSchema>;
 
+// Decision: a terminal step. When it fires it stops the run *successfully*
+// with a named outcome (e.g. 'decline', 'refer') — distinct from an error
+// halt. `when` gates it: absent = always fires (an unconditional terminal,
+// e.g. a catch-all "refer"); present = fires only when truthy, otherwise
+// execution falls through to the next step (the "knock-out rule" pattern:
+// a flat list of decline conditions). `reason` is an optional expression
+// shown to the user.
+export const decisionStepSchema = z.object({
+  ...stepBase,
+  type: z.literal('decision'),
+  outcome: z.string().min(1).max(64), // free-text: 'decline', 'refer', 'review', …
+  when: expression.optional(),
+  reason: expression.optional(),
+});
+
+export type DecisionStep = z.infer<typeof decisionStepSchema>;
+
 // Branch: first case whose `when` is truthy runs its steps; `else` otherwise.
 // The branch itself binds nothing; inner steps bind into the shared scope.
 // Zod can't type recursive schemas cleanly without explicit types, so the
@@ -288,6 +387,7 @@ export type RaterStep =
   | DbFetchStep
   | HttpFetchStep
   | OutputStep
+  | DecisionStep
   | BranchStep;
 
 const branchStepSchema: z.ZodType<BranchStep> = z.lazy(() =>
@@ -315,6 +415,7 @@ export const raterStepSchema: z.ZodType<RaterStep> = z.lazy(() =>
     dbFetchStepSchema,
     httpFetchStepSchema,
     outputStepSchema,
+    decisionStepSchema,
     branchStepSchema,
   ]),
 ) as z.ZodType<RaterStep>;
@@ -366,8 +467,18 @@ export interface TraceStep {
   error?: string;
 }
 
+// A terminal decision reached during a run (e.g. a decline). Successful — not
+// an error; the run stops early with this instead of computing more outputs.
+export interface RaterOutcome {
+  decision: string; // the decision step's `outcome` string
+  reason: string | null;
+  stepId: string;
+  label?: string;
+}
+
 export interface RaterRunResult {
   outputs: Record<string, RaterOutputValue>;
+  outcome: RaterOutcome | null;
   trace: { steps: TraceStep[] };
   error: { stepId: string; message: string } | null;
 }
