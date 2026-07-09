@@ -80,6 +80,7 @@ export const defaultAgencyValues: NewAgencyValues = {
     city: '',
     state: '',
     postal: '',
+    country: 'US',
   },
 };
 

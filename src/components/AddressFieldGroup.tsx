@@ -1,3 +1,7 @@
+import {
+  countryOptions,
+  DROPDOWN_STATE_COUNTRIES,
+} from '#/constants/countries';
 import { stateOptions } from '#/constants/usStates';
 import { withFieldGroup } from '#/hooks/form';
 import { Grid } from '@mui/material';
@@ -10,6 +14,7 @@ export const AddressFieldGroup = withFieldGroup({
     city: '',
     state: '',
     postal: '',
+    country: 'US',
   },
   props: {
     spacing: 2,
@@ -43,6 +48,7 @@ export const AddressFieldGroup = withFieldGroup({
                   group.setFieldValue('city', a.city);
                   group.setFieldValue('state', a.state);
                   group.setFieldValue('postal', a.postal);
+                  if (a.country) group.setFieldValue('country', a.country);
                 }}
               />
             )}
@@ -64,23 +70,48 @@ export const AddressFieldGroup = withFieldGroup({
             )}
           />
         </Grid>
-        <Grid size={{ xs: 6, sm: 2 }}>
-          <group.AppField
-            name='state'
-            children={(field) => (
-              <field.Select
-                label='State'
-                options={stateOptions}
-                size={inputSize}
+        <Grid size={{ xs: 6, sm: 3 }}>
+          {/* State/Province: dropdown for countries with fixed subdivisions
+              (US), free-text elsewhere. */}
+          <group.Subscribe selector={(s) => s.values.country}>
+            {(country) => (
+              <group.AppField
+                name='state'
+                children={(field) =>
+                  DROPDOWN_STATE_COUNTRIES.has(country) ? (
+                    <field.Select
+                      label='State / Province'
+                      options={stateOptions}
+                      size={inputSize}
+                    />
+                  ) : (
+                    <field.TextField
+                      label='State / Province'
+                      size={inputSize}
+                    />
+                  )
+                }
               />
             )}
-          />
+          </group.Subscribe>
         </Grid>
-        <Grid size={{ xs: 6, sm: 4 }}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <group.AppField
             name='postal'
             children={(field) => (
-              <field.TextField label='Postal' size={inputSize} />
+              <field.TextField label='Postal / ZIP' size={inputSize} />
+            )}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <group.AppField
+            name='country'
+            children={(field) => (
+              <field.Select
+                label='Country'
+                options={countryOptions}
+                size={inputSize}
+              />
             )}
           />
         </Grid>

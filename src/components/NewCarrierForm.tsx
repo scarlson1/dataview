@@ -13,7 +13,6 @@ import { emptyToNull } from '#/lib/formCoerce';
 import { supabase } from '#/supabaseClient';
 import {
   Alert,
-  Box,
   Button,
   Collapse,
   Grid,
@@ -47,7 +46,6 @@ const toFormValues = (
         phone: str(row.phone),
         email: str(row.email),
         claimsPhone: str(row.claims_phone),
-        country: str(row.country),
         status: str(row.status) || 'active',
         address: {
           addressLine1: str(row.address_line1),
@@ -55,6 +53,7 @@ const toFormValues = (
           city: str(row.city),
           state: str(row.state),
           postal: str(row.postal),
+          country: str(row.country) || 'US',
         },
       }
     : {}),
@@ -119,7 +118,7 @@ export const NewCarrierForm = ({
         phone: emptyToNull(value.phone),
         email: emptyToNull(value.email),
         claims_phone: emptyToNull(value.claimsPhone),
-        country: emptyToNull(value.country),
+        country: emptyToNull(value.address.country),
         status: (emptyToNull(value.status) ??
           'active') as CarrierInsert['status'],
         address_line1: emptyToNull(value.address.addressLine1),
@@ -211,12 +210,12 @@ export const NewCarrierForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='phone'>
-              {(field) => <field.MaskInput label='Phone' size='small' />}
+              {(field) => <field.PhoneInput label='Phone' />}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='claimsPhone'>
-              {(field) => <field.MaskInput label='Claims phone' />}
+              {(field) => <field.PhoneInput label='Claims phone' />}
             </form.AppField>
           </Grid>
         </Grid>
@@ -233,12 +232,6 @@ export const NewCarrierForm = ({
             />
           </GoogleMapsProvider>
         </Suspense>
-
-        <Box>
-          <form.AppField name='country'>
-            {(field) => <field.TextField label='Country' />}
-          </form.AppField>
-        </Box>
 
         <Collapse in={isError}>
           <Alert severity='error'>

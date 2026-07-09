@@ -586,14 +586,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -777,14 +777,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -1101,14 +1101,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "zip_code",
         "label": "Zip Code",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -1348,6 +1348,13 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      },
+      {
+        "field": "country",
+        "label": "Country",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
       }
     ]
   },
@@ -1428,20 +1435,27 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "zip_code",
         "label": "Zip Code",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
       {
         "field": "county",
         "label": "County",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "country",
+        "label": "Country",
         "type": "varchar(100)",
         "nullable": true,
         "kind": "text"
@@ -2721,14 +2735,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -3014,14 +3028,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(12)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -3154,14 +3168,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(12)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },

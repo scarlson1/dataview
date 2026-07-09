@@ -13,6 +13,7 @@ export interface ParsedAddress {
   city: string;
   state: string;
   postal: string;
+  country: string;
 }
 
 const pick = (
@@ -36,4 +37,5 @@ export const parseAddressComponents = (
     pick(comps, 'sublocality'),
   state: pick(comps, 'administrative_area_level_1', true), // short_name => 'CA'
   postal: pick(comps, 'postal_code'),
+  country: pick(comps, 'country', true), // short_name => ISO code, e.g. 'US'
 });

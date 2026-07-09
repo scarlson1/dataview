@@ -394,6 +394,7 @@ export type Database = {
           client_id: number | null
           construction_code: string | null
           contents_value: number
+          country: string | null
           county: string | null
           created_at: string
           deductible_amount: number | null
@@ -441,6 +442,7 @@ export type Database = {
           client_id?: number | null
           construction_code?: string | null
           contents_value?: number
+          country?: string | null
           county?: string | null
           created_at?: string
           deductible_amount?: number | null
@@ -488,6 +490,7 @@ export type Database = {
           client_id?: number | null
           construction_code?: string | null
           contents_value?: number
+          country?: string | null
           county?: string | null
           created_at?: string
           deductible_amount?: number | null
@@ -2762,6 +2765,7 @@ export type Database = {
           client_id: number | null
           construction_code: string | null
           contents_value: number | null
+          country: string | null
           county: string | null
           created_at: string | null
           deductible_amount: number | null

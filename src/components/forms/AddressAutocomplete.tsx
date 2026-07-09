@@ -17,6 +17,11 @@ interface AddressAutocompleteProps {
   helperText?: string;
   onAddressSelect?: (addr: ParsedAddress) => void;
   textFieldProps?: Omit<TextFieldProps, 'value' | 'onChange'>;
+  /**
+   * Restrict autocomplete predictions to these ISO country codes (e.g. ['us']).
+   * Omit for worldwide search.
+   */
+  countries?: string[];
 }
 
 function AddressAutocomplete({
@@ -24,6 +29,7 @@ function AddressAutocomplete({
   helperText,
   onAddressSelect,
   textFieldProps,
+  countries,
 }: AddressAutocompleteProps) {
   use(loadPlaces()); // suspends until places is ready
   const { state, store, handleBlur, handleChange } = useFieldContext<string>();
@@ -34,7 +40,9 @@ function AddressAutocomplete({
     setValue,
     clearSuggestions,
   } = usePlacesAutocomplete({
-    requestOptions: { componentRestrictions: { country: 'us' } },
+    requestOptions: countries?.length
+      ? { componentRestrictions: { country: countries } }
+      : {},
     debounce: 300,
   });
 

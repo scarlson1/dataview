@@ -6,6 +6,9 @@
  *    pulled from the JSON response by dot-path.
  */
 
+import { TABLE_ORDER, TABLES } from '#/data/tables';
+import { MONO_FONT } from '#/theme/tokens';
+import type { DbFetchStep, FetchStep, HttpFetchStep } from '#/types/raters';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -16,9 +19,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { Plus, X } from 'lucide-react';
-import { TABLE_ORDER, TABLES } from '#/data/tables';
-import { MONO_FONT } from '#/theme/tokens';
-import type { DbFetchStep, FetchStep, HttpFetchStep } from '#/types/raters';
 import { ExpressionField } from '../ExpressionField';
 
 interface FetchStepEditorProps {
@@ -542,6 +542,7 @@ const HttpFetchFields = ({
             sx={{ flex: 1 }}
             placeholder='data.rates.USD'
             slotProps={monoInput}
+            helperText={ex.name ? '' : undefined}
           />
           {step.extract.length > 1 && (
             <IconButton

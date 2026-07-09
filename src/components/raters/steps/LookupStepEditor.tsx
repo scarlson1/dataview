@@ -23,6 +23,7 @@ import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { MONO_FONT } from '#/theme/tokens';
 import type { LookupMatch, LookupStep } from '#/types/raters';
 import { ExpressionField } from '../ExpressionField';
@@ -48,6 +49,61 @@ const parseCell = (raw: string, type: 'text' | 'number' | 'boolean'): Cell => {
 
 const cellToString = (cell: Cell): string =>
   cell === null || cell === undefined ? '' : String(cell);
+
+// Editable text/number cell. Keeps its own draft string while focused so
+// in-progress numeric input survives (typing "0.0008" — a bare "0." or a
+// trailing zero would otherwise be stripped the instant the parsed number is
+// reflected back). The parsed value is committed live via onCommitRaw; the
+// draft resyncs to the canonical string when the value changes from outside.
+interface CellInputProps {
+  value: Cell;
+  onCommitRaw: (raw: string) => void;
+  placeholder?: string;
+  variant?: 'standard' | 'outlined';
+  label?: string;
+  width?: number;
+}
+
+const CellInput = ({
+  value,
+  onCommitRaw,
+  placeholder,
+  variant = 'standard',
+  label,
+  width,
+}: CellInputProps) => {
+  const [draft, setDraft] = useState(() => cellToString(value));
+  const focused = useRef(false);
+
+  // Adopt external changes (row reorder, column retype, reset) only when the
+  // user isn't mid-edit, so we never clobber what they're typing.
+  useEffect(() => {
+    if (!focused.current) setDraft(cellToString(value));
+  }, [value]);
+
+  return (
+    <TextField
+      label={label}
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        onCommitRaw(e.target.value);
+      }}
+      onFocus={() => {
+        focused.current = true;
+      }}
+      onBlur={() => {
+        focused.current = false;
+        setDraft(cellToString(value)); // normalize (e.g. "0." → "0", "1.50" → "1.5")
+      }}
+      size='small'
+      variant={variant}
+      placeholder={placeholder}
+      sx={width ? { width } : undefined}
+      slotProps={{ input: { sx: { fontFamily: MONO_FONT, fontSize: 12.5 } } }}
+    />
+  );
+};
 
 export const LookupStepEditor = ({
   step,
@@ -247,19 +303,12 @@ export const LookupStepEditor = ({
                         size='small'
                       />
                     ) : (
-                      <TextField
-                        value={cellToString(cell)}
-                        onChange={(e) => setCell(r, c, e.target.value)}
-                        size='small'
-                        variant='standard'
+                      <CellInput
+                        value={cell}
+                        onCommitRaw={(raw) => setCell(r, c, raw)}
                         placeholder={
                           step.columns[c]?.type === 'number' ? '∞' : ''
                         }
-                        slotProps={{
-                          input: {
-                            sx: { fontFamily: MONO_FONT, fontSize: 12.5 },
-                          },
-                        }}
                       />
                     )}
                   </TableCell>
@@ -495,24 +544,21 @@ export const LookupStepEditor = ({
       {step.onMiss === 'default' && step.defaultRow && (
         <Stack direction='row' spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
           {step.columns.map((c) => (
-            <TextField
+            <CellInput
               key={c.name}
               label={`default ${c.name}`}
-              value={cellToString((step.defaultRow?.[c.name] ?? null) as Cell)}
-              onChange={(e) =>
+              variant='outlined'
+              width={150}
+              value={(step.defaultRow?.[c.name] ?? null) as Cell}
+              onCommitRaw={(raw) =>
                 onChange({
                   ...step,
                   defaultRow: {
                     ...step.defaultRow,
-                    [c.name]: parseCell(e.target.value, c.type),
+                    [c.name]: parseCell(raw, c.type),
                   },
                 })
               }
-              size='small'
-              sx={{ width: 150 }}
-              slotProps={{
-                input: { sx: { fontFamily: MONO_FONT, fontSize: 12.5 } },
-              }}
             />
           ))}
         </Stack>

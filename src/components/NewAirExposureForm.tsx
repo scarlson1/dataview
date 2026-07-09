@@ -16,6 +16,7 @@ import {
   type NewAirExposureValues,
   newAirExposureFormOpts,
 } from '#/constants/newAirExposureForm';
+import { countryOptions } from '#/constants/countries';
 import type { Tables, TablesInsert } from '#/data/database.types';
 import type { EntityFormProps } from '#/data/entityForms';
 import { useAppForm } from '#/hooks/form';
@@ -61,8 +62,9 @@ const toFormValues = (
         streetAddress: str(row.street_address),
         city: str(row.city),
         state: str(row.state),
-        zipCode: str(row.zip_code),
+        postal: str(row.postal),
         county: str(row.county),
+        country: str(row.country) || 'US',
         latitude: str(row.latitude),
         longitude: str(row.longitude),
         geocodeQuality: str(row.geocode_quality),
@@ -146,8 +148,9 @@ export const NewAirExposureForm = ({
         street_address: emptyToNull(value.streetAddress),
         city: emptyToNull(value.city),
         state: emptyToNull(value.state),
-        zip_code: emptyToNull(value.zipCode),
+        postal: emptyToNull(value.postal),
         county: emptyToNull(value.county),
+        country: emptyToNull(value.country),
         latitude: toNumber(value.latitude),
         longitude: toNumber(value.longitude),
         geocode_quality: toNumber(value.geocodeQuality),
@@ -288,22 +291,24 @@ export const NewAirExposureForm = ({
           </Grid>
           <Grid size={{ xs: 4, sm: 2 }}>
             <form.AppField name='state'>
-              {(field) => (
-                <field.TextField
-                  label='State'
-                  slotProps={{ htmlInput: { maxLength: 2 } }}
-                />
-              )}
+              {(field) => <field.TextField label='State / Province' />}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 8, sm: 2 }}>
-            <form.AppField name='zipCode'>
-              {(field) => <field.TextField label='ZIP' />}
+            <form.AppField name='postal'>
+              {(field) => <field.TextField label='Postal / ZIP' />}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
             <form.AppField name='county'>
               {(field) => <field.TextField label='County' />}
+            </form.AppField>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <form.AppField name='country'>
+              {(field) => (
+                <field.Select label='Country' options={countryOptions} />
+              )}
             </form.AppField>
           </Grid>
           <Grid size={{ xs: 6, sm: 3 }}>

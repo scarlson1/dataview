@@ -5,6 +5,14 @@
  * to `raters` via supabase-js under RLS.
  */
 
+import { supabase } from '#/supabaseClient';
+import {
+  raterDefinitionSchema,
+  validateRaterDefinition,
+  type RaterDefinition,
+  type RaterStep,
+  type RecordMapping,
+} from '#/types/raters';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -18,14 +26,6 @@ import { useMutation } from '@tanstack/react-query';
 import { Save } from 'lucide-react';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '#/supabaseClient';
-import {
-  type RaterDefinition,
-  type RaterStep,
-  type RecordMapping,
-  raterDefinitionSchema,
-  validateRaterDefinition,
-} from '#/types/raters';
 import {
   appendStep,
   moveStepAt,
@@ -199,7 +199,9 @@ export const RaterBuilder = ({
           )}
           <Button
             variant='contained'
-            startIcon={<Save size={15} />}
+            startIcon={
+              <Save size={15} color='var(--palette-primary-contrastText)' />
+            }
             disabled={save.isPending || !dirty}
             onClick={() => save.mutate()}
           >

@@ -46,7 +46,7 @@ interface ExposureRow {
   street_address: string | null;
   city: string | null;
   state: string | null;
-  zip_code: string | null;
+  postal: string | null;
   building_id: string | null;
   year_built: number | null;
   gross_floor_area: number | null;

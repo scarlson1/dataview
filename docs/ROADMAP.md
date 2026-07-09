@@ -8,6 +8,9 @@
   - [] Trim large historical tool results (`list_tables`/`run_query` outputs) to cut token burn. start with prompt caching; optimize if context growth bites.
   - [] verify running existing report template also honors RBAC
   - [] Use SQL editor for syntax highlighting & validation (monaco ??)
+- [x] Rater builder (rating logic: inputs, lookups, branches, formulas) — docs: [RATER_BUILDER.md](RATER_BUILDER.md)
+  - [] wire raters into the submission/policy workflow (auto-price a submission, write outputs back) — see [RATER_BUILDER.md](RATER_BUILDER.md#planned-submission-integration)
+  - [] draft→published rater versioning (`rater_versions` table)
 - fix exports - server side export -> export all rows matching filters, not just current page
 - ReactPDF document generation
 - email notifications
