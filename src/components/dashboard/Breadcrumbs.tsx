@@ -13,7 +13,7 @@ export const Breadcrumbs = () => {
     }));
 
   return (
-    <MuiBreadcrumbs aria-label='breadcrumb'>
+    <MuiBreadcrumbs maxItems={2} aria-label='breadcrumb'>
       {breadcrumbItems.map((c) => (
         <RouterLink
           underline='hover'
