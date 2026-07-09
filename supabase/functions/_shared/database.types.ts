@@ -1976,6 +1976,95 @@ export type Database = {
           },
         ]
       }
+      rater_runs: {
+        Row: {
+          created_at: string
+          definition_snapshot: Json | null
+          duration_ms: number | null
+          error: string | null
+          id: number
+          inputs: Json | null
+          outputs: Json | null
+          rater_id: string | null
+          source_record: Json | null
+          trace: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          definition_snapshot?: Json | null
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          inputs?: Json | null
+          outputs?: Json | null
+          rater_id?: string | null
+          source_record?: Json | null
+          trace?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          definition_snapshot?: Json | null
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          inputs?: Json | null
+          outputs?: Json | null
+          rater_id?: string | null
+          source_record?: Json | null
+          trace?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rater_runs_rater_id_fkey"
+            columns: ["rater_id"]
+            isOneToOne: false
+            referencedRelation: "raters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raters: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          definition: Json
+          description: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          record_mapping: Json | null
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition: Json
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          record_mapping?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition?: Json
+          description?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          record_mapping?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       renewals: {
         Row: {
           agency_com_pct: number | null
