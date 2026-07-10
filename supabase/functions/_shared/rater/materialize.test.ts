@@ -78,6 +78,21 @@ Deno.test('materialize: ref lookup becomes an inline grid and runs', async () =>
   assertEquals(result.outputs.premium.value, 0.0015);
 });
 
+Deno.test('materialize: display-only tableName is dropped from the inline step', async () => {
+  const withName = refRater(TABLE_ID);
+  const ref = withName.steps[0];
+  if (ref.type === 'lookup' && ref.source === 'ref') ref.tableName = 'Base Rates';
+
+  const { definition } = await materializeLookupTables(
+    withName,
+    resolverFor({ [TABLE_ID]: baseRateTable }),
+  );
+  const lookup = definition.steps[0];
+  // Materialized to inline — no ref-only fields survive into the snapshot.
+  assertEquals('tableName' in lookup, false);
+  assertEquals('tableId' in lookup, false);
+});
+
 Deno.test('materialize: missing/inaccessible table is an error', async () => {
   const { errors } = await materializeLookupTables(
     refRater(TABLE_ID),

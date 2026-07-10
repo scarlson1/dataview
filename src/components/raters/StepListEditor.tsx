@@ -89,7 +89,7 @@ const summarize = (step: RaterStep): string => {
       return step.expr || '—';
     case 'lookup':
       return step.source === 'ref'
-        ? 'shared table'
+        ? (step.tableName ?? 'shared table')
         : `${step.rows.length} row${step.rows.length === 1 ? '' : 's'} × ${step.columns.length} col`;
     case 'fetch':
       return step.source === 'db'

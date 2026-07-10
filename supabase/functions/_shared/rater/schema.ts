@@ -246,6 +246,11 @@ export const refLookupStepSchema = z
     type: z.literal('lookup'),
     source: z.literal('ref'),
     tableId: z.string().uuid(),
+    // Display-only cache of the referenced table's name, so the builder step
+    // list and diagram can show a friendly label without a join. Never read by
+    // the interpreter and dropped during materialization; refreshed when the
+    // user re-picks the table (may go stale after a rename until then).
+    tableName: z.string().optional(),
     ...lookupMatchFields,
   })
   .superRefine(requireDefaultRow);

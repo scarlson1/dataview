@@ -46,7 +46,7 @@ const summarize = (step: RaterStep): string | undefined => {
       return step.expr || undefined;
     case 'lookup':
       return step.source === 'ref'
-        ? 'shared table'
+        ? (step.tableName ?? 'shared table')
         : `${step.rows.length} rows`;
     case 'fetch':
       return step.source === 'db' ? step.table : 'external API';

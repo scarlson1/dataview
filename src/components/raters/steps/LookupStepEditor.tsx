@@ -89,6 +89,7 @@ export const LookupStepEditor = ({
         type: 'lookup',
         source: 'ref',
         tableId: firstTable?.id ?? '',
+        ...(firstTable ? { tableName: firstTable.name } : {}),
         match: step.match,
         onMiss: step.onMiss,
         ...(step.defaultRow !== undefined
@@ -138,7 +139,18 @@ export const LookupStepEditor = ({
           step={step}
           tables={tables.data ?? []}
           loading={tables.isLoading}
-          onSelect={(tableId) => onChange({ ...step, tableId })}
+          onSelect={(tableId) => {
+            // Cache the picked table's name for friendly summaries (self-heals a
+            // stale name on re-pick); drop it if somehow unresolved.
+            const picked = tables.data?.find((t) => t.id === tableId);
+            onChange({
+              ...step,
+              tableId,
+              ...(picked
+                ? { tableName: picked.name }
+                : { tableName: undefined }),
+            });
+          }}
         />
       ) : (
         <LookupTableGrid
@@ -223,6 +235,14 @@ const RefTablePicker = ({
           </MenuItem>
         ))}
       </TextField>
+
+      {!loading && step.tableId && !selected && (
+        <Alert severity='error' sx={{ fontSize: 12.5 }}>
+          The referenced table
+          {step.tableName ? ` "${step.tableName}"` : ''} is unavailable
+          (archived or deleted). Pick another table.
+        </Alert>
+      )}
 
       {selected && (
         <Box>
