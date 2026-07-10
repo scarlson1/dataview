@@ -43,7 +43,7 @@ const RaterFlow = lazy(() =>
   })),
 );
 
-export const Route = createFileRoute('/_dashboard/raters/$id')({
+export const Route = createFileRoute('/_dashboard/raters-admin/$id')({
   component: RaterDetail,
   loader: () => ({ crumb: 'rater' }),
 });

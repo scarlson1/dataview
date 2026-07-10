@@ -431,7 +431,7 @@ export const Sidebar = ({
           icon={<Calculator size={20} />}
           label='Raters'
           collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/raters' }))}
+          onClick={() => go(() => navigate({ to: '/raters-admin' }))}
         />
         <FooterItem
           icon={<Table2 size={20} />}

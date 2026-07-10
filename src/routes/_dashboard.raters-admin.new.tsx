@@ -4,7 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { RaterBuilder } from '#/components/raters/RaterBuilder';
 import { emptyRaterDefinition } from '#/types/raters';
 
-export const Route = createFileRoute('/_dashboard/raters/new')({
+export const Route = createFileRoute('/_dashboard/raters-admin/new')({
   component: NewRater,
   loader: () => ({ crumb: 'new' }),
 });
