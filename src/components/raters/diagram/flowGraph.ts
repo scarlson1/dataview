@@ -45,7 +45,9 @@ const summarize = (step: RaterStep): string | undefined => {
     case 'output':
       return step.expr || undefined;
     case 'lookup':
-      return `${step.rows.length} rows`;
+      return step.source === 'ref'
+        ? 'shared table'
+        : `${step.rows.length} rows`;
     case 'fetch':
       return step.source === 'db' ? step.table : 'external API';
     case 'branch':
@@ -112,7 +114,8 @@ export const definitionToFlow = (
     let badge: string | undefined;
     if (status === 'ok') {
       if (stepType === 'decision') {
-        badge = t?.detail?.fired === true ? String(t.detail.outcome) : undefined;
+        badge =
+          t?.detail?.fired === true ? String(t.detail.outcome) : undefined;
       } else if (stepType !== 'branch' && stepType !== 'inputs') {
         badge = badgeFor(t?.value);
       }

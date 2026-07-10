@@ -434,12 +434,32 @@ export const raterDefinitionSchema: z.ZodType<RaterDefinition> = z.object({
   steps: z.array(raterStepSchema),
 });
 
-// Record mapping (raters.record_mapping): pre-fill inputs from a source row.
+// A single applicability condition: match one of the target table's columns
+// against a literal value. `value` is a literal (not a scope expression) — it's
+// compared against a concrete record row when deciding which raters apply,
+// before any run scope exists. Coercion happens at match time (see
+// src/lib/raterMatching.ts) based on the column's kind. The operator set is the
+// same as db-fetch filters.
+export const matchConditionSchema = z.object({
+  column: z.string().min(1).max(64),
+  op: z.enum(DB_FILTER_OPS),
+  value: z.string().max(RATER_LIMITS.maxExprLength),
+});
+
+export type MatchCondition = z.infer<typeof matchConditionSchema>;
+
+// Record binding (raters.record_mapping): declares which table a rater applies
+// to, optional match conditions that narrow applicability against the record's
+// own columns, and optional pre-fill mappings from a source row. A binding with
+// `table` set and no conditions applies to every row of that table; conditions
+// AND together. `mappings` is optional so a rater can be applicable to a table
+// without pre-filling any inputs.
 export const recordMappingSchema = z.object({
   table: z.string().min(1).max(64),
+  conditions: z.array(matchConditionSchema).optional(),
   mappings: z
     .array(z.object({ input: bindingName, column: z.string().min(1) }))
-    .min(1),
+    .optional(),
 });
 
 export type RecordMapping = z.infer<typeof recordMappingSchema>;

@@ -10,8 +10,8 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { DecisionStep } from '#/types/raters';
 import { MONO_FONT } from '#/theme/tokens';
+import type { DecisionStep } from '#/types/raters';
 import { ExpressionField } from '../ExpressionField';
 
 interface DecisionStepEditorProps {
@@ -57,7 +57,10 @@ export const DecisionStepEditor = ({
         label={
           <Typography sx={{ fontSize: 13 }}>
             Only when a condition is met
-            <Typography component='span' sx={{ color: 'text.secondary', ml: 1, fontSize: 12 }}>
+            <Typography
+              component='span'
+              sx={{ color: 'text.secondary', ml: 1, fontSize: 12 }}
+            >
               {conditional
                 ? '(falls through when false)'
                 : '(always fires — a terminal end state)'}

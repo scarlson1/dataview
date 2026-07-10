@@ -5477,6 +5477,80 @@ export const SCHEMA = {
       }
     ]
   },
+  "rater_lookup_tables": {
+    "name": "rater_lookup_tables",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "uuid",
+        "nullable": false,
+        "def": "gen_random_uuid()",
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "name",
+        "label": "Name",
+        "type": "text",
+        "nullable": false,
+        "kind": "text"
+      },
+      {
+        "field": "description",
+        "label": "Description",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "columns",
+        "label": "Columns",
+        "type": "jsonb",
+        "nullable": false,
+        "kind": "json"
+      },
+      {
+        "field": "rows",
+        "label": "Rows",
+        "type": "jsonb",
+        "nullable": false,
+        "kind": "json"
+      },
+      {
+        "field": "created_by",
+        "label": "Created By",
+        "type": "uuid",
+        "nullable": true,
+        "key": "FK",
+        "kind": "mono"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "archived_at",
+        "label": "Archived At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      }
+    ]
+  },
   "rater_runs": {
     "name": "rater_runs",
     "kind": "table",

@@ -127,9 +127,10 @@ export const RaterBuilder = ({
         name: name.trim(),
         description: description.trim() || null,
         definition: definition as never,
-        record_mapping: (recordMapping?.mappings.length
-          ? recordMapping
-          : null) as never,
+        // Persist the binding whenever a table is chosen — a table-only binding
+        // ("applies to every row of this table") is meaningful even with no
+        // conditions or pre-fill mappings.
+        record_mapping: (recordMapping?.table ? recordMapping : null) as never,
       };
       if (raterId) {
         const { error } = await supabase
@@ -265,7 +266,7 @@ export const RaterBuilder = ({
           </Box>
           <Box>
             <Typography sx={{ fontSize: 14, fontWeight: 700, mb: 1 }}>
-              Record pre-fill
+              Applies to
             </Typography>
             <RecordMappingEditor
               inputs={definition.inputs}

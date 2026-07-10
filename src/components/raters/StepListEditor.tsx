@@ -41,8 +41,8 @@ import {
 } from './definitionUtils';
 import { BranchStepEditor } from './steps/BranchStepEditor';
 import { CalcStepEditor } from './steps/CalcStepEditor';
-import { FetchStepEditor } from './steps/FetchStepEditor';
 import { DecisionStepEditor } from './steps/DecisionStepEditor';
+import { FetchStepEditor } from './steps/FetchStepEditor';
 import { LookupStepEditor } from './steps/LookupStepEditor';
 import { OutputStepEditor } from './steps/OutputStepEditor';
 
@@ -88,7 +88,9 @@ const summarize = (step: RaterStep): string => {
     case 'output':
       return step.expr || '—';
     case 'lookup':
-      return `${step.rows.length} row${step.rows.length === 1 ? '' : 's'} × ${step.columns.length} col`;
+      return step.source === 'ref'
+        ? 'shared table'
+        : `${step.rows.length} row${step.rows.length === 1 ? '' : 's'} × ${step.columns.length} col`;
     case 'fetch':
       return step.source === 'db'
         ? step.table || 'db query'

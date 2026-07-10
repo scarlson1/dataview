@@ -17,7 +17,9 @@ const severityFor = (decision: string): 'error' | 'warning' | 'info' => {
 
 export const OutcomeBanner = ({ outcome }: { outcome: RaterOutcome }) => (
   <Alert severity={severityFor(outcome.decision)} variant='outlined'>
-    <AlertTitle sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
+    <AlertTitle
+      sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}
+    >
       {outcome.decision}
     </AlertTitle>
     {outcome.reason ?? outcome.label ?? 'No further pricing was computed.'}

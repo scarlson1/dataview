@@ -21,8 +21,8 @@ import type {
   RaterOutputValue,
   TraceStep,
 } from '#/types/raters';
-import { OutputCards } from './OutputCards';
 import { OutcomeBanner } from './OutcomeBanner';
+import { OutputCards } from './OutputCards';
 import { RaterInputsForm, type RaterInputsFormHandle } from './RaterInputsForm';
 import { TracePanel } from './TracePanel';
 
@@ -123,6 +123,7 @@ export const TestRunPanel = ({
       </Box>
 
       {state.error && <Alert severity='error'>{state.error}</Alert>}
+      {state.outcome && <OutcomeBanner outcome={state.outcome} />}
       {state.outputs && Object.keys(state.outputs).length > 0 && (
         <OutputCards outputs={state.outputs} />
       )}

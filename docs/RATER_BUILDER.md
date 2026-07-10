@@ -22,6 +22,7 @@ the report generator) without changing the data model.
   - [Inputs](#inputs)
   - [Steps](#steps)
   - [Outputs — how they work](#outputs--how-they-work)
+  - [Decisions — terminal outcomes](#decisions--terminal-outcomes-decline--refer-)
   - [The expression language](#the-expression-language)
 - [Worked example](#worked-example)
 - [How a rater is used (execution)](#how-a-rater-is-used-execution)
@@ -120,6 +121,7 @@ per execution path). Types:
 | `fetch` (db)   | Declarative PostgREST query against an app table, under the caller's RLS                     | the row / null / list                 |
 | `fetch` (http) | External HTTPS API call (allowlisted, server-only); pulls values by JSON dot-path            | `{ [extract.name]: value }`           |
 | `branch`       | Evaluates each case's `when`; first truthy case runs its nested steps, else the `else` block | nothing (inner steps bind into scope) |
+| `decision`     | Terminal: ends the run with a named outcome (decline / refer / …) — see [Decisions](#decisions--terminal-outcomes-decline--refer-) | nothing (halts the run) |
 | `output`       | Produces a named, formatted result of the run                                                | the value (and adds to `outputs`)     |
 
 `lookup` is the "small reference table" primitive — e.g. base-rate-by-custody-
@@ -178,6 +180,54 @@ Each entry renders as its own result card on the run page. **Important:** the
 stored value (`rater_runs.outputs`) is the _raw_ number — `16100`, not
 `"$16,100"`. `format` never touches the stored data, so any downstream consumer
 (the planned submission integration, an export, an API) gets the number.
+
+### Decisions — terminal outcomes (decline / refer / …)
+
+A `decision` step ends the run **successfully** with a named outcome instead of
+computing more outputs — the model for knock-out rules like "decline over $1B"
+or "refer to an underwriter". It's distinct from an error (which is a 422): a
+fired decision returns 200 with an `outcome`.
+
+```jsonc
+{
+  "id": "decline_high_value",
+  "type": "decision",
+  "outcome": "decline",   // free-text: decline, refer, review, …
+  "when": "inputs.asset_value > 1000000000", // optional — see below
+  "reason": "'Asset value exceeds $1B capacity'" // optional expression (quote literal text)
+}
+```
+
+- **`outcome`** — a free-text label. `decline`/`reject` render as a red banner,
+  `refer`/`review` as amber, anything else as neutral.
+- **`when`** — gates the step. **Absent → always fires** (an unconditional
+  terminal, e.g. a catch-all `refer` at the end). **Present → fires only when
+  truthy**, otherwise execution *falls through* to the next step. This is the
+  knock-out pattern: a flat list of decline conditions at the top of the rater,
+  each falling through to normal rating when it doesn't fire.
+- **`reason`** — an optional expression (so quote literal text: `'Over capacity'`,
+  or interpolate: `concat('Score ', string(inputs.score), ' below 600')`). Shown
+  in the outcome banner and the run trace.
+
+When a decision fires it halts everything after it (remaining steps are marked
+`skipped` in the trace — including steps across an enclosing branch boundary),
+sets the run's `outcome`, and skips the premium outputs. The run result and the
+`rater_runs.outcome` jsonb column carry `{ decision, reason, stepId, label? }`,
+so "how many declines this month" is a plain query.
+
+**Every path must terminate** in either an output or an **unconditional**
+decision — the validator errors otherwise. A conditional-only decision doesn't
+count (execution continues when its `when` is false), and steps placed after an
+unconditional decision warn as unreachable. In the diagram a fired decision
+shows as a red terminal node badged with its outcome.
+
+Two ways to author a decline, both valid:
+
+- **Knock-out (recommended for gating):** a `decision` with a `when` near the
+  top; falls through to the rest of the rater when the condition is false.
+- **Branch + unconditional decision:** put the decline in a branch case as an
+  unconditional `decision`, and the rating in the `else`. Useful when the decline
+  condition is naturally part of a wider branch.
 
 ### The expression language
 
@@ -294,6 +344,7 @@ is edited.
 | `rater_id`, `user_id` | |
 | `inputs` | jsonb — coerced input values |
 | `outputs` | jsonb — `{ id: { label, value, format } }` (raw values) |
+| `outcome` | jsonb — `{ decision, reason, stepId, label? }` when a decision fired, else null (migration `20260709130000_rater_runs_outcome.sql`) |
 | `definition_snapshot` | jsonb — the exact definition that executed |
 | `trace` | jsonb — per-step results |
 | `source_record` | jsonb — `{ table, id }` when pre-filled |
@@ -392,6 +443,36 @@ Enforced by the schema to keep runs fast and bounded: ≤ 100 steps, ≤ 24 inpu
 
 ---
 
+## Record binding & applicability
+
+A rater's `record_mapping` is a **record binding**: it declares which table the
+rater *applies to*, optionally narrows that with **match conditions** on the
+table's own columns, and optionally maps columns onto inputs for pre-fill. This
+answers "which raters apply to this record?" — e.g. one rater for
+`new_business_submissions` where `line_of_business ilike Cyber` and a different
+one for `Property`, or a carrier-specific rater keyed on `carrier_id`.
+
+- Shape (`supabase/functions/_shared/rater/schema.ts`): `{ table, conditions?,
+  mappings? }`. `conditions` is `[{ column, op, value }]` reusing the db-fetch
+  operator set (`DB_FILTER_OPS`); an empty/absent `conditions` means the rater
+  applies to *every* row of `table`. `mappings` is optional so a rater can be
+  applicable without pre-filling anything.
+- Config: the **Applies to** section of the builder
+  (`RecordMappingEditor.tsx`) — table select, a generic condition editor driven
+  by that table's columns (from the `TABLES` registry), and the pre-fill map.
+- Resolve: `src/lib/raterMatching.ts` — `fetchMatchingRaters(table, row)`
+  filters on `record_mapping->>table` server-side, then evaluates conditions
+  client-side against the row, returning **all** matches (the consumer decides
+  how to present several). Matching value coercion is driven by each column's
+  kind.
+- Consuming surface: the **Rate** action (`RateActionButton`) on the
+  `new_business_submissions` rows of the workflow view loads the full record,
+  lists the matching raters in a menu, and opens the chosen one in a drawer
+  (`RaterRunDrawer` → `EntityDrawer`: side sheet on desktop, bottom on mobile).
+  The run UI itself is `RaterRunPanel`, shared with the rater detail page; it
+  pre-fills from the record via `record_mapping` and tags the run's
+  `sourceRecord` for audit.
+
 ## Planned: submission integration
 
 Raters today are standalone. The natural next step is to make a rater an
@@ -406,3 +487,4 @@ short design for this lives alongside this doc — see the roadmap entry.
 
 - add helpers
   - "use single quotes in output text" or general guidance on combining string text with variables (how does templating strings work?)
+- ~~need more specificity for which rater is used for which types of records. For example, new_business_submission may use one rater for cyber line_of_business and a different one for property; or different raters depending on the carrier, etc.~~ → implemented; see **Record binding & applicability** above.

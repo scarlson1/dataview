@@ -18,6 +18,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { RateActionButton } from '#/components/raters/RateActionButton';
+import { RouterLink } from '#/components/RouterLink';
 import { NewBusinessDrawer } from '../components/NewBusinessDrawer';
 import {
   type ArTarget,
@@ -105,6 +107,7 @@ function WorkflowPage() {
   const canWritePayments = can('accounts_receivable_payments', 'write');
   const canWriteRemit = can('capacity_remittance', 'write');
   const canWriteRenewals = can('renewals', 'write');
+  const canReadRaters = can('raters', 'read');
   const [newBusinessOpen, setNewBusinessOpen] = useState(false);
   const [payTarget, setPayTarget] = useState<ArTarget | null>(null);
   const [remitTarget, setRemitTarget] = useState<CapTarget | null>(null);
@@ -320,8 +323,33 @@ function WorkflowPage() {
       {/* New Business pipeline */}
       <Section
         title='New Business — ready to bind'
-        empty={unboundNbs.length === 0}
+        items={unboundNbs}
         emptyText='No unbound submissions.'
+        viewAllTable='new_business_submissions'
+        renderRow={(n) => (
+          <>
+            <Mono>{n.nbs_ref}</Mono>
+            <Cell grow>{clientName(n.clients)}</Cell>
+            <Cell>{n.line_of_business ?? '—'}</Cell>
+            <StatusChip label={labelize(n.stage)} tone={valueTone(n.stage)} />
+            {canReadRaters && (
+              <RateActionButton
+                table='new_business_submissions'
+                recordId={n.id}
+              />
+            )}
+            {canWritePolicies && (
+              <Button
+                size='small'
+                variant='contained'
+                disabled={bind.isPending}
+                onClick={() => bind.mutate(n.id)}
+              >
+                Bind
+              </Button>
+            )}
+          </>
+        )}
         action={
           canWriteNbs ? (
             <Button
@@ -336,35 +364,16 @@ function WorkflowPage() {
             </Button>
           ) : undefined
         }
-      >
-        {unboundNbs.map((n) => (
-          <Row key={n.id}>
-            <Mono>{n.nbs_ref}</Mono>
-            <Cell grow>{clientName(n.clients)}</Cell>
-            <Cell>{n.line_of_business ?? '—'}</Cell>
-            <StatusChip label={labelize(n.stage)} tone={valueTone(n.stage)} />
-            {canWritePolicies && (
-              <Button
-                size='small'
-                variant='contained'
-                disabled={bind.isPending}
-                onClick={() => bind.mutate(n.id)}
-              >
-                Bind
-              </Button>
-            )}
-          </Row>
-        ))}
-      </Section>
+      />
 
       {/* Policies needing an invoice */}
       <Section
         title='Policies — ready to invoice'
-        empty={uninvoiced.length === 0}
+        items={uninvoiced}
         emptyText='Every policy has been invoiced.'
-      >
-        {uninvoiced.map((p) => (
-          <Row key={p.id}>
+        viewAllTable='policies'
+        renderRow={(p) => (
+          <>
             <Mono>{p.pol_ref}</Mono>
             <Cell grow>{labelize(p.transaction_type)}</Cell>
             <Cell>{money(p.total_term_prem_fees)}</Cell>
@@ -381,18 +390,18 @@ function WorkflowPage() {
                 Generate Invoice
               </Button>
             )}
-          </Row>
-        ))}
-      </Section>
+          </>
+        )}
+      />
 
       {/* Receivables */}
       <Section
         title='Receivables — open balances'
-        empty={openAr.length === 0}
+        items={openAr}
         emptyText='No open receivables.'
-      >
-        {openAr.map((r) => (
-          <Row key={r.id}>
+        viewAllTable='accounts_receivable'
+        renderRow={(r) => (
+          <>
             <Mono>{r.ar_ref}</Mono>
             <Cell grow>
               {money(r.total_paid)} / {money(r.invoice_total)} collected
@@ -411,18 +420,18 @@ function WorkflowPage() {
                 Record Payment
               </Button>
             )}
-          </Row>
-        ))}
-      </Section>
+          </>
+        )}
+      />
 
       {/* Carrier AP — ready to remit */}
       <Section
         title='Carrier AP — ready to remit'
-        empty={openCap.length === 0}
+        items={openCap}
         emptyText='No open carrier payables.'
-      >
-        {openCap.map((c) => (
-          <Row key={c.id}>
+        viewAllTable='capacity'
+        renderRow={(c) => (
+          <>
             <Mono>{c.cap_ref}</Mono>
             <Cell grow>Net due {money(c.net_premium_due_carrier)}</Cell>
             <Cell>Available {money(c.available_for_payment)}</Cell>
@@ -441,31 +450,18 @@ function WorkflowPage() {
                 Record Remittance
               </Button>
             )}
-          </Row>
-        ))}
-      </Section>
+          </>
+        )}
+      />
 
       {/* Renewals pipeline */}
       <Section
         title='Renewals — pipeline'
-        empty={openRenewals.length === 0}
+        items={openRenewals}
         emptyText='No renewals awaiting a bind. Seed the pipeline to pull upcoming expiries.'
-        action={
-          canWriteRenewals ? (
-            <Button
-              size='small'
-              variant='outlined'
-              startIcon={<RefreshCw size={16} />}
-              disabled={seedRenewals.isPending}
-              onClick={() => seedRenewals.mutate()}
-            >
-              Seed renewals
-            </Button>
-          ) : undefined
-        }
-      >
-        {openRenewals.map((r) => (
-          <Row key={r.id}>
+        viewAllTable='renewals'
+        renderRow={(r) => (
+          <>
             <Mono>{r.rnw_ref}</Mono>
             <Cell grow>
               {r.days_to_renewal == null
@@ -487,9 +483,22 @@ function WorkflowPage() {
                 Bind renewal
               </Button>
             )}
-          </Row>
-        ))}
-      </Section>
+          </>
+        )}
+        action={
+          canWriteRenewals ? (
+            <Button
+              size='small'
+              variant='outlined'
+              startIcon={<RefreshCw size={16} />}
+              disabled={seedRenewals.isPending}
+              onClick={() => seedRenewals.mutate()}
+            >
+              Seed renewals
+            </Button>
+          ) : undefined
+        }
+      />
 
       <NewBusinessDrawer
         open={newBusinessOpen}
@@ -528,45 +537,110 @@ const Kpi = ({ label, value }: { label: string; value: string }) => (
   </Paper>
 );
 
-const Section = ({
+/** How many rows a section shows before collapsing behind "Show all". */
+const ROW_CAP = 5;
+
+function Section<T extends { id: number }>({
   title,
-  empty,
+  items,
   emptyText,
+  renderRow,
+  viewAllTable,
   action,
-  children,
 }: {
   title: string;
-  empty: boolean;
+  items: T[];
   emptyText: string;
+  renderRow: (item: T) => React.ReactNode;
+  /** Registered table name to deep-link to for the full list. */
+  viewAllTable?: string;
   action?: React.ReactNode;
-  children: React.ReactNode;
-}) => (
-  <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
-    <Box
-      sx={(t) => ({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 2,
-        px: 2,
-        py: 1.5,
-        borderBottom: `1px solid ${t.palette.divider}`,
-        fontSize: 14,
-        fontWeight: 700,
-      })}
-    >
-      {title}
-      {action}
-    </Box>
-    {empty ? (
-      <Box sx={{ px: 2, py: 3, color: 'text.disabled', fontSize: 13.5 }}>
-        {emptyText}
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? items : items.slice(0, ROW_CAP);
+  const hidden = items.length - shown.length;
+
+  return (
+    <Paper variant='outlined' sx={{ borderRadius: 2, overflow: 'hidden' }}>
+      <Box
+        sx={(t) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+          px: 2,
+          py: 1.5,
+          borderBottom: `1px solid ${t.palette.divider}`,
+          fontSize: 14,
+          fontWeight: 700,
+        })}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {title}
+          {items.length > 0 && (
+            <Box
+              component='span'
+              sx={{ fontSize: 12.5, fontWeight: 600, color: 'text.secondary' }}
+            >
+              {items.length}
+            </Box>
+          )}
+        </Box>
+        {action}
       </Box>
-    ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>{children}</Box>
-    )}
-  </Paper>
-);
+      {items.length === 0 ? (
+        <Box sx={{ px: 2, py: 3, color: 'text.disabled', fontSize: 13.5 }}>
+          {emptyText}
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          {shown.map((item) => (
+            <Row key={item.id}>{renderRow(item)}</Row>
+          ))}
+        </Box>
+      )}
+      {items.length > ROW_CAP && (
+        <Box
+          sx={(t) => ({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            px: 2,
+            py: 1,
+            borderTop: `1px solid ${t.palette.divider}`,
+          })}
+        >
+          <Button
+            size='small'
+            variant='text'
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? 'Show less' : `Show all ${items.length}`}
+          </Button>
+          {!expanded && hidden > 0 && (
+            <Box
+              component='span'
+              sx={{ fontSize: 12.5, color: 'text.secondary' }}
+            >
+              {hidden} more
+              {viewAllTable ? ' · ' : ''}
+              {viewAllTable && (
+                <RouterLink
+                  to='/$table'
+                  params={{ table: viewAllTable }}
+                  sx={{ fontSize: 12.5 }}
+                >
+                  open full view
+                </RouterLink>
+              )}
+            </Box>
+          )}
+        </Box>
+      )}
+    </Paper>
+  );
+}
 
 const Row = ({ children }: { children: React.ReactNode }) => (
   <Box

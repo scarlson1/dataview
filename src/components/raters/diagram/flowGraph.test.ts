@@ -115,4 +115,49 @@ describe('definitionToFlow', () => {
       'skipped',
     );
   });
+
+  it('badges a fired decision with its outcome and marks it a terminal', () => {
+    const withDecision: RaterDefinition = {
+      schema_version: 1,
+      inputs: [
+        { name: 'score', label: 'Score', type: 'number', required: true },
+      ],
+      steps: [
+        {
+          id: 'decline_low',
+          type: 'decision',
+          outcome: 'decline',
+          when: 'inputs.score < 600',
+        },
+        { id: 'premium', type: 'calc', expr: 'inputs.score' },
+        {
+          id: 'out',
+          type: 'output',
+          label: 'Out',
+          expr: 'premium',
+          format: 'money',
+        },
+      ],
+    };
+
+    const trace: TraceStep[] = [
+      {
+        id: 'decline_low',
+        type: 'decision',
+        status: 'ok',
+        detail: { fired: true, outcome: 'decline', reason: null },
+      },
+      { id: 'premium', type: 'calc', status: 'skipped' },
+      { id: 'out', type: 'output', status: 'skipped' },
+    ];
+
+    const { nodes } = definitionToFlow(withDecision, trace);
+    const decisionNode = nodes.find((n) => n.data.title === 'decline_low');
+    expect(decisionNode?.data.status).toBe('ok');
+    expect(decisionNode?.data.badge).toBe('decline'); // outcome, not a bound value
+    // downstream steps are skipped (dimmed) after the terminal
+    expect(nodes.find((n) => n.data.title === 'out')?.data.status).toBe(
+      'skipped',
+    );
+  });
 });
