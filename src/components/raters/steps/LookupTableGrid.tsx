@@ -37,7 +37,7 @@ export const parseCell = (raw: string, type: ColumnType): Cell => {
     const n = Number(s);
     return Number.isFinite(n) ? n : null;
   }
-  if (type === 'boolean') return raw === 'true';
+  if (type === 'boolean') return raw.trim().toLowerCase() === 'true';
   return raw;
 };
 

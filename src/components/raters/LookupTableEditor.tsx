@@ -13,8 +13,10 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { FileUp } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { csvToLookupTable } from '#/lib/csv';
 import { supabase } from '#/supabaseClient';
 import type { LookupColumn } from '#/types/raters';
 import { lookupTableContentSchema } from '#/types/raters';
@@ -55,6 +57,26 @@ export const LookupTableEditor = ({
   const [description, setDescription] = useState(initial.description);
   const [columns, setColumns] = useState<LookupColumn[]>(initial.columns);
   const [rows, setRows] = useState<Cell[][]>(initial.rows);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const importCsv = async (file: File) => {
+    try {
+      const { columns: cols, rows: nextRows } = csvToLookupTable(
+        await file.text(),
+      );
+      setColumns(cols);
+      setRows(nextRows);
+      // Seed the name from the file only when the user hasn't typed one.
+      if (!name.trim()) {
+        setName(file.name.replace(/\.csv$/i, ''));
+      }
+      toast.success(
+        `Imported ${nextRows.length} row${nextRows.length === 1 ? '' : 's'} × ${cols.length} column${cols.length === 1 ? '' : 's'}`,
+      );
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   // Validate the grid shape (unique columns, uniform row width, caps) the same
   // way the run path will.
@@ -125,9 +147,34 @@ export const LookupTableEditor = ({
       </Paper>
 
       <Paper variant='outlined' sx={{ borderRadius: 2, p: 2.5 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, mb: 1.5 }}>
-          Grid
-        </Typography>
+        <Stack
+          direction='row'
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 1.5,
+          }}
+        >
+          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Grid</Typography>
+          <Button
+            size='small'
+            startIcon={<FileUp size={14} />}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Import CSV
+          </Button>
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='.csv,text/csv'
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void importCsv(file);
+              e.target.value = ''; // allow re-picking the same file
+            }}
+          />
+        </Stack>
         <LookupTableGrid
           columns={columns}
           rows={rows}
