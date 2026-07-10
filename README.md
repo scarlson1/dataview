@@ -86,3 +86,7 @@ See the [`docs/`](docs/) directory for details:
 - [SUPABASE_QUICKSTART.md](docs/SUPABASE_QUICKSTART.md) — Supabase setup
 
 ## TODO
+
+- fork rater (copies existing rater as new instance in create form)
+- CSV lookup table import
+- castaway-asr/audio-cache is getting large (11.5 GB) - do we need this? is there a better way to store it?

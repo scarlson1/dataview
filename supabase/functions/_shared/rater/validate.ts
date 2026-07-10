@@ -42,8 +42,9 @@ interface WalkState {
   definite: Set<string>;
   // Bindings assigned on SOME path (referencing these is a warning).
   maybe: Set<string>;
-  // Whether an output step has definitely executed by the current position.
-  hasOutput: boolean;
+  // Whether the path definitely produces a result by this position: an output
+  // step, or an unconditional decision (a terminal that always fires).
+  producesResult: boolean;
 }
 
 export const validateRaterDefinition = (
@@ -62,6 +63,7 @@ export const validateRaterDefinition = (
 
   let totalSteps = 0;
   let fetchSteps = 0;
+  const warnedUnreachable = new Set<string>();
 
   // Parse an expression and check its references against the current scope.
   const checkExpr = (
@@ -136,6 +138,10 @@ export const validateRaterDefinition = (
           }
         }
         break;
+      case 'decision':
+        if (step.when !== undefined) checkExpr(step.id, 'condition', step.when, state);
+        if (step.reason !== undefined) checkExpr(step.id, 'reason', step.reason, state);
+        break;
       case 'branch':
         // `when` guards checked in walkSteps (per-case).
         break;
@@ -151,9 +157,18 @@ export const validateRaterDefinition = (
     depth: number,
   ): WalkState => {
     let current = state;
+    let terminatedAt: string | null = null; // id of an unconditional decision seen in THIS list
 
     for (const step of steps) {
       totalSteps += 1;
+
+      if (terminatedAt && !warnedUnreachable.has(terminatedAt)) {
+        warnedUnreachable.add(terminatedAt);
+        warnings.push({
+          stepId: step.id,
+          message: `steps after decision '${terminatedAt}' are unreachable — it always halts the run`,
+        });
+      }
 
       if (RESERVED.has(step.id)) {
         errors.push({ stepId: step.id, message: `'${step.id}' is a reserved name` });
@@ -186,7 +201,7 @@ export const validateRaterDefinition = (
               {
                 definite: new Set(current.definite),
                 maybe: new Set(current.maybe),
-                hasOutput: current.hasOutput,
+                producesResult: current.producesResult,
               },
               new Set(pathIds),
               depth + 1,
@@ -201,7 +216,7 @@ export const validateRaterDefinition = (
                 {
                   definite: new Set(current.definite),
                   maybe: new Set(current.maybe),
-                  hasOutput: current.hasOutput,
+                  producesResult: current.producesResult,
                 },
                 new Set(pathIds),
                 depth + 1,
@@ -223,15 +238,26 @@ export const validateRaterDefinition = (
         current = {
           definite,
           maybe,
-          hasOutput: caseStates.every((s) => s.hasOutput),
+          producesResult: caseStates.every((s) => s.producesResult),
         };
         continue;
       }
 
       checkStepExprs(step, current);
+
+      if (step.type === 'decision') {
+        // An unconditional decision (no `when`) always fires → it both produces
+        // a result and terminates this list. It does NOT bind a value.
+        if (step.when === undefined) {
+          current = { ...current, producesResult: true };
+          terminatedAt = step.id;
+        }
+        continue;
+      }
+
       current.definite.add(step.id);
       if (step.type === 'output') {
-        current = { ...current, hasOutput: true };
+        current = { ...current, producesResult: true };
       }
     }
 
@@ -240,14 +266,15 @@ export const validateRaterDefinition = (
 
   const final = walkSteps(
     definition.steps,
-    { definite: new Set(), maybe: new Set(), hasOutput: false },
+    { definite: new Set(), maybe: new Set(), producesResult: false },
     new Set(),
     0,
   );
 
-  if (definition.steps.length > 0 && !final.hasOutput) {
+  if (definition.steps.length > 0 && !final.producesResult) {
     errors.push({
-      message: 'at least one output step must run on every path (add an output, or move it out of the branch)',
+      message:
+        'every path must end in an output or a terminal decision (add an output, an unconditional decision, or move one out of the branch)',
     });
   }
 

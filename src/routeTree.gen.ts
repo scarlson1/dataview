@@ -16,23 +16,27 @@ import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as AuthPasswordResetRouteImport } from './routes/auth.password-reset'
 import { Route as DashboardWorkflowRouteImport } from './routes/_dashboard.workflow'
 import { Route as DashboardUsersRouteImport } from './routes/_dashboard.users'
-import { Route as DashboardRatersRouteImport } from './routes/_dashboard.raters'
+import { Route as DashboardRatersAdminRouteImport } from './routes/_dashboard.raters-admin'
+import { Route as DashboardLookupTablesRouteImport } from './routes/_dashboard.lookup-tables'
 import { Route as DashboardGenReportsRouteImport } from './routes/_dashboard.gen-reports'
 import { Route as DashboardExportsRouteImport } from './routes/_dashboard.exports'
 import { Route as DashboardBudgetRouteImport } from './routes/_dashboard.budget'
 import { Route as DashboardTableRouteImport } from './routes/_dashboard.$table'
-import { Route as DashboardRatersIndexRouteImport } from './routes/_dashboard.raters.index'
+import { Route as DashboardRatersAdminIndexRouteImport } from './routes/_dashboard.raters-admin.index'
+import { Route as DashboardLookupTablesIndexRouteImport } from './routes/_dashboard.lookup-tables.index'
 import { Route as DashboardGenReportsIndexRouteImport } from './routes/_dashboard.gen-reports.index'
 import { Route as DashboardTableIndexRouteImport } from './routes/_dashboard.$table.index'
-import { Route as DashboardRatersNewRouteImport } from './routes/_dashboard.raters.new'
-import { Route as DashboardRatersIdRouteImport } from './routes/_dashboard.raters.$id'
+import { Route as DashboardRatersAdminNewRouteImport } from './routes/_dashboard.raters-admin.new'
+import { Route as DashboardRatersAdminIdRouteImport } from './routes/_dashboard.raters-admin.$id'
+import { Route as DashboardLookupTablesNewRouteImport } from './routes/_dashboard.lookup-tables.new'
 import { Route as DashboardInvoicesIdRouteImport } from './routes/_dashboard.invoices.$id'
 import { Route as DashboardGenReportsIdRouteImport } from './routes/_dashboard.gen-reports.$id'
 import { Route as DashboardBinderIdRouteImport } from './routes/_dashboard.binder.$id'
 import { Route as DashboardAir_exposureIdRouteImport } from './routes/_dashboard.air_exposure.$id'
 import { Route as DashboardAccounts_receivableIdRouteImport } from './routes/_dashboard.accounts_receivable.$id'
 import { Route as DashboardTableIdRouteImport } from './routes/_dashboard.$table.$id'
-import { Route as DashboardRatersIdEditRouteImport } from './routes/_dashboard.raters.$id_.edit'
+import { Route as DashboardRatersAdminIdEditRouteImport } from './routes/_dashboard.raters-admin.$id_.edit'
+import { Route as DashboardLookupTablesIdEditRouteImport } from './routes/_dashboard.lookup-tables.$id.edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -68,9 +72,14 @@ const DashboardUsersRoute = DashboardUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardRatersRoute = DashboardRatersRouteImport.update({
-  id: '/raters',
-  path: '/raters',
+const DashboardRatersAdminRoute = DashboardRatersAdminRouteImport.update({
+  id: '/raters-admin',
+  path: '/raters-admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLookupTablesRoute = DashboardLookupTablesRouteImport.update({
+  id: '/lookup-tables',
+  path: '/lookup-tables',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardGenReportsRoute = DashboardGenReportsRouteImport.update({
@@ -93,11 +102,18 @@ const DashboardTableRoute = DashboardTableRouteImport.update({
   path: '/$table',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardRatersIndexRoute = DashboardRatersIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRatersRoute,
-} as any)
+const DashboardRatersAdminIndexRoute =
+  DashboardRatersAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardRatersAdminRoute,
+  } as any)
+const DashboardLookupTablesIndexRoute =
+  DashboardLookupTablesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardLookupTablesRoute,
+  } as any)
 const DashboardGenReportsIndexRoute =
   DashboardGenReportsIndexRouteImport.update({
     id: '/',
@@ -109,16 +125,22 @@ const DashboardTableIndexRoute = DashboardTableIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardTableRoute,
 } as any)
-const DashboardRatersNewRoute = DashboardRatersNewRouteImport.update({
+const DashboardRatersAdminNewRoute = DashboardRatersAdminNewRouteImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => DashboardRatersRoute,
+  getParentRoute: () => DashboardRatersAdminRoute,
 } as any)
-const DashboardRatersIdRoute = DashboardRatersIdRouteImport.update({
+const DashboardRatersAdminIdRoute = DashboardRatersAdminIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => DashboardRatersRoute,
+  getParentRoute: () => DashboardRatersAdminRoute,
 } as any)
+const DashboardLookupTablesNewRoute =
+  DashboardLookupTablesNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => DashboardLookupTablesRoute,
+  } as any)
 const DashboardInvoicesIdRoute = DashboardInvoicesIdRouteImport.update({
   id: '/invoices/$id',
   path: '/invoices/$id',
@@ -150,11 +172,18 @@ const DashboardTableIdRoute = DashboardTableIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => DashboardTableRoute,
 } as any)
-const DashboardRatersIdEditRoute = DashboardRatersIdEditRouteImport.update({
-  id: '/$id_/edit',
-  path: '/$id/edit',
-  getParentRoute: () => DashboardRatersRoute,
-} as any)
+const DashboardRatersAdminIdEditRoute =
+  DashboardRatersAdminIdEditRouteImport.update({
+    id: '/$id_/edit',
+    path: '/$id/edit',
+    getParentRoute: () => DashboardRatersAdminRoute,
+  } as any)
+const DashboardLookupTablesIdEditRoute =
+  DashboardLookupTablesIdEditRouteImport.update({
+    id: '/$id/edit',
+    path: '/$id/edit',
+    getParentRoute: () => DashboardLookupTablesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
@@ -164,7 +193,8 @@ export interface FileRoutesByFullPath {
   '/budget': typeof DashboardBudgetRoute
   '/exports': typeof DashboardExportsRoute
   '/gen-reports': typeof DashboardGenReportsRouteWithChildren
-  '/raters': typeof DashboardRatersRouteWithChildren
+  '/lookup-tables': typeof DashboardLookupTablesRouteWithChildren
+  '/raters-admin': typeof DashboardRatersAdminRouteWithChildren
   '/users': typeof DashboardUsersRoute
   '/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
@@ -174,12 +204,15 @@ export interface FileRoutesByFullPath {
   '/binder/$id': typeof DashboardBinderIdRoute
   '/gen-reports/$id': typeof DashboardGenReportsIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
-  '/raters/$id': typeof DashboardRatersIdRoute
-  '/raters/new': typeof DashboardRatersNewRoute
+  '/lookup-tables/new': typeof DashboardLookupTablesNewRoute
+  '/raters-admin/$id': typeof DashboardRatersAdminIdRoute
+  '/raters-admin/new': typeof DashboardRatersAdminNewRoute
   '/$table/': typeof DashboardTableIndexRoute
   '/gen-reports/': typeof DashboardGenReportsIndexRoute
-  '/raters/': typeof DashboardRatersIndexRoute
-  '/raters/$id/edit': typeof DashboardRatersIdEditRoute
+  '/lookup-tables/': typeof DashboardLookupTablesIndexRoute
+  '/raters-admin/': typeof DashboardRatersAdminIndexRoute
+  '/lookup-tables/$id/edit': typeof DashboardLookupTablesIdEditRoute
+  '/raters-admin/$id/edit': typeof DashboardRatersAdminIdEditRoute
 }
 export interface FileRoutesByTo {
   '/accept-invite': typeof AcceptInviteRoute
@@ -196,12 +229,15 @@ export interface FileRoutesByTo {
   '/binder/$id': typeof DashboardBinderIdRoute
   '/gen-reports/$id': typeof DashboardGenReportsIdRoute
   '/invoices/$id': typeof DashboardInvoicesIdRoute
-  '/raters/$id': typeof DashboardRatersIdRoute
-  '/raters/new': typeof DashboardRatersNewRoute
+  '/lookup-tables/new': typeof DashboardLookupTablesNewRoute
+  '/raters-admin/$id': typeof DashboardRatersAdminIdRoute
+  '/raters-admin/new': typeof DashboardRatersAdminNewRoute
   '/$table': typeof DashboardTableIndexRoute
   '/gen-reports': typeof DashboardGenReportsIndexRoute
-  '/raters': typeof DashboardRatersIndexRoute
-  '/raters/$id/edit': typeof DashboardRatersIdEditRoute
+  '/lookup-tables': typeof DashboardLookupTablesIndexRoute
+  '/raters-admin': typeof DashboardRatersAdminIndexRoute
+  '/lookup-tables/$id/edit': typeof DashboardLookupTablesIdEditRoute
+  '/raters-admin/$id/edit': typeof DashboardRatersAdminIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -212,7 +248,8 @@ export interface FileRoutesById {
   '/_dashboard/budget': typeof DashboardBudgetRoute
   '/_dashboard/exports': typeof DashboardExportsRoute
   '/_dashboard/gen-reports': typeof DashboardGenReportsRouteWithChildren
-  '/_dashboard/raters': typeof DashboardRatersRouteWithChildren
+  '/_dashboard/lookup-tables': typeof DashboardLookupTablesRouteWithChildren
+  '/_dashboard/raters-admin': typeof DashboardRatersAdminRouteWithChildren
   '/_dashboard/users': typeof DashboardUsersRoute
   '/_dashboard/workflow': typeof DashboardWorkflowRoute
   '/auth/password-reset': typeof AuthPasswordResetRoute
@@ -223,12 +260,15 @@ export interface FileRoutesById {
   '/_dashboard/binder/$id': typeof DashboardBinderIdRoute
   '/_dashboard/gen-reports/$id': typeof DashboardGenReportsIdRoute
   '/_dashboard/invoices/$id': typeof DashboardInvoicesIdRoute
-  '/_dashboard/raters/$id': typeof DashboardRatersIdRoute
-  '/_dashboard/raters/new': typeof DashboardRatersNewRoute
+  '/_dashboard/lookup-tables/new': typeof DashboardLookupTablesNewRoute
+  '/_dashboard/raters-admin/$id': typeof DashboardRatersAdminIdRoute
+  '/_dashboard/raters-admin/new': typeof DashboardRatersAdminNewRoute
   '/_dashboard/$table/': typeof DashboardTableIndexRoute
   '/_dashboard/gen-reports/': typeof DashboardGenReportsIndexRoute
-  '/_dashboard/raters/': typeof DashboardRatersIndexRoute
-  '/_dashboard/raters/$id_/edit': typeof DashboardRatersIdEditRoute
+  '/_dashboard/lookup-tables/': typeof DashboardLookupTablesIndexRoute
+  '/_dashboard/raters-admin/': typeof DashboardRatersAdminIndexRoute
+  '/_dashboard/lookup-tables/$id/edit': typeof DashboardLookupTablesIdEditRoute
+  '/_dashboard/raters-admin/$id_/edit': typeof DashboardRatersAdminIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,7 +280,8 @@ export interface FileRouteTypes {
     | '/budget'
     | '/exports'
     | '/gen-reports'
-    | '/raters'
+    | '/lookup-tables'
+    | '/raters-admin'
     | '/users'
     | '/workflow'
     | '/auth/password-reset'
@@ -250,12 +291,15 @@ export interface FileRouteTypes {
     | '/binder/$id'
     | '/gen-reports/$id'
     | '/invoices/$id'
-    | '/raters/$id'
-    | '/raters/new'
+    | '/lookup-tables/new'
+    | '/raters-admin/$id'
+    | '/raters-admin/new'
     | '/$table/'
     | '/gen-reports/'
-    | '/raters/'
-    | '/raters/$id/edit'
+    | '/lookup-tables/'
+    | '/raters-admin/'
+    | '/lookup-tables/$id/edit'
+    | '/raters-admin/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/accept-invite'
@@ -272,12 +316,15 @@ export interface FileRouteTypes {
     | '/binder/$id'
     | '/gen-reports/$id'
     | '/invoices/$id'
-    | '/raters/$id'
-    | '/raters/new'
+    | '/lookup-tables/new'
+    | '/raters-admin/$id'
+    | '/raters-admin/new'
     | '/$table'
     | '/gen-reports'
-    | '/raters'
-    | '/raters/$id/edit'
+    | '/lookup-tables'
+    | '/raters-admin'
+    | '/lookup-tables/$id/edit'
+    | '/raters-admin/$id/edit'
   id:
     | '__root__'
     | '/_dashboard'
@@ -287,7 +334,8 @@ export interface FileRouteTypes {
     | '/_dashboard/budget'
     | '/_dashboard/exports'
     | '/_dashboard/gen-reports'
-    | '/_dashboard/raters'
+    | '/_dashboard/lookup-tables'
+    | '/_dashboard/raters-admin'
     | '/_dashboard/users'
     | '/_dashboard/workflow'
     | '/auth/password-reset'
@@ -298,12 +346,15 @@ export interface FileRouteTypes {
     | '/_dashboard/binder/$id'
     | '/_dashboard/gen-reports/$id'
     | '/_dashboard/invoices/$id'
-    | '/_dashboard/raters/$id'
-    | '/_dashboard/raters/new'
+    | '/_dashboard/lookup-tables/new'
+    | '/_dashboard/raters-admin/$id'
+    | '/_dashboard/raters-admin/new'
     | '/_dashboard/$table/'
     | '/_dashboard/gen-reports/'
-    | '/_dashboard/raters/'
-    | '/_dashboard/raters/$id_/edit'
+    | '/_dashboard/lookup-tables/'
+    | '/_dashboard/raters-admin/'
+    | '/_dashboard/lookup-tables/$id/edit'
+    | '/_dashboard/raters-admin/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -364,11 +415,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardUsersRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/raters': {
-      id: '/_dashboard/raters'
-      path: '/raters'
-      fullPath: '/raters'
-      preLoaderRoute: typeof DashboardRatersRouteImport
+    '/_dashboard/raters-admin': {
+      id: '/_dashboard/raters-admin'
+      path: '/raters-admin'
+      fullPath: '/raters-admin'
+      preLoaderRoute: typeof DashboardRatersAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/lookup-tables': {
+      id: '/_dashboard/lookup-tables'
+      path: '/lookup-tables'
+      fullPath: '/lookup-tables'
+      preLoaderRoute: typeof DashboardLookupTablesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/gen-reports': {
@@ -399,12 +457,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/raters/': {
-      id: '/_dashboard/raters/'
+    '/_dashboard/raters-admin/': {
+      id: '/_dashboard/raters-admin/'
       path: '/'
-      fullPath: '/raters/'
-      preLoaderRoute: typeof DashboardRatersIndexRouteImport
-      parentRoute: typeof DashboardRatersRoute
+      fullPath: '/raters-admin/'
+      preLoaderRoute: typeof DashboardRatersAdminIndexRouteImport
+      parentRoute: typeof DashboardRatersAdminRoute
+    }
+    '/_dashboard/lookup-tables/': {
+      id: '/_dashboard/lookup-tables/'
+      path: '/'
+      fullPath: '/lookup-tables/'
+      preLoaderRoute: typeof DashboardLookupTablesIndexRouteImport
+      parentRoute: typeof DashboardLookupTablesRoute
     }
     '/_dashboard/gen-reports/': {
       id: '/_dashboard/gen-reports/'
@@ -420,19 +485,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableIndexRouteImport
       parentRoute: typeof DashboardTableRoute
     }
-    '/_dashboard/raters/new': {
-      id: '/_dashboard/raters/new'
+    '/_dashboard/raters-admin/new': {
+      id: '/_dashboard/raters-admin/new'
       path: '/new'
-      fullPath: '/raters/new'
-      preLoaderRoute: typeof DashboardRatersNewRouteImport
-      parentRoute: typeof DashboardRatersRoute
+      fullPath: '/raters-admin/new'
+      preLoaderRoute: typeof DashboardRatersAdminNewRouteImport
+      parentRoute: typeof DashboardRatersAdminRoute
     }
-    '/_dashboard/raters/$id': {
-      id: '/_dashboard/raters/$id'
+    '/_dashboard/raters-admin/$id': {
+      id: '/_dashboard/raters-admin/$id'
       path: '/$id'
-      fullPath: '/raters/$id'
-      preLoaderRoute: typeof DashboardRatersIdRouteImport
-      parentRoute: typeof DashboardRatersRoute
+      fullPath: '/raters-admin/$id'
+      preLoaderRoute: typeof DashboardRatersAdminIdRouteImport
+      parentRoute: typeof DashboardRatersAdminRoute
+    }
+    '/_dashboard/lookup-tables/new': {
+      id: '/_dashboard/lookup-tables/new'
+      path: '/new'
+      fullPath: '/lookup-tables/new'
+      preLoaderRoute: typeof DashboardLookupTablesNewRouteImport
+      parentRoute: typeof DashboardLookupTablesRoute
     }
     '/_dashboard/invoices/$id': {
       id: '/_dashboard/invoices/$id'
@@ -476,12 +548,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTableIdRouteImport
       parentRoute: typeof DashboardTableRoute
     }
-    '/_dashboard/raters/$id_/edit': {
-      id: '/_dashboard/raters/$id_/edit'
+    '/_dashboard/raters-admin/$id_/edit': {
+      id: '/_dashboard/raters-admin/$id_/edit'
       path: '/$id/edit'
-      fullPath: '/raters/$id/edit'
-      preLoaderRoute: typeof DashboardRatersIdEditRouteImport
-      parentRoute: typeof DashboardRatersRoute
+      fullPath: '/raters-admin/$id/edit'
+      preLoaderRoute: typeof DashboardRatersAdminIdEditRouteImport
+      parentRoute: typeof DashboardRatersAdminRoute
+    }
+    '/_dashboard/lookup-tables/$id/edit': {
+      id: '/_dashboard/lookup-tables/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/lookup-tables/$id/edit'
+      preLoaderRoute: typeof DashboardLookupTablesIdEditRouteImport
+      parentRoute: typeof DashboardLookupTablesRoute
     }
   }
 }
@@ -513,30 +592,47 @@ const DashboardGenReportsRouteChildren: DashboardGenReportsRouteChildren = {
 const DashboardGenReportsRouteWithChildren =
   DashboardGenReportsRoute._addFileChildren(DashboardGenReportsRouteChildren)
 
-interface DashboardRatersRouteChildren {
-  DashboardRatersIdRoute: typeof DashboardRatersIdRoute
-  DashboardRatersNewRoute: typeof DashboardRatersNewRoute
-  DashboardRatersIndexRoute: typeof DashboardRatersIndexRoute
-  DashboardRatersIdEditRoute: typeof DashboardRatersIdEditRoute
+interface DashboardLookupTablesRouteChildren {
+  DashboardLookupTablesNewRoute: typeof DashboardLookupTablesNewRoute
+  DashboardLookupTablesIndexRoute: typeof DashboardLookupTablesIndexRoute
+  DashboardLookupTablesIdEditRoute: typeof DashboardLookupTablesIdEditRoute
 }
 
-const DashboardRatersRouteChildren: DashboardRatersRouteChildren = {
-  DashboardRatersIdRoute: DashboardRatersIdRoute,
-  DashboardRatersNewRoute: DashboardRatersNewRoute,
-  DashboardRatersIndexRoute: DashboardRatersIndexRoute,
-  DashboardRatersIdEditRoute: DashboardRatersIdEditRoute,
+const DashboardLookupTablesRouteChildren: DashboardLookupTablesRouteChildren = {
+  DashboardLookupTablesNewRoute: DashboardLookupTablesNewRoute,
+  DashboardLookupTablesIndexRoute: DashboardLookupTablesIndexRoute,
+  DashboardLookupTablesIdEditRoute: DashboardLookupTablesIdEditRoute,
 }
 
-const DashboardRatersRouteWithChildren = DashboardRatersRoute._addFileChildren(
-  DashboardRatersRouteChildren,
-)
+const DashboardLookupTablesRouteWithChildren =
+  DashboardLookupTablesRoute._addFileChildren(
+    DashboardLookupTablesRouteChildren,
+  )
+
+interface DashboardRatersAdminRouteChildren {
+  DashboardRatersAdminIdRoute: typeof DashboardRatersAdminIdRoute
+  DashboardRatersAdminNewRoute: typeof DashboardRatersAdminNewRoute
+  DashboardRatersAdminIndexRoute: typeof DashboardRatersAdminIndexRoute
+  DashboardRatersAdminIdEditRoute: typeof DashboardRatersAdminIdEditRoute
+}
+
+const DashboardRatersAdminRouteChildren: DashboardRatersAdminRouteChildren = {
+  DashboardRatersAdminIdRoute: DashboardRatersAdminIdRoute,
+  DashboardRatersAdminNewRoute: DashboardRatersAdminNewRoute,
+  DashboardRatersAdminIndexRoute: DashboardRatersAdminIndexRoute,
+  DashboardRatersAdminIdEditRoute: DashboardRatersAdminIdEditRoute,
+}
+
+const DashboardRatersAdminRouteWithChildren =
+  DashboardRatersAdminRoute._addFileChildren(DashboardRatersAdminRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardTableRoute: typeof DashboardTableRouteWithChildren
   DashboardBudgetRoute: typeof DashboardBudgetRoute
   DashboardExportsRoute: typeof DashboardExportsRoute
   DashboardGenReportsRoute: typeof DashboardGenReportsRouteWithChildren
-  DashboardRatersRoute: typeof DashboardRatersRouteWithChildren
+  DashboardLookupTablesRoute: typeof DashboardLookupTablesRouteWithChildren
+  DashboardRatersAdminRoute: typeof DashboardRatersAdminRouteWithChildren
   DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardWorkflowRoute: typeof DashboardWorkflowRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -551,7 +647,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBudgetRoute: DashboardBudgetRoute,
   DashboardExportsRoute: DashboardExportsRoute,
   DashboardGenReportsRoute: DashboardGenReportsRouteWithChildren,
-  DashboardRatersRoute: DashboardRatersRouteWithChildren,
+  DashboardLookupTablesRoute: DashboardLookupTablesRouteWithChildren,
+  DashboardRatersAdminRoute: DashboardRatersAdminRouteWithChildren,
   DashboardUsersRoute: DashboardUsersRoute,
   DashboardWorkflowRoute: DashboardWorkflowRoute,
   DashboardIndexRoute: DashboardIndexRoute,

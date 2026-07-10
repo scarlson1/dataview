@@ -17,6 +17,7 @@ const EntitySelect = lazy(() => import('../components/forms/EntitySelect.tsx'));
 const Checkbox = lazy(() => import('../components/forms/Checkbox.tsx'));
 const Select = lazy(() => import('../components/forms/Select.tsx'));
 const MaskInput = lazy(() => import('../components/forms/MaskInput.tsx'));
+const PhoneInput = lazy(() => import('../components/forms/PhoneInput.tsx'));
 
 // TODO: create other reusable input types (number input, select, masked fields etc.)
 
@@ -32,6 +33,7 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     EntitySelect,
     ToggleButtonGroup,
     MaskInput,
+    PhoneInput,
   },
   formComponents: {
     SubmitButton,

@@ -586,14 +586,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -777,14 +777,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -1101,14 +1101,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
-        "field": "zip_code",
-        "label": "Zip Code",
-        "type": "varchar(10)",
+        "field": "postal",
+        "label": "Postal",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -1348,6 +1348,13 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      },
+      {
+        "field": "country",
+        "label": "Country",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
       }
     ]
   },
@@ -1428,20 +1435,27 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
-        "field": "zip_code",
-        "label": "Zip Code",
-        "type": "varchar(10)",
+        "field": "postal",
+        "label": "Postal",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
       {
         "field": "county",
         "label": "County",
+        "type": "varchar(100)",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "country",
+        "label": "Country",
         "type": "varchar(100)",
         "nullable": true,
         "kind": "text"
@@ -2721,14 +2735,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "char(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(10)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -3014,14 +3028,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(12)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -3154,14 +3168,14 @@ export const SCHEMA = {
       {
         "field": "state",
         "label": "State",
-        "type": "varchar(2)",
+        "type": "varchar(100)",
         "nullable": true,
         "kind": "chip"
       },
       {
         "field": "postal",
         "label": "Postal",
-        "type": "varchar(12)",
+        "type": "varchar(20)",
         "nullable": true,
         "kind": "text"
       },
@@ -5463,6 +5477,80 @@ export const SCHEMA = {
       }
     ]
   },
+  "rater_lookup_tables": {
+    "name": "rater_lookup_tables",
+    "kind": "table",
+    "columns": [
+      {
+        "field": "id",
+        "label": "ID",
+        "type": "uuid",
+        "nullable": false,
+        "def": "gen_random_uuid()",
+        "key": "PK",
+        "kind": "mono"
+      },
+      {
+        "field": "name",
+        "label": "Name",
+        "type": "text",
+        "nullable": false,
+        "kind": "text"
+      },
+      {
+        "field": "description",
+        "label": "Description",
+        "type": "text",
+        "nullable": true,
+        "kind": "text"
+      },
+      {
+        "field": "columns",
+        "label": "Columns",
+        "type": "jsonb",
+        "nullable": false,
+        "kind": "json"
+      },
+      {
+        "field": "rows",
+        "label": "Rows",
+        "type": "jsonb",
+        "nullable": false,
+        "kind": "json"
+      },
+      {
+        "field": "created_by",
+        "label": "Created By",
+        "type": "uuid",
+        "nullable": true,
+        "key": "FK",
+        "kind": "mono"
+      },
+      {
+        "field": "created_at",
+        "label": "Created At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "updated_at",
+        "label": "Updated At",
+        "type": "timestamptz",
+        "nullable": false,
+        "def": "now()",
+        "kind": "datetime"
+      },
+      {
+        "field": "archived_at",
+        "label": "Archived At",
+        "type": "timestamptz",
+        "nullable": true,
+        "kind": "datetime"
+      }
+    ]
+  },
   "rater_runs": {
     "name": "rater_runs",
     "kind": "table",
@@ -5548,6 +5636,13 @@ export const SCHEMA = {
         "nullable": false,
         "def": "now()",
         "kind": "datetime"
+      },
+      {
+        "field": "outcome",
+        "label": "Outcome",
+        "type": "jsonb",
+        "nullable": true,
+        "kind": "json"
       }
     ]
   },

@@ -9,7 +9,9 @@ import {
   type HttpFetchRequest,
   type RaterAdapters,
 } from '../_shared/rater/interpreter.ts';
+import { materializeLookupTables } from '../_shared/rater/materialize.ts';
 import {
+  type LookupTableContent,
   type RaterDefinition,
   raterDefinitionSchema,
 } from '../_shared/rater/schema.ts';
@@ -186,6 +188,30 @@ export default {
       });
     }
 
+    // Resolve any shared lookup-table references into inline grids. The load
+    // runs through the CALLER's client, so rater_lookup_tables RLS gates what a
+    // rater can reach; the materialized definition is what executes AND what is
+    // snapshotted, keeping past runs reproducible after a shared table changes.
+    const materialized = await materializeLookupTables(definition, async (tableId) => {
+      const { data, error } = await ctx.supabase
+        .from('rater_lookup_tables')
+        .select('columns, rows')
+        .eq('id', tableId)
+        .is('archived_at', null)
+        .maybeSingle();
+      if (error || !data) return null;
+      return { columns: data.columns, rows: data.rows } as LookupTableContent;
+    });
+    if (materialized.errors.length) {
+      const first = materialized.errors[0];
+      return errorResponse(422, {
+        code: 'invalid_definition',
+        message: first.message,
+        stepId: first.stepId,
+      });
+    }
+    const execDefinition = materialized.definition;
+
     const coerced = coerceInputValues(definition.inputs, providedInputs);
     if (!coerced.ok) {
       return errorResponse(422, { code: coerced.code, message: coerced.message });
@@ -223,7 +249,7 @@ export default {
     };
 
     const started = Date.now();
-    const result = await executeRater(definition, coerced.values, adapters);
+    const result = await executeRater(execDefinition, coerced.values, adapters);
     const durationMs = Date.now() - started;
 
     // Audit + last_run_at for saved raters (fire-and-forget; never let audit
@@ -235,7 +261,8 @@ export default {
         userId: claims.sub,
         inputs: coerced.values,
         outputs: result.outputs,
-        definitionSnapshot: definition,
+        outcome: result.outcome,
+        definitionSnapshot: execDefinition,
         trace: result.trace,
         sourceRecord,
         durationMs,
@@ -261,8 +288,11 @@ export default {
       );
     }
 
+    // A terminal decision (e.g. decline) is a SUCCESSFUL outcome, not an error
+    // — 200 with `outcome` set. The UI shows a banner instead of premium cards.
     return Response.json({
       outputs: result.outputs,
+      outcome: result.outcome,
       trace: result.trace,
       durationMs,
     });
@@ -288,6 +318,7 @@ const logRun = (
     userId: string;
     inputs: Record<string, unknown>;
     outputs: unknown;
+    outcome: unknown;
     definitionSnapshot: RaterDefinition;
     trace: unknown;
     sourceRecord: { table: string; id: number } | null;
@@ -302,6 +333,7 @@ const logRun = (
       user_id: row.userId,
       inputs: row.inputs as never,
       outputs: row.outputs as never,
+      outcome: row.outcome as never,
       definition_snapshot: row.definitionSnapshot as never,
       trace: row.trace as never,
       source_record: row.sourceRecord as never,

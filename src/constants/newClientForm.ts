@@ -14,8 +14,9 @@ export const addressValues = z.object({
   addressLine1: z.string().min(1),
   addressLine2: z.string(),
   city: z.string().min(1),
-  state: z.string().length(2).uppercase(), // TODO: add state validation ??
-  postal: z.string().min(5).max(10),
+  state: z.string(), // free-text State/Province (region formats vary by country)
+  postal: z.string().min(1),
+  country: z.string().min(1),
 });
 
 export const newClientValues = //addressValues.and(
@@ -73,6 +74,7 @@ export const defaultClientValues: NewClientValues = {
     city: '',
     state: '',
     postal: '',
+    country: 'US',
   },
 };
 

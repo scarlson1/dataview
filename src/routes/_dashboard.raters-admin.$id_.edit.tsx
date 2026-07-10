@@ -18,7 +18,7 @@ import {
   raterDefinitionSchema,
 } from '#/types/raters';
 
-export const Route = createFileRoute('/_dashboard/raters/$id_/edit')({
+export const Route = createFileRoute('/_dashboard/raters-admin/$id_/edit')({
   component: EditRater,
   loader: () => ({ crumb: 'edit' }),
 });

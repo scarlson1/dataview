@@ -61,6 +61,7 @@ const agencyRowToValues = (
           city: agencyStr(row.city),
           state: agencyStr(row.state),
           postal: agencyStr(row.postal),
+          country: agencyStr(row.country) || 'US',
         },
       } as unknown as Partial<NewAgencyValues>)
     : {};
@@ -128,6 +129,7 @@ export const NewAgencyForm = ({
           city: value.address.city,
           state: value.address.state,
           postal: value.address.postal,
+          country: value.address.country,
         };
 
         await mutateAsync(agency);
@@ -225,7 +227,7 @@ export const NewAgencyForm = ({
             <form.AppField
               name='phone'
               children={(field) => (
-                <field.MaskInput label='Phone' size='small' />
+                <field.PhoneInput label='Phone' />
               )}
             />
           </Grid>

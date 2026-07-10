@@ -15,26 +15,22 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Pencil, Play } from 'lucide-react';
-import { lazy, Suspense, useRef, useState } from 'react';
+import { Pencil } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
+import { OutcomeBanner } from '#/components/raters/OutcomeBanner';
 import { formatOutput, OutputCards } from '#/components/raters/OutputCards';
 import {
-  RaterInputsForm,
-  type RaterInputsFormHandle,
-} from '#/components/raters/RaterInputsForm';
-import { RecordPicker } from '#/components/raters/RecordPicker';
+  RaterRunPanel,
+  type RaterRunState,
+} from '#/components/raters/RaterRunPanel';
 import { TracePanel } from '#/components/raters/TracePanel';
 import { useAuth } from '#/context/AuthContext';
-import {
-  RATER_ENTITY_PICKERS,
-  type RaterEntityTable,
-} from '#/lib/raterPickers';
-import { RunRaterError, runRater } from '#/lib/raters';
 import { supabase } from '#/supabaseClient';
 import {
   type RaterDefinition,
+  type RaterOutcome,
   type RaterOutputValue,
   type RecordMapping,
   raterDefinitionSchema,
@@ -47,7 +43,7 @@ const RaterFlow = lazy(() =>
   })),
 );
 
-export const Route = createFileRoute('/_dashboard/raters/$id')({
+export const Route = createFileRoute('/_dashboard/raters-admin/$id')({
   component: RaterDetail,
   loader: () => ({ crumb: 'rater' }),
 });
@@ -65,6 +61,7 @@ interface RunRow {
   id: number;
   inputs: Record<string, unknown> | null;
   outputs: Record<string, RaterOutputValue> | null;
+  outcome: RaterOutcome | null;
   definition_snapshot: unknown;
   trace: { steps: TraceStep[] } | null;
   duration_ms: number | null;
@@ -72,26 +69,17 @@ interface RunRow {
   created_at: string;
 }
 
-interface RunState {
-  outputs: Record<string, RaterOutputValue> | null;
-  trace: TraceStep[] | null;
-  error: string | null;
-}
-
 function RaterDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { can } = useAuth();
   const canWrite = can('raters', 'write');
 
-  const formRef = useRef<RaterInputsFormHandle>(null);
-  const [sourceRecord, setSourceRecord] = useState<{
-    table: string;
-    id: number;
-  } | null>(null);
-  const [runState, setRunState] = useState<RunState>({
+  // Kept for the diagram column, which highlights the executed path; the panel
+  // owns the run and reports each result back through onRunStateChange.
+  const [runState, setRunState] = useState<RaterRunState>({
     outputs: null,
+    outcome: null,
     trace: null,
     error: null,
   });
@@ -119,7 +107,7 @@ function RaterDetail() {
       const { data, error } = await supabase
         .from('rater_runs')
         .select(
-          'id, inputs, outputs, definition_snapshot, trace, duration_ms, error, created_at',
+          'id, inputs, outputs, outcome, definition_snapshot, trace, duration_ms, error, created_at',
         )
         .eq('rater_id', id)
         .order('created_at', { ascending: false })
@@ -128,46 +116,6 @@ function RaterDetail() {
       return (data ?? []) as unknown as RunRow[];
     },
   });
-
-  const run = useMutation({
-    mutationFn: async () => {
-      const collected = formRef.current?.collect();
-      if (!collected) throw new Error('Inputs are not ready');
-      if (!collected.ok) throw new Error(collected.message);
-      return runRater({
-        raterId: id,
-        inputs: collected.values,
-        ...(sourceRecord ? { sourceRecord } : {}),
-      });
-    },
-    onSuccess: (result) => {
-      setRunState({
-        outputs: result.outputs,
-        trace: result.trace.steps,
-        error: null,
-      });
-      queryClient.invalidateQueries({ queryKey: ['rater_runs', id] });
-    },
-    onError: (e: Error) => {
-      const trace =
-        e instanceof RunRaterError ? (e.trace?.steps ?? null) : null;
-      setRunState({ outputs: null, trace, error: e.message });
-      queryClient.invalidateQueries({ queryKey: ['rater_runs', id] });
-    },
-  });
-
-  // The picker hands back the full row; seed mapped inputs from it directly.
-  const prefill = (row: Record<string, unknown> | null) => {
-    const mapping = rater.data?.record_mapping;
-    if (!mapping || !row) {
-      setSourceRecord(null);
-      return;
-    }
-    formRef.current?.seed(
-      Object.fromEntries(mapping.mappings.map((m) => [m.input, row[m.column]])),
-    );
-    setSourceRecord({ table: mapping.table, id: row.id as number });
-  };
 
   if (rater.isLoading) {
     return (
@@ -192,9 +140,6 @@ function RaterDetail() {
   }
   const definition: RaterDefinition = parsed.data;
   const mapping = row.record_mapping;
-  const picker = mapping
-    ? RATER_ENTITY_PICKERS[mapping.table as RaterEntityTable]
-    : undefined;
 
   return (
     <Box
@@ -245,58 +190,14 @@ function RaterDetail() {
         {/* run column */}
         <Stack spacing={2.5}>
           <Paper variant='outlined' sx={{ borderRadius: 2, p: 2 }}>
-            <Stack spacing={2}>
-              {mapping && picker && (
-                <Box sx={{ maxWidth: 360 }}>
-                  <RecordPicker
-                    label={`Pre-fill from ${mapping.table}`}
-                    table={picker.queryTable}
-                    searchColumns={picker.searchColumns}
-                    getOptionLabel={picker.getOptionLabel}
-                    onSelect={(row) => prefill(row)}
-                  />
-                </Box>
-              )}
-              {definition.inputs.length ? (
-                <RaterInputsForm ref={formRef} inputs={definition.inputs} />
-              ) : (
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  This rater has no inputs.
-                </Typography>
-              )}
-              <Box>
-                <Button
-                  variant='contained'
-                  startIcon={
-                    run.isPending ? (
-                      <CircularProgress size={14} color='inherit' />
-                    ) : (
-                      <Play size={15} />
-                    )
-                  }
-                  disabled={run.isPending || Boolean(row.archived_at)}
-                  onClick={() => run.mutate()}
-                >
-                  Run
-                </Button>
-              </Box>
-              {runState.error && (
-                <Alert severity='error'>{runState.error}</Alert>
-              )}
-              {runState.outputs && Object.keys(runState.outputs).length > 0 && (
-                <OutputCards outputs={runState.outputs} />
-              )}
-              {runState.trace && (
-                <Box>
-                  <Typography
-                    sx={{ fontSize: 12.5, fontWeight: 600, mb: 0.75 }}
-                  >
-                    Step trace
-                  </Typography>
-                  <TracePanel steps={runState.trace} />
-                </Box>
-              )}
-            </Stack>
+            <RaterRunPanel
+              raterId={id}
+              definition={definition}
+              recordMapping={mapping}
+              archived={Boolean(row.archived_at)}
+              allowManualPrefill
+              onRunStateChange={setRunState}
+            />
           </Paper>
 
           {/* runs history */}
@@ -350,14 +251,16 @@ function RaterDetail() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        color: r.error ? 'error.main' : undefined,
+                        color: r.error || r.outcome ? 'error.main' : undefined,
                       }}
                     >
                       {r.error
                         ? r.error
-                        : Object.values(r.outputs ?? {})
-                            .map((o) => `${o.label}: ${formatOutput(o)}`)
-                            .join(' · ') || '—'}
+                        : r.outcome
+                          ? `${r.outcome.decision.toUpperCase()}${r.outcome.reason ? ` — ${r.outcome.reason}` : ''}`
+                          : Object.values(r.outputs ?? {})
+                              .map((o) => `${o.label}: ${formatOutput(o)}`)
+                              .join(' · ') || '—'}
                     </Typography>
                     {r.duration_ms !== null && (
                       <Typography
@@ -403,6 +306,9 @@ function RaterDetail() {
             <Stack spacing={2} sx={{ pt: 0.5 }}>
               {viewingRun.error && (
                 <Alert severity='error'>{viewingRun.error}</Alert>
+              )}
+              {viewingRun.outcome && (
+                <OutcomeBanner outcome={viewingRun.outcome} />
               )}
               {viewingRun.inputs &&
                 Object.keys(viewingRun.inputs).length > 0 && (

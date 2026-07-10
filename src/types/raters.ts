@@ -10,26 +10,37 @@ export type {
   BranchStep,
   CalcStep,
   DbFetchStep,
+  DecisionStep,
   FetchStep,
   HttpFetchStep,
+  InlineLookupStep,
+  LookupCell,
+  LookupColumn,
   LookupMatch,
   LookupStep,
+  LookupTableContent,
+  MatchCondition,
   OutputFormat,
   OutputStep,
   RaterDefinition,
   RaterInput,
   RaterInputType,
+  RaterOutcome,
   RaterOutputValue,
   RaterRunResult,
   RaterStep,
   RecordMapping,
+  RefLookupStep,
   TraceStatus,
   TraceStep,
 } from '#rater-shared/schema.ts';
 
 export {
+  DB_FILTER_OPS,
   emptyRaterDefinition,
   LOOKUP_COLUMN_TYPES,
+  lookupTableContentSchema,
+  matchConditionSchema,
   RATER_ENTITY_TABLES,
   RATER_INPUT_TYPES,
   RATER_LIMITS,
@@ -44,10 +55,22 @@ export type {
 export { validateRaterDefinition } from '#rater-shared/validate.ts';
 
 import type {
+  LookupColumn,
+  RaterOutcome,
   RaterOutputValue,
   RaterRunResult,
   TraceStep,
 } from '#rater-shared/schema.ts';
+
+/** A row of the shared lookup-tables list page / picker. */
+export interface LookupTableListRow {
+  id: string;
+  name: string;
+  description: string | null;
+  columns: LookupColumn[];
+  updated_at: string;
+  created_at: string;
+}
 
 /** A row of the saved-raters list page. */
 export interface RaterListRow {
@@ -76,6 +99,7 @@ export interface RunRaterRequest {
 
 export interface RunRaterSuccess {
   outputs: Record<string, RaterOutputValue>;
+  outcome: RaterOutcome | null;
   trace: RaterRunResult['trace'];
   durationMs: number;
 }

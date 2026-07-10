@@ -96,6 +96,9 @@ export const InputDefsEditor = ({ inputs, onChange }: InputDefsEditorProps) => {
                   value={input.label}
                   onChange={(e) => setInput(i, { label: e.target.value })}
                   size='small'
+                  slotProps={{
+                    input: { sx: { fontFamily: MONO_FONT, fontSize: 13 } },
+                  }}
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -120,6 +123,9 @@ export const InputDefsEditor = ({ inputs, onChange }: InputDefsEditorProps) => {
                   }}
                   size='small'
                   select
+                  slotProps={{
+                    input: { sx: { fontFamily: MONO_FONT, fontSize: 13 } },
+                  }}
                   sx={{ width: 150 }}
                 >
                   {INPUT_TYPES.map((t) => (
@@ -191,6 +197,11 @@ export const InputDefsEditor = ({ inputs, onChange }: InputDefsEditorProps) => {
                           })
                         }
                         size='small'
+                        slotProps={{
+                          input: {
+                            sx: { fontFamily: MONO_FONT, fontSize: 13 },
+                          },
+                        }}
                         sx={{ flex: 1 }}
                       />
                       {(input.options?.length ?? 0) > 1 && (
@@ -239,6 +250,9 @@ export const InputDefsEditor = ({ inputs, onChange }: InputDefsEditorProps) => {
                   }
                   size='small'
                   select
+                  slotProps={{
+                    input: { sx: { fontFamily: MONO_FONT, fontSize: 13 } },
+                  }}
                   sx={{ width: 280 }}
                 >
                   {Object.keys(RATER_ENTITY_PICKERS).map((table) => (

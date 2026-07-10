@@ -16,6 +16,7 @@ import {
   FileDown,
   LogOut,
   Pin,
+  Table2,
   TrendingUp,
   Users,
   Workflow,
@@ -430,7 +431,13 @@ export const Sidebar = ({
           icon={<Calculator size={20} />}
           label='Raters'
           collapsed={collapsed}
-          onClick={() => go(() => navigate({ to: '/raters' }))}
+          onClick={() => go(() => navigate({ to: '/raters-admin' }))}
+        />
+        <FooterItem
+          icon={<Table2 size={20} />}
+          label='Lookup tables'
+          collapsed={collapsed}
+          onClick={() => go(() => navigate({ to: '/lookup-tables' }))}
         />
         <FooterItem
           icon={<FileDown size={20} />}

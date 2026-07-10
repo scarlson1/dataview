@@ -23,7 +23,6 @@ export const newCarrierValues = z.object({
   phone: zPhoneOptional,
   email: z.string(),
   claimsPhone: zPhoneOptional,
-  country: z.string(),
   status: z.string(),
   address: z.object({
     addressLine1: z.string(),
@@ -31,6 +30,7 @@ export const newCarrierValues = z.object({
     city: z.string(),
     state: z.string(),
     postal: z.string(),
+    country: z.string(),
   }),
 });
 export type NewCarrierValues = z.infer<typeof newCarrierValues>;
@@ -47,7 +47,6 @@ export const defaultCarrierValues: NewCarrierValues = {
   phone: '',
   email: '',
   claimsPhone: '',
-  country: '',
   status: 'active',
   address: {
     addressLine1: '',
@@ -55,6 +54,7 @@ export const defaultCarrierValues: NewCarrierValues = {
     city: '',
     state: '',
     postal: '',
+    country: 'US',
   },
 };
 

@@ -21,7 +21,7 @@ import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
 import type { RaterListRow } from '#/types/raters';
 
-export const Route = createFileRoute('/_dashboard/raters/')({
+export const Route = createFileRoute('/_dashboard/raters-admin/')({
   component: RatersList,
   loader: () => ({ crumb: 'raters' }),
 });

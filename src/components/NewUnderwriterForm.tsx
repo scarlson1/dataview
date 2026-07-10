@@ -124,7 +124,7 @@ export const NewUnderwriterForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <form.AppField name='phone'>
-              {(field) => <field.MaskInput label='Phone' />}
+              {(field) => <field.PhoneInput label='Phone' />}
             </form.AppField>
           </Grid>
         </Grid>

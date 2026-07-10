@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/_dashboard/raters')({
+export const Route = createFileRoute('/_dashboard/raters-admin')({
   component: RouteComponent,
   loader: () => ({
     crumb: 'raters',

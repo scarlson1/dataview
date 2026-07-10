@@ -691,7 +691,7 @@ begin
   -- ==========================================================================
   insert into public.air_exposure
     (policy_id, client_id, certificate_ref, location_id, location_name,
-     street_address, city, state, zip_code, county, latitude, longitude,
+     street_address, city, state, postal, county, latitude, longitude,
      geocode_quality, number_of_buildings, occupancy_code, construction_code,
      building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
      roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,
@@ -713,7 +713,7 @@ begin
 
   insert into public.air_exposure
     (policy_id, client_id, certificate_ref, location_id, location_name,
-     street_address, city, state, zip_code, county, latitude, longitude,
+     street_address, city, state, postal, county, latitude, longitude,
      geocode_quality, number_of_buildings, occupancy_code, construction_code,
      building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
      roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,
@@ -735,7 +735,7 @@ begin
 
   insert into public.air_exposure
     (policy_id, client_id, certificate_ref, location_id, location_name,
-     street_address, city, state, zip_code, county, latitude, longitude,
+     street_address, city, state, postal, county, latitude, longitude,
      geocode_quality, number_of_buildings, occupancy_code, construction_code,
      building_id, year_built, num_storeys, gross_floor_area, primary_construction_class,
      roof_type, roof_shape, foundation_type, seismic_design_level, wind_speed_design,

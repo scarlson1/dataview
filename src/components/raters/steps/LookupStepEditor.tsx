@@ -1,33 +1,39 @@
 /**
- * Editor for lookup steps: an inline reference table (typed columns × rows)
- * plus the match config (how a probe value finds its row). A controlled MUI
- * Table rather than DataGrid editing — dynamic typed columns and row
- * reordering don't fit DataGrid's edit model.
+ * Editor for lookup steps. A lookup finds a row in a reference grid by matching
+ * probe values against its columns, then binds the matched row as an object
+ * (e.g. `base_rate.rate`). The grid is either:
+ *   - inline:  typed columns × rows carried on the step itself, or
+ *   - saved:   a shared rater_lookup_tables row referenced by id, so one grid
+ *              can be edited once and reused across many raters. The run-rater
+ *              edge function resolves a saved reference into an inline grid at
+ *              run time.
  *
- * Number cells: blank = null (open-ended range bound). First matching row
- * wins, so row order matters for overlapping ranges.
+ * Both modes share the same row-matching + miss-behavior config
+ * ({@link LookupMatchConfig}); only where the columns/rows come from differs.
  */
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
+import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
-import { ArrowDown, ArrowUp, Plus, Trash2, X } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '#/supabaseClient';
 import { MONO_FONT } from '#/theme/tokens';
-import type { LookupMatch, LookupStep } from '#/types/raters';
-import { ExpressionField } from '../ExpressionField';
-
-type Cell = string | number | boolean | null;
+import type {
+  InlineLookupStep,
+  LookupColumn,
+  LookupStep,
+  LookupTableListRow,
+  RefLookupStep,
+} from '#/types/raters';
+import { LookupMatchConfig } from './LookupMatchConfig';
+import { type Cell, LookupTableGrid } from './LookupTableGrid';
 
 interface LookupStepEditorProps {
   step: LookupStep;
@@ -35,487 +41,243 @@ interface LookupStepEditorProps {
   availableBindings: string[];
 }
 
-const parseCell = (raw: string, type: 'text' | 'number' | 'boolean'): Cell => {
-  if (type === 'number') {
-    const s = raw.trim();
-    if (!s) return null;
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  }
-  if (type === 'boolean') return raw === 'true';
-  return raw;
-};
+// Default columns when switching a step into inline mode without a shape to
+// seed from.
+const DEFAULT_COLUMNS: LookupColumn[] = [
+  { name: 'key', type: 'text' },
+  { name: 'value', type: 'number' },
+];
 
-const cellToString = (cell: Cell): string =>
-  cell === null || cell === undefined ? '' : String(cell);
+export const useLookupTables = () =>
+  useQuery({
+    queryKey: ['rater_lookup_tables'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rater_lookup_tables')
+        .select('id, name, description, columns, updated_at, created_at')
+        .is('archived_at', null)
+        .order('name', { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as LookupTableListRow[];
+    },
+  });
 
 export const LookupStepEditor = ({
   step,
   onChange,
   availableBindings,
 }: LookupStepEditorProps) => {
-  const setColumns = (columns: LookupStep['columns'], rows: Cell[][]) =>
-    onChange({ ...step, columns, rows });
+  const tables = useLookupTables();
+  const isRef = step.source === 'ref';
 
-  const renameColumn = (index: number, name: string) => {
-    onChange({
-      ...step,
-      columns: step.columns.map((c, i) => (i === index ? { ...c, name } : c)),
-      // match entries reference columns by name — keep them in sync
-      match: step.match.map((m) => {
-        const old = step.columns[index].name;
-        if (m.mode === 'exact') {
-          return m.column === old ? { ...m, column: name } : m;
-        }
-        return {
-          ...m,
-          minColumn: m.minColumn === old ? name : m.minColumn,
-          maxColumn: m.maxColumn === old ? name : m.maxColumn,
-        };
-      }),
-    });
+  // Columns the match config works against: the step's own (inline) or the
+  // referenced table's (ref).
+  const refTable = isRef
+    ? tables.data?.find((t) => t.id === step.tableId)
+    : undefined;
+  const columns: LookupColumn[] = isRef
+    ? (refTable?.columns ?? [])
+    : step.columns;
+
+  const setMode = (_e: unknown, next: 'inline' | 'ref' | null) => {
+    if (next === null || (next === 'ref') === isRef) return;
+    if (next === 'ref') {
+      const firstTable = tables.data?.[0];
+      const refStep: RefLookupStep = {
+        id: step.id,
+        ...(step.label !== undefined ? { label: step.label } : {}),
+        type: 'lookup',
+        source: 'ref',
+        tableId: firstTable?.id ?? '',
+        ...(firstTable ? { tableName: firstTable.name } : {}),
+        match: step.match,
+        onMiss: step.onMiss,
+        ...(step.defaultRow !== undefined
+          ? { defaultRow: step.defaultRow }
+          : {}),
+      };
+      onChange(refStep);
+    } else {
+      // ref → inline: seed columns from the referenced table (empty rows) if we
+      // have them, else fall back to a starter grid.
+      const seededCols = refTable?.columns ?? DEFAULT_COLUMNS;
+      const inlineStep: InlineLookupStep = {
+        id: step.id,
+        ...(step.label !== undefined ? { label: step.label } : {}),
+        type: 'lookup',
+        source: 'inline',
+        columns: seededCols,
+        rows: [],
+        match: step.match,
+        onMiss: step.onMiss,
+        ...(step.defaultRow !== undefined
+          ? { defaultRow: step.defaultRow }
+          : {}),
+      };
+      onChange(inlineStep);
+    }
   };
-
-  const retypeColumn = (index: number, type: 'text' | 'number' | 'boolean') => {
-    setColumns(
-      step.columns.map((c, i) => (i === index ? { ...c, type } : c)),
-      step.rows.map((row) =>
-        row.map((cell, i) =>
-          i === index ? parseCell(cellToString(cell), type) : cell,
-        ),
-      ),
-    );
-  };
-
-  const addColumn = () => {
-    let n = step.columns.length + 1;
-    while (step.columns.some((c) => c.name === `col_${n}`)) n += 1;
-    setColumns(
-      [...step.columns, { name: `col_${n}`, type: 'number' }],
-      step.rows.map((row) => [...row, null]),
-    );
-  };
-
-  const removeColumn = (index: number) => {
-    setColumns(
-      step.columns.filter((_, i) => i !== index),
-      step.rows.map((row) => row.filter((_, i) => i !== index)),
-    );
-  };
-
-  const setCell = (rowIndex: number, colIndex: number, raw: string) => {
-    onChange({
-      ...step,
-      rows: step.rows.map((row, r) =>
-        r === rowIndex
-          ? row.map((cell, c) =>
-              c === colIndex
-                ? parseCell(raw, step.columns[colIndex].type)
-                : cell,
-            )
-          : row,
-      ),
-    });
-  };
-
-  const addRow = () =>
-    onChange({
-      ...step,
-      rows: [
-        ...step.rows,
-        step.columns.map((c) => (c.type === 'text' ? '' : null)),
-      ],
-    });
-
-  const removeRow = (index: number) =>
-    onChange({ ...step, rows: step.rows.filter((_, i) => i !== index) });
-
-  const moveRow = (index: number, delta: -1 | 1) => {
-    const to = index + delta;
-    if (to < 0 || to >= step.rows.length) return;
-    const rows = [...step.rows];
-    const [row] = rows.splice(index, 1);
-    rows.splice(to, 0, row);
-    onChange({ ...step, rows });
-  };
-
-  const setMatch = (index: number, match: LookupMatch) =>
-    onChange({
-      ...step,
-      match: step.match.map((m, i) => (i === index ? match : m)),
-    });
-
-  const numberColumns = step.columns.filter((c) => c.type === 'number');
 
   return (
     <Stack spacing={2}>
-      {/* the reference table */}
-      <Box sx={{ overflowX: 'auto' }}>
-        <Table size='small' sx={{ '& td, & th': { px: 0.75, py: 0.5 } }}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ width: 76 }} />
-              {step.columns.map((col, i) => (
-                <TableCell
-                  // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
-                  key={`col-${i}-${step.columns.length}`}
-                >
-                  <Stack
-                    direction='row'
-                    spacing={0.5}
-                    sx={{ alignItems: 'center' }}
-                  >
-                    <TextField
-                      value={col.name}
-                      onChange={(e) => renameColumn(i, e.target.value)}
-                      size='small'
-                      variant='standard'
-                      slotProps={{
-                        input: {
-                          sx: { fontFamily: MONO_FONT, fontSize: 12.5 },
-                        },
-                      }}
-                    />
-                    <TextField
-                      value={col.type}
-                      onChange={(e) =>
-                        retypeColumn(
-                          i,
-                          e.target.value as 'text' | 'number' | 'boolean',
-                        )
-                      }
-                      size='small'
-                      variant='standard'
-                      select
-                      sx={{ width: 66 }}
-                      slotProps={{ input: { sx: { fontSize: 11.5 } } }}
-                    >
-                      <MenuItem value='text'>text</MenuItem>
-                      <MenuItem value='number'>num</MenuItem>
-                      <MenuItem value='boolean'>bool</MenuItem>
-                    </TextField>
-                    {step.columns.length > 1 && (
-                      <IconButton size='small' onClick={() => removeColumn(i)}>
-                        <X size={13} />
-                      </IconButton>
-                    )}
-                  </Stack>
-                </TableCell>
-              ))}
-              <TableCell sx={{ width: 40 }}>
-                <IconButton size='small' onClick={addColumn} title='Add column'>
-                  <Plus size={15} />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {step.rows.map((row, r) => (
-              <TableRow
-                // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional
-                key={r}
-              >
-                <TableCell>
-                  <Stack direction='row' spacing={0}>
-                    <IconButton
-                      size='small'
-                      onClick={() => moveRow(r, -1)}
-                      disabled={r === 0}
-                    >
-                      <ArrowUp size={13} />
-                    </IconButton>
-                    <IconButton
-                      size='small'
-                      onClick={() => moveRow(r, 1)}
-                      disabled={r === step.rows.length - 1}
-                    >
-                      <ArrowDown size={13} />
-                    </IconButton>
-                  </Stack>
-                </TableCell>
-                {row.map((cell, c) => (
-                  <TableCell
-                    // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional
-                    key={`${r}-${c}`}
-                  >
-                    {step.columns[c]?.type === 'boolean' ? (
-                      <Checkbox
-                        checked={cell === true}
-                        onChange={(e) =>
-                          setCell(r, c, String(e.target.checked))
-                        }
-                        size='small'
-                      />
-                    ) : (
-                      <TextField
-                        value={cellToString(cell)}
-                        onChange={(e) => setCell(r, c, e.target.value)}
-                        size='small'
-                        variant='standard'
-                        placeholder={
-                          step.columns[c]?.type === 'number' ? '∞' : ''
-                        }
-                        slotProps={{
-                          input: {
-                            sx: { fontFamily: MONO_FONT, fontSize: 12.5 },
-                          },
-                        }}
-                      />
-                    )}
-                  </TableCell>
-                ))}
-                <TableCell>
-                  <IconButton size='small' onClick={() => removeRow(r)}>
-                    <Trash2 size={13} />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
-      <Box>
-        <Button size='small' startIcon={<Plus size={14} />} onClick={addRow}>
-          Add row
-        </Button>
-        <Typography
-          component='span'
-          sx={{ fontSize: 11.5, color: 'text.secondary', ml: 1.5 }}
-        >
-          First matching row wins — order matters. Blank number cell =
-          open-ended.
-        </Typography>
-      </Box>
+      <ToggleButtonGroup
+        value={isRef ? 'ref' : 'inline'}
+        exclusive
+        onChange={setMode}
+        size='small'
+      >
+        <ToggleButton value='inline' sx={{ textTransform: 'none', px: 1.5 }}>
+          Inline table
+        </ToggleButton>
+        <ToggleButton value='ref' sx={{ textTransform: 'none', px: 1.5 }}>
+          Saved table
+        </ToggleButton>
+      </ToggleButtonGroup>
 
-      {/* match config */}
-      <Stack spacing={1.5}>
-        <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>
-          Row matching
-        </Typography>
-        {step.match.map((m, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: matches are positional
-          <Stack key={i} spacing={1}>
-            <Stack
-              direction='row'
-              spacing={1}
-              sx={{ alignItems: 'flex-start' }}
-            >
-              <TextField
-                value={m.mode}
-                onChange={(e) => {
-                  const mode = e.target.value as 'exact' | 'range';
-                  if (mode === m.mode) return;
-                  setMatch(
-                    i,
-                    mode === 'exact'
-                      ? { mode, column: step.columns[0].name, value: m.value }
-                      : {
-                          mode,
-                          minColumn:
-                            numberColumns[0]?.name ?? step.columns[0].name,
-                          maxColumn:
-                            numberColumns[1]?.name ??
-                            numberColumns[0]?.name ??
-                            step.columns[0].name,
-                          value: m.value,
-                          minInclusive: true,
-                          maxInclusive: false,
-                        },
-                  );
-                }}
-                size='small'
-                select
-                sx={{ width: 110 }}
-                label='Mode'
-              >
-                <MenuItem value='exact'>Exact</MenuItem>
-                <MenuItem value='range'>Range band</MenuItem>
-              </TextField>
+      {isRef ? (
+        <RefTablePicker
+          step={step}
+          tables={tables.data ?? []}
+          loading={tables.isLoading}
+          onSelect={(tableId) => {
+            // Cache the picked table's name for friendly summaries (self-heals a
+            // stale name on re-pick); drop it if somehow unresolved.
+            const picked = tables.data?.find((t) => t.id === tableId);
+            onChange({
+              ...step,
+              tableId,
+              ...(picked
+                ? { tableName: picked.name }
+                : { tableName: undefined }),
+            });
+          }}
+        />
+      ) : (
+        <LookupTableGrid
+          columns={step.columns}
+          rows={step.rows as Cell[][]}
+          onChange={(cols, rows) => onChange({ ...step, columns: cols, rows })}
+          onRenameColumn={(_i, from, to) => {
+            // keep match column references in sync with the rename
+            onChange({
+              ...step,
+              match: step.match.map((m) =>
+                m.mode === 'exact'
+                  ? m.column === from
+                    ? { ...m, column: to }
+                    : m
+                  : {
+                      ...m,
+                      minColumn: m.minColumn === from ? to : m.minColumn,
+                      maxColumn: m.maxColumn === from ? to : m.maxColumn,
+                    },
+              ),
+            });
+          }}
+        />
+      )}
 
-              {m.mode === 'exact' ? (
-                <TextField
-                  value={m.column}
-                  onChange={(e) =>
-                    setMatch(i, { ...m, column: e.target.value })
-                  }
-                  size='small'
-                  select
-                  sx={{ width: 150 }}
-                  label='Column'
-                >
-                  {step.columns.map((c) => (
-                    <MenuItem key={c.name} value={c.name}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              ) : (
-                <>
-                  <TextField
-                    value={m.minColumn}
-                    onChange={(e) =>
-                      setMatch(i, { ...m, minColumn: e.target.value })
-                    }
-                    size='small'
-                    select
-                    sx={{ width: 130 }}
-                    label='Min column'
-                  >
-                    {step.columns.map((c) => (
-                      <MenuItem key={c.name} value={c.name}>
-                        {c.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    value={m.maxColumn}
-                    onChange={(e) =>
-                      setMatch(i, { ...m, maxColumn: e.target.value })
-                    }
-                    size='small'
-                    select
-                    sx={{ width: 130 }}
-                    label='Max column'
-                  >
-                    {step.columns.map((c) => (
-                      <MenuItem key={c.name} value={c.name}>
-                        {c.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </>
-              )}
-              {step.match.length > 1 && (
-                <IconButton
-                  size='small'
-                  onClick={() =>
-                    onChange({
-                      ...step,
-                      match: step.match.filter((_, mi) => mi !== i),
-                    })
-                  }
-                  sx={{ mt: 0.5 }}
-                >
-                  <X size={14} />
-                </IconButton>
-              )}
-            </Stack>
-            <ExpressionField
-              label='Match value'
-              value={m.value}
-              onChange={(value) => setMatch(i, { ...m, value })}
-              availableBindings={availableBindings}
-              placeholder='inputs.custody_type'
-              required
-            />
-            {m.mode === 'range' && (
-              <Stack direction='row' spacing={2}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={m.minInclusive}
-                      onChange={(e) =>
-                        setMatch(i, { ...m, minInclusive: e.target.checked })
-                      }
-                      size='small'
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontSize: 12.5 }}>
-                      Min inclusive
-                    </Typography>
-                  }
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={m.maxInclusive}
-                      onChange={(e) =>
-                        setMatch(i, { ...m, maxInclusive: e.target.checked })
-                      }
-                      size='small'
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontSize: 12.5 }}>
-                      Max inclusive
-                    </Typography>
-                  }
-                />
-              </Stack>
-            )}
-          </Stack>
-        ))}
-        <Box>
-          <Button
-            size='small'
-            onClick={() =>
-              onChange({
-                ...step,
-                match: [
-                  ...step.match,
-                  { mode: 'exact', column: step.columns[0].name, value: '' },
-                ],
-              })
-            }
-          >
-            Add match condition
-          </Button>
-        </Box>
-      </Stack>
+      {isRef && !step.tableId && (
+        <Alert severity='warning' sx={{ fontSize: 12.5 }}>
+          Pick a saved table for this lookup.
+        </Alert>
+      )}
 
-      {/* miss behavior */}
-      <TextField
-        value={step.onMiss}
-        onChange={(e) => {
-          const onMiss = e.target.value as 'error' | 'default';
-          onChange({
-            ...step,
-            onMiss,
-            defaultRow:
-              onMiss === 'default'
-                ? (step.defaultRow ??
-                  Object.fromEntries(
-                    step.columns.map((c) => [
-                      c.name,
-                      c.type === 'text' ? '' : null,
-                    ]),
-                  ))
-                : step.defaultRow,
-          });
+      <LookupMatchConfig
+        columns={columns}
+        state={{
+          match: step.match,
+          onMiss: step.onMiss,
+          defaultRow: step.defaultRow,
         }}
+        onChange={(patch) => onChange({ ...step, ...patch } as LookupStep)}
+        availableBindings={availableBindings}
+      />
+    </Stack>
+  );
+};
+
+interface RefTablePickerProps {
+  step: RefLookupStep;
+  tables: LookupTableListRow[];
+  loading: boolean;
+  onSelect: (tableId: string) => void;
+}
+
+const RefTablePicker = ({
+  step,
+  tables,
+  loading,
+  onSelect,
+}: RefTablePickerProps) => {
+  const selected = tables.find((t) => t.id === step.tableId);
+
+  return (
+    <Stack spacing={1.5}>
+      <TextField
+        value={tables.some((t) => t.id === step.tableId) ? step.tableId : ''}
+        onChange={(e) => onSelect(e.target.value)}
         size='small'
         select
-        sx={{ width: 260 }}
-        label='When no row matches'
+        label='Saved lookup table'
+        sx={{ maxWidth: 360 }}
+        helperText={
+          loading
+            ? 'Loading tables…'
+            : tables.length === 0
+              ? 'No saved tables yet — create one under Lookup tables.'
+              : undefined
+        }
       >
-        <MenuItem value='error'>Fail the run</MenuItem>
-        <MenuItem value='default'>Use a default row</MenuItem>
+        {tables.map((t) => (
+          <MenuItem key={t.id} value={t.id}>
+            {t.name}
+          </MenuItem>
+        ))}
       </TextField>
-      {step.onMiss === 'default' && step.defaultRow && (
-        <Stack direction='row' spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-          {step.columns.map((c) => (
-            <TextField
-              key={c.name}
-              label={`default ${c.name}`}
-              value={cellToString((step.defaultRow?.[c.name] ?? null) as Cell)}
-              onChange={(e) =>
-                onChange({
-                  ...step,
-                  defaultRow: {
-                    ...step.defaultRow,
-                    [c.name]: parseCell(e.target.value, c.type),
-                  },
-                })
-              }
-              size='small'
-              sx={{ width: 150 }}
-              slotProps={{
-                input: { sx: { fontFamily: MONO_FONT, fontSize: 12.5 } },
-              }}
-            />
-          ))}
-        </Stack>
+
+      {!loading && step.tableId && !selected && (
+        <Alert severity='error' sx={{ fontSize: 12.5 }}>
+          The referenced table
+          {step.tableName ? ` "${step.tableName}"` : ''} is unavailable
+          (archived or deleted). Pick another table.
+        </Alert>
+      )}
+
+      {selected && (
+        <Box>
+          {selected.description && (
+            <Typography
+              sx={{ fontSize: 12.5, color: 'text.secondary', mb: 0.75 }}
+            >
+              {selected.description}
+            </Typography>
+          )}
+          <Stack
+            direction='row'
+            spacing={0.75}
+            useFlexGap
+            sx={{ flexWrap: 'wrap' }}
+          >
+            {selected.columns.map((c) => (
+              <Chip
+                key={c.name}
+                size='small'
+                variant='outlined'
+                label={`${c.name}: ${c.type}`}
+                sx={{ fontFamily: MONO_FONT, fontSize: 11.5 }}
+              />
+            ))}
+          </Stack>
+          <Typography
+            sx={{ fontSize: 11.5, color: 'text.secondary', mt: 0.75 }}
+          >
+            The grid is resolved from the saved table at run time.{' '}
+            <Link href='/lookup-tables' target='_blank' rel='noopener'>
+              Manage tables
+            </Link>
+          </Typography>
+        </Box>
       )}
     </Stack>
   );

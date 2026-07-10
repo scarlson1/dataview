@@ -5,6 +5,14 @@
  * to `raters` via supabase-js under RLS.
  */
 
+import { supabase } from '#/supabaseClient';
+import {
+  raterDefinitionSchema,
+  validateRaterDefinition,
+  type RaterDefinition,
+  type RaterStep,
+  type RecordMapping,
+} from '#/types/raters';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -18,14 +26,6 @@ import { useMutation } from '@tanstack/react-query';
 import { Save } from 'lucide-react';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '#/supabaseClient';
-import {
-  type RaterDefinition,
-  type RaterStep,
-  type RecordMapping,
-  raterDefinitionSchema,
-  validateRaterDefinition,
-} from '#/types/raters';
 import {
   appendStep,
   moveStepAt,
@@ -127,9 +127,10 @@ export const RaterBuilder = ({
         name: name.trim(),
         description: description.trim() || null,
         definition: definition as never,
-        record_mapping: (recordMapping?.mappings.length
-          ? recordMapping
-          : null) as never,
+        // Persist the binding whenever a table is chosen — a table-only binding
+        // ("applies to every row of this table") is meaningful even with no
+        // conditions or pre-fill mappings.
+        record_mapping: (recordMapping?.table ? recordMapping : null) as never,
       };
       if (raterId) {
         const { error } = await supabase
@@ -199,7 +200,9 @@ export const RaterBuilder = ({
           )}
           <Button
             variant='contained'
-            startIcon={<Save size={15} />}
+            startIcon={
+              <Save size={15} color='var(--palette-primary-contrastText)' />
+            }
             disabled={save.isPending || !dirty}
             onClick={() => save.mutate()}
           >
@@ -263,7 +266,7 @@ export const RaterBuilder = ({
           </Box>
           <Box>
             <Typography sx={{ fontSize: 14, fontWeight: 700, mb: 1 }}>
-              Record pre-fill
+              Applies to
             </Typography>
             <RecordMappingEditor
               inputs={definition.inputs}

@@ -4,7 +4,7 @@
  */
 
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import { useColorScheme, useTheme } from '@mui/material/styles';
 import {
   Background,
   Controls,
@@ -34,6 +34,8 @@ export const RaterFlow = ({
   height = 480,
 }: RaterFlowProps) => {
   const theme = useTheme();
+  const { mode, systemMode } = useColorScheme();
+  const colorMode = (mode === 'system' ? systemMode : mode) ?? 'light';
 
   const { nodes, edges } = useMemo(() => {
     const graph = layoutFlow(definitionToFlow(definition, trace ?? undefined));
@@ -58,9 +60,9 @@ export const RaterFlow = ({
       labelStyle: {
         fontSize: 10.5,
         opacity: e.dimmed ? 0.4 : 1,
-        fill: theme.palette.text.secondary,
+        fill: theme.vars.palette.text.secondary,
       },
-      labelBgStyle: { fill: theme.palette.background.paper },
+      labelBgStyle: { fill: theme.vars.palette.background.paper },
       markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14 },
     }));
 
@@ -90,6 +92,7 @@ export const RaterFlow = ({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        colorMode={colorMode}
         fitView
         fitViewOptions={{ padding: 0.15, maxZoom: 1 }}
         nodesDraggable={false}

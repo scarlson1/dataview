@@ -47,6 +47,12 @@ const detailLine = (step: TraceStep): string | null => {
       ? 'took: else'
       : `took: ${d.caseLabel ?? `case ${(d.caseTaken as number) + 1}`}`;
   }
+  if (step.type === 'decision') {
+    if (d.fired === true) {
+      return `→ ${d.outcome}${d.reason ? `: ${d.reason}` : ''}`;
+    }
+    return 'condition not met — continued';
+  }
   return null;
 };
 
