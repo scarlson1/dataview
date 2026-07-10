@@ -4,6 +4,9 @@
  * real boundary.
  */
 
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
+import type { RaterListRow } from '#/types/raters';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,13 +20,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Archive, MoreVertical, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
-import type { RaterListRow } from '#/types/raters';
 
 export const Route = createFileRoute('/_dashboard/raters-admin/')({
   component: RatersList,
-  loader: () => ({ crumb: 'raters' }),
+  // loader: () => ({ crumb: 'raters' }),
 });
 
 const formatWhen = (value: string | null): string => {
@@ -98,7 +98,7 @@ function RatersList() {
             startIcon={
               <Plus size={16} color={'var(--variant-containedColor)'} />
             }
-            onClick={() => navigate({ to: '/raters/new' })}
+            onClick={() => navigate({ to: '/raters-admin/new' })}
           >
             New rater
           </Button>
@@ -128,7 +128,7 @@ function RatersList() {
             <Box
               key={rater.id}
               onClick={() =>
-                navigate({ to: '/raters/$id', params: { id: rater.id } })
+                navigate({ to: '/raters-admin/$id', params: { id: rater.id } })
               }
               sx={(t) => ({
                 display: 'flex',
@@ -196,7 +196,7 @@ function RatersList() {
           onClick={() => {
             if (menuFor) {
               navigate({
-                to: '/raters/$id/edit',
+                to: '/raters-admin/$id/edit',
                 params: { id: menuFor.rater.id },
               });
             }

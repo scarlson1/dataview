@@ -5,6 +5,23 @@
  * rendered against that run's own definition snapshot.
  */
 
+import { OutcomeBanner } from '#/components/raters/OutcomeBanner';
+import { formatOutput, OutputCards } from '#/components/raters/OutputCards';
+import {
+  RaterRunPanel,
+  type RaterRunState,
+} from '#/components/raters/RaterRunPanel';
+import { TracePanel } from '#/components/raters/TracePanel';
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
+import {
+  raterDefinitionSchema,
+  type RaterDefinition,
+  type RaterOutcome,
+  type RaterOutputValue,
+  type RecordMapping,
+  type TraceStep,
+} from '#/types/raters';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -19,23 +36,6 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Pencil } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
-import { OutcomeBanner } from '#/components/raters/OutcomeBanner';
-import { formatOutput, OutputCards } from '#/components/raters/OutputCards';
-import {
-  RaterRunPanel,
-  type RaterRunState,
-} from '#/components/raters/RaterRunPanel';
-import { TracePanel } from '#/components/raters/TracePanel';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
-import {
-  type RaterDefinition,
-  type RaterOutcome,
-  type RaterOutputValue,
-  type RecordMapping,
-  raterDefinitionSchema,
-  type TraceStep,
-} from '#/types/raters';
 
 const RaterFlow = lazy(() =>
   import('#/components/raters/diagram/RaterFlow').then((m) => ({
@@ -165,7 +165,9 @@ function RaterDetail() {
         {canWrite && (
           <Button
             startIcon={<Pencil size={15} />}
-            onClick={() => navigate({ to: '/raters/$id/edit', params: { id } })}
+            onClick={() =>
+              navigate({ to: '/raters-admin/$id/edit', params: { id } })
+            }
           >
             Edit
           </Button>

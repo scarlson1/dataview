@@ -3,12 +3,6 @@
  * RLS is the real boundary.
  */
 
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { RaterBuilder } from '#/components/raters/RaterBuilder';
 import { useAuth } from '#/context/AuthContext';
 import { supabase } from '#/supabaseClient';
@@ -17,6 +11,12 @@ import {
   type RecordMapping,
   raterDefinitionSchema,
 } from '#/types/raters';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_dashboard/raters-admin/$id_/edit')({
   component: EditRater,
@@ -101,9 +101,11 @@ function EditRater() {
         initialRecordMapping={row.record_mapping}
         onSaved={() => {
           queryClient.invalidateQueries({ queryKey: ['raters'] });
-          navigate({ to: '/raters/$id', params: { id: row.id } });
+          navigate({ to: '/raters-admin/$id', params: { id: row.id } });
         }}
-        onCancel={() => navigate({ to: '/raters/$id', params: { id: row.id } })}
+        onCancel={() =>
+          navigate({ to: '/raters-admin/$id', params: { id: row.id } })
+        }
       />
     </Box>
   );

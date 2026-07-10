@@ -3,6 +3,9 @@
  * hidden for read-only roles; RLS is the real boundary.
  */
 
+import { useAuth } from '#/context/AuthContext';
+import { supabase } from '#/supabaseClient';
+import type { LookupTableListRow } from '#/types/raters';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -16,13 +19,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Archive, MoreVertical, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '#/context/AuthContext';
-import { supabase } from '#/supabaseClient';
-import type { LookupTableListRow } from '#/types/raters';
 
 export const Route = createFileRoute('/_dashboard/lookup-tables/')({
   component: LookupTablesList,
-  loader: () => ({ crumb: 'lookup tables' }),
+  // loader: () => ({ crumb: 'lookup tables' }),
 });
 
 function LookupTablesList() {
