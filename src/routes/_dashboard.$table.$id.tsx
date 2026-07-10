@@ -62,10 +62,14 @@ function DetailRoute() {
     enabled: !!table,
     queryFn: async () => {
       const source = table?.source ?? tableName;
+      // Pass the raw param string, not Number(id): PostgREST casts the filter
+      // value to the column type server-side, so a string works for both
+      // integer and uuid PKs. Number('<uuid>') is NaN, which Postgres rejects
+      // with `invalid input syntax for type uuid: "NaN"`.
       const { data, error } = await supabase
         .from(source as never)
         .select('*')
-        .eq('id', Number(id))
+        .eq('id', id)
         .single();
       if (error) throw error;
       return data as Record<string, unknown>;
