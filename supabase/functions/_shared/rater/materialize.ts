@@ -87,8 +87,8 @@ export const materializeLookupTables = async (
         return step;
       }
 
-      // Match columns must exist in the resolved table (the inline schema
-      // enforces this statically; ref steps can only be checked here).
+      // Match + output columns must exist in the resolved table (the inline
+      // schema enforces this statically; ref steps can only be checked here).
       const colNames = new Set(content.columns.map((c) => c.name));
       for (const m of step.match) {
         const refs = m.mode === 'exact' ? [m.column] : [m.minColumn, m.maxColumn];
@@ -101,6 +101,12 @@ export const materializeLookupTables = async (
           }
         }
       }
+      if (step.outputColumn && !colNames.has(step.outputColumn)) {
+        errors.push({
+          stepId: step.id,
+          message: `lookup '${step.id}' outputColumn references column '${step.outputColumn}', which the referenced table doesn't have`,
+        });
+      }
 
       return {
         id: step.id,
@@ -112,6 +118,7 @@ export const materializeLookupTables = async (
         match: step.match,
         onMiss: step.onMiss,
         ...(step.defaultRow !== undefined ? { defaultRow: step.defaultRow } : {}),
+        ...(step.outputColumn !== undefined ? { outputColumn: step.outputColumn } : {}),
       };
     });
 

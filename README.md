@@ -89,4 +89,7 @@ See the [`docs/`](docs/) directory for details:
 
 - fork rater (copies existing rater as new instance in create form)
 - CSV lookup table import
-- castaway-asr/audio-cache is getting large (11.5 GB) - do we need this? is there a better way to store it?
+- fix "edit" not filling form with current values
+- rater form - conditions: prefill select options if column type is enum (or restrict input type to match column type) ??
+- why doesn't seed fill limits for new business submissions? should be required if status is not "submitted" or "prospect" ??
+- actions after rater runs --> what actions get triggered (e.g. update submission status or other values within submission; potentially trigger another process ??)

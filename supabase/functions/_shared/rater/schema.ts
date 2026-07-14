@@ -109,10 +109,12 @@ export const calcStepSchema = z.object({
 export type CalcStep = z.infer<typeof calcStepSchema>;
 
 // Lookup: a reference table matched against probe values. `match` entries AND
-// together; the first row satisfying all of them wins (row order matters). The
-// step binds the matched row as an object, e.g. `base_rate.rate`. The grid is
-// either carried inline on the step (source: 'inline') or references a shared
-// rater_lookup_tables row (source: 'ref'), resolved to inline at run time.
+// together; the first row satisfying all of them wins (row order matters). By
+// default the step binds the matched row as an object, e.g. `base_rate.rate`;
+// set `outputColumn` to bind just that column's value (a scalar) instead. The
+// grid is either carried inline on the step (source: 'inline') or references a
+// shared rater_lookup_tables row (source: 'ref'), resolved to inline at run
+// time.
 export const LOOKUP_COLUMN_TYPES = ['text', 'number', 'boolean'] as const;
 
 export const lookupCell = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -176,6 +178,11 @@ const lookupMatchFields = {
   match: z.array(lookupMatchSchema).min(1),
   onMiss: z.enum(['error', 'default']).default('error'),
   defaultRow: z.record(z.string(), lookupCell).optional(),
+  // When set, the step binds just this column's value from the matched row (a
+  // scalar) instead of the whole row object. Absent ⇒ binds the row object
+  // (e.g. `base_rate.rate`). Validated against the grid's columns for inline
+  // steps (below); ref steps can only be checked at materialize time.
+  outputColumn: bindingName.optional(),
 };
 
 // A defaultRow is required when onMiss is 'default' (both variants).
@@ -231,6 +238,12 @@ export const inlineLookupStepSchema = z
           });
         }
       }
+    }
+    if (step.outputColumn && !colNames.has(step.outputColumn)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `lookup '${step.id}' outputColumn references unknown column '${step.outputColumn}'`,
+      });
     }
     requireDefaultRow(step, ctx);
   });
