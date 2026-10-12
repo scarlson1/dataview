@@ -10,13 +10,13 @@
  * figure and this document is the outward-facing bill.
  */
 
+import { labelize, money } from '#/lib/money';
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import dayjs from 'dayjs';
-import { labelize, money } from '#/lib/money';
 
 // TODO: confirm the MGA's legal billing entity + remittance details.
 const SELLER = {
-  name: 'Evertas',
+  name: 'dataview',
   lines: ['Managing General Agency'],
 };
 

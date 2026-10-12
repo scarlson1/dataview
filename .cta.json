@@ -1,5 +1,5 @@
 {
-  "projectName": "evertas",
+  "projectName": "dataview",
   "mode": "file-router",
   "typescript": true,
   "packageManager": "pnpm",

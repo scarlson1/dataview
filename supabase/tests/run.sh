@@ -9,7 +9,7 @@
 # Usage:  supabase/tests/run.sh [container_name]
 set -euo pipefail
 
-CONTAINER="${1:-supabase_db_evertas}"
+CONTAINER="${1:-supabase_db_dataview}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then

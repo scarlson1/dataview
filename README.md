@@ -1,6 +1,6 @@
 # MGA Dashboard
 
-A web dashboard for the Evertas managing general agent (MGA), porting the SingleSource underwriting workbook to a browser-based application.
+A web dashboard for managing general agents (MGAs), porting the SingleSource underwriting workbook to a browser-based application.
 
 ## Tech Stack
 
