@@ -14,7 +14,7 @@ supabase test db
 Without the CLI, against the running local DB container (`supabase start`):
 
 ```sh
-supabase/tests/run.sh            # defaults to the supabase_db_evertas container
+supabase/tests/run.sh            # defaults to the supabase_db_dataview container
 ```
 
 ## `rbac_test.sql`

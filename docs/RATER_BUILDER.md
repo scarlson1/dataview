@@ -117,7 +117,7 @@ per execution path). Types:
 | Type           | What it does                                                                                 | Binds                                 |
 | -------------- | -------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `calc`         | Evaluates an expression                                                                      | the value                             |
-| `lookup`       | Finds a row in an **inline** reference table (exact match and/or range bands)                | the matched row object → `id.column`  |
+| `lookup`       | Finds a row in an **inline** reference table (exact match and/or range bands)                | the matched row object → `id.column` (or a single column's value, if an output column is set) |
 | `fetch` (db)   | Declarative PostgREST query against an app table, under the caller's RLS                     | the row / null / list                 |
 | `fetch` (http) | External HTTPS API call (allowlisted, server-only); pulls values by JSON dot-path            | `{ [extract.name]: value }`           |
 | `branch`       | Evaluates each case's `when`; first truthy case runs its nested steps, else the `else` block | nothing (inner steps bind into scope) |
@@ -128,6 +128,14 @@ per execution path). Types:
 type, or a size-band factor grid. Rows are matched by one or more conditions
 that AND together; the **first** matching row wins (row order matters), and a
 missing match either errors or falls back to a default row.
+
+By default a lookup binds the **whole matched row** as an object, referenced as
+`id.column` (e.g. `base_rate.rate`). Set the step's **output column** (`Return`
+in the editor; `outputColumn` in the JSON) to bind just that column's value
+instead — the binding is then the scalar itself (`base_rate`), not an object.
+Handy when the table has a single result column and you don't want the
+`.column` suffix everywhere. The chosen column is validated against the grid's
+columns (for saved/shared tables, at run time when the reference is resolved).
 
 ### Outputs — how they work
 

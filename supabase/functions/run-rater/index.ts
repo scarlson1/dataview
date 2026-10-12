@@ -41,6 +41,12 @@ interface RunRaterBody {
 
 const MAX_HTTP_RESPONSE_BYTES = 1_000_000;
 
+// const corsHeaders = {
+//   'Access-Control-Allow-Origin': '*', // Or restrict to 'https://dataview-nine.vercel.app'
+//   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+//   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+// }
+
 const errorResponse = (
   status: number,
   err: { code: string; message: string; stepId?: string },
@@ -60,7 +66,9 @@ const hostAllowed = (host: string, allowlist: string[]): boolean =>
 const PRIVATE_HOST_RE =
   /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|\[?::1\]?$|172\.(1[6-9]|2\d|3[01])\.)/i;
 
-const guardedHttpFetch = async (request: HttpFetchRequest): Promise<unknown> => {
+const guardedHttpFetch = async (
+  request: HttpFetchRequest,
+): Promise<unknown> => {
   const url = new URL(request.url);
   if (url.protocol !== 'https:') {
     throw new Error('external fetches must use https');
@@ -70,7 +78,9 @@ const guardedHttpFetch = async (request: HttpFetchRequest): Promise<unknown> => 
   }
   const allowlist = httpAllowlist();
   if (!allowlist.length) {
-    throw new Error('external API fetches are disabled (RATER_HTTP_ALLOWLIST is not set)');
+    throw new Error(
+      'external API fetches are disabled (RATER_HTTP_ALLOWLIST is not set)',
+    );
   }
   if (!hostAllowed(url.hostname.toLowerCase(), allowlist)) {
     throw new Error(`host '${url.hostname}' is not on the allowlist`);
@@ -107,14 +117,20 @@ export default {
   fetch: withSupabase<Database>({ auth: ['user'] }, async (req, ctx) => {
     const claims = ctx.jwtClaims;
     if (!claims?.sub) {
-      return errorResponse(401, { code: 'unauthorized', message: 'Unauthorized' });
+      return errorResponse(401, {
+        code: 'unauthorized',
+        message: 'Unauthorized',
+      });
     }
 
     let body: RunRaterBody;
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, { code: 'bad_request', message: 'Invalid JSON body' });
+      return errorResponse(400, {
+        code: 'bad_request',
+        message: 'Invalid JSON body',
+      });
     }
 
     const raterId = typeof body.raterId === 'string' ? body.raterId : null;
@@ -129,7 +145,9 @@ export default {
     }
 
     const providedInputs: Record<string, unknown> =
-      body.inputs !== null && typeof body.inputs === 'object' && !Array.isArray(body.inputs)
+      body.inputs !== null &&
+      typeof body.inputs === 'object' &&
+      !Array.isArray(body.inputs)
         ? (body.inputs as Record<string, unknown>)
         : {};
 
@@ -137,7 +155,8 @@ export default {
       body.sourceRecord !== null &&
       typeof body.sourceRecord === 'object' &&
       !Array.isArray(body.sourceRecord) &&
-      typeof (body.sourceRecord as Record<string, unknown>).table === 'string' &&
+      typeof (body.sourceRecord as Record<string, unknown>).table ===
+        'string' &&
       typeof (body.sourceRecord as Record<string, unknown>).id === 'number'
         ? (body.sourceRecord as { table: string; id: number })
         : null;
@@ -157,10 +176,16 @@ export default {
         .maybeSingle();
 
       if (error) {
-        return errorResponse(422, { code: error.code ?? 'load_error', message: error.message });
+        return errorResponse(422, {
+          code: error.code ?? 'load_error',
+          message: error.message,
+        });
       }
       if (!rater || rater.archived_at) {
-        return errorResponse(404, { code: 'not_found', message: 'Rater not found' });
+        return errorResponse(404, {
+          code: 'not_found',
+          message: 'Rater not found',
+        });
       }
       rawDefinition = rater.definition;
     } else {
@@ -192,16 +217,19 @@ export default {
     // runs through the CALLER's client, so rater_lookup_tables RLS gates what a
     // rater can reach; the materialized definition is what executes AND what is
     // snapshotted, keeping past runs reproducible after a shared table changes.
-    const materialized = await materializeLookupTables(definition, async (tableId) => {
-      const { data, error } = await ctx.supabase
-        .from('rater_lookup_tables')
-        .select('columns, rows')
-        .eq('id', tableId)
-        .is('archived_at', null)
-        .maybeSingle();
-      if (error || !data) return null;
-      return { columns: data.columns, rows: data.rows } as LookupTableContent;
-    });
+    const materialized = await materializeLookupTables(
+      definition,
+      async (tableId) => {
+        const { data, error } = await ctx.supabase
+          .from('rater_lookup_tables')
+          .select('columns, rows')
+          .eq('id', tableId)
+          .is('archived_at', null)
+          .maybeSingle();
+        if (error || !data) return null;
+        return { columns: data.columns, rows: data.rows } as LookupTableContent;
+      },
+    );
     if (materialized.errors.length) {
       const first = materialized.errors[0];
       return errorResponse(422, {
@@ -214,7 +242,10 @@ export default {
 
     const coerced = coerceInputValues(definition.inputs, providedInputs);
     if (!coerced.ok) {
-      return errorResponse(422, { code: coerced.code, message: coerced.message });
+      return errorResponse(422, {
+        code: coerced.code,
+        message: coerced.message,
+      });
     }
 
     // DB fetch steps run through the user-scoped client — RLS applies.
@@ -229,14 +260,18 @@ export default {
             f.op === 'in' && Array.isArray(f.value)
               ? `(${f.value
                   .map((v) =>
-                    typeof v === 'string' ? `"${v.replace(/"/g, '\\"')}"` : String(v),
+                    typeof v === 'string'
+                      ? `"${v.replace(/"/g, '\\"')}"`
+                      : String(v),
                   )
                   .join(',')})`
               : f.value;
           q = q.filter(f.column, f.op, value as never);
         }
         if (query.orderBy) {
-          q = q.order(query.orderBy.column, { ascending: query.orderBy.ascending });
+          q = q.order(query.orderBy.column, {
+            ascending: query.orderBy.ascending,
+          });
         }
         if (query.limit !== undefined) {
           q = q.limit(query.limit);
@@ -266,7 +301,9 @@ export default {
         trace: result.trace,
         sourceRecord,
         durationMs,
-        error: result.error ? `${result.error.stepId}: ${result.error.message}` : null,
+        error: result.error
+          ? `${result.error.stepId}: ${result.error.message}`
+          : null,
       });
     }
 

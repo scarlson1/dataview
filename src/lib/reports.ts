@@ -19,6 +19,9 @@ const SUPABASE_KEY =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// https://khcnchmbucccbjaedapn.supabase.co/functions/v1/run-report
+// https://khcnchmbucccbjaedapn.supabase.co/functions/v1/run-rater
+
 export const functionUrl = (name: string): string =>
   `${SUPABASE_URL}/functions/v1/${name}`;
 

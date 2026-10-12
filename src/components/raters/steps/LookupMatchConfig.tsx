@@ -23,7 +23,11 @@ export interface LookupMatchState {
   match: LookupMatch[];
   onMiss: 'error' | 'default';
   defaultRow?: Record<string, LookupCell>;
+  outputColumn?: string;
 }
+
+// Sentinel select value for "bind the whole row object" (outputColumn unset).
+const WHOLE_ROW = '__row__';
 
 interface LookupMatchConfigProps {
   columns: LookupColumn[];
@@ -38,7 +42,7 @@ export const LookupMatchConfig = ({
   onChange,
   availableBindings,
 }: LookupMatchConfigProps) => {
-  const { match, onMiss, defaultRow } = state;
+  const { match, onMiss, defaultRow, outputColumn } = state;
   const numberColumns = columns.filter((c) => c.type === 'number');
   const firstColumn = columns[0]?.name ?? '';
 
@@ -218,6 +222,33 @@ export const LookupMatchConfig = ({
           </Button>
         </Box>
       </Stack>
+
+      {/* what the step binds: the whole matched row, or one column's value */}
+      <TextField
+        value={outputColumn ?? WHOLE_ROW}
+        onChange={(e) => {
+          const next = e.target.value;
+          onChange({
+            outputColumn: next === WHOLE_ROW ? undefined : next,
+          });
+        }}
+        size='small'
+        select
+        sx={{ width: 260 }}
+        label='Return'
+        helperText={
+          outputColumn
+            ? `Binds ${outputColumn} (a single value)`
+            : 'Binds the whole matched row as an object'
+        }
+      >
+        <MenuItem value={WHOLE_ROW}>Whole row (object)</MenuItem>
+        {columns.map((c) => (
+          <MenuItem key={c.name} value={c.name}>
+            {c.name}
+          </MenuItem>
+        ))}
+      </TextField>
 
       {/* miss behavior */}
       <TextField

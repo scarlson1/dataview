@@ -1,7 +1,8 @@
 /**
  * Editor for lookup steps. A lookup finds a row in a reference grid by matching
  * probe values against its columns, then binds the matched row as an object
- * (e.g. `base_rate.rate`). The grid is either:
+ * (e.g. `base_rate.rate`) — or, when an output column is chosen, just that
+ * column's value. The grid is either:
  *   - inline:  typed columns × rows carried on the step itself, or
  *   - saved:   a shared rater_lookup_tables row referenced by id, so one grid
  *              can be edited once and reused across many raters. The run-rater
@@ -158,9 +159,10 @@ export const LookupStepEditor = ({
           rows={step.rows as Cell[][]}
           onChange={(cols, rows) => onChange({ ...step, columns: cols, rows })}
           onRenameColumn={(_i, from, to) => {
-            // keep match column references in sync with the rename
+            // keep match + output column references in sync with the rename
             onChange({
               ...step,
+              ...(step.outputColumn === from ? { outputColumn: to } : {}),
               match: step.match.map((m) =>
                 m.mode === 'exact'
                   ? m.column === from
@@ -189,6 +191,7 @@ export const LookupStepEditor = ({
           match: step.match,
           onMiss: step.onMiss,
           defaultRow: step.defaultRow,
+          outputColumn: step.outputColumn,
         }}
         onChange={(patch) => onChange({ ...step, ...patch } as LookupStep)}
         availableBindings={availableBindings}

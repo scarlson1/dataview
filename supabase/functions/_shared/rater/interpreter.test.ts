@@ -240,6 +240,59 @@ Deno.test('lookup: onMiss error names the probes; onMiss default uses defaultRow
   assertEquals(ok.trace.steps[0].detail?.usedDefault, true);
 });
 
+Deno.test('lookup: outputColumn binds a scalar instead of the row object', async () => {
+  const base: RaterDefinition = {
+    schema_version: 1,
+    inputs: [],
+    steps: [
+      {
+        id: 'factor',
+        type: 'lookup',
+        columns: [
+          { name: 'key', type: 'text' },
+          { name: 'value', type: 'number' },
+        ],
+        rows: [
+          ['a', 1],
+          ['b', 2],
+        ],
+        match: [{ mode: 'exact', column: 'key', value: "'b'" }],
+        onMiss: 'error',
+        outputColumn: 'value',
+      },
+      // With outputColumn set, `factor` is the scalar (2), not an object — so
+      // the output reads `factor`, not `factor.value`.
+      { id: 'out', type: 'output', label: 'Out', expr: 'factor', format: 'number' },
+    ],
+  };
+  const ok = await executeRater(base, {}, noDb);
+  assertEquals(ok.error, null);
+  assertEquals(ok.outputs.out.value, 2);
+  assertEquals(ok.trace.steps[0].value, 2);
+  assertEquals(ok.trace.steps[0].detail?.outputColumn, 'value');
+
+  // onMiss default projects the default row through outputColumn too.
+  const lookup = base.steps[0] as Extract<
+    RaterDefinition['steps'][number],
+    { type: 'lookup' }
+  >;
+  const missed: RaterDefinition = {
+    ...base,
+    steps: [
+      {
+        ...lookup,
+        match: [{ mode: 'exact', column: 'key', value: "'zzz'" }],
+        onMiss: 'default',
+        defaultRow: { key: 'z', value: 9 },
+      },
+      base.steps[1],
+    ],
+  };
+  const def = await executeRater(missed, {}, noDb);
+  assertEquals(def.error, null);
+  assertEquals(def.outputs.out.value, 9);
+});
+
 Deno.test('lookup: range bands respect inclusivity and open ends', async () => {
   const banded = (value: number): RaterDefinition => ({
     schema_version: 1,

@@ -97,6 +97,11 @@ export const executeRater = async (
     const colIndex = new Map(step.columns.map((c, i) => [c.name, i]));
     const rowToObject = (row: (typeof step.rows)[number]): Record<string, unknown> =>
       Object.fromEntries(step.columns.map((c, i) => [c.name, row[i]]));
+    // Bind the whole row object, or just one column's value when outputColumn
+    // is set.
+    const project = (obj: Record<string, unknown>): unknown =>
+      step.outputColumn === undefined ? obj : obj[step.outputColumn];
+    const outputDetail = step.outputColumn ? { outputColumn: step.outputColumn } : {};
 
     // Evaluate each match's probe value once, then scan rows in order.
     const probes = step.match.map((m, i) =>
@@ -136,12 +141,15 @@ export const executeRater = async (
 
     for (const [i, row] of step.rows.entries()) {
       if (matches(row)) {
-        return { value: rowToObject(row), detail: { matchedRowIndex: i } };
+        return { value: project(rowToObject(row)), detail: { matchedRowIndex: i, ...outputDetail } };
       }
     }
 
     if (step.onMiss === 'default' && step.defaultRow) {
-      return { value: step.defaultRow, detail: { matchedRowIndex: null, usedDefault: true } };
+      return {
+        value: project(step.defaultRow),
+        detail: { matchedRowIndex: null, usedDefault: true, ...outputDetail },
+      };
     }
     throw new StepError(
       step.id,

@@ -58,7 +58,7 @@ restart identity cascade;
 -- = false), so this pre-confirmed user can log straight in at
 -- http://127.0.0.1:3000 and exercise the dashboard/reporting pages.
 --
---   email:    dev@evertas.example
+--   email:    dev@dataview.example
 --   password: password123
 --
 -- The password is stored as a precomputed bcrypt hash literal (below) rather than
@@ -75,7 +75,7 @@ restart identity cascade;
 -- Idempotent: the user (and its cascading identity) is removed and recreated on
 -- every run, matching the truncate-and-reseed pattern used for the app tables.
 -- ============================================================================
-delete from auth.users where email = 'dev@evertas.example';
+delete from auth.users where email = 'dev@dataview.example';
 
 do $$
 declare
@@ -89,7 +89,7 @@ begin
   )
   values (
     '00000000-0000-0000-0000-000000000000', v_user_id, 'authenticated', 'authenticated',
-    'dev@evertas.example', '$2a$10$3PBJixUGmbM1wVPS4R.yjOysCebqgzy/scfMK7GfqPayVwuWT8s.y',
+    'dev@dataview.example', '$2a$10$3PBJixUGmbM1wVPS4R.yjOysCebqgzy/scfMK7GfqPayVwuWT8s.y',
     now(), now(), now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"full_name":"Dev User"}'::jsonb, false,
@@ -103,7 +103,7 @@ begin
   )
   values (
     gen_random_uuid(), v_user_id, v_user_id,
-    jsonb_build_object('sub', v_user_id::text, 'email', 'dev@evertas.example',
+    jsonb_build_object('sub', v_user_id::text, 'email', 'dev@dataview.example',
                        'email_verified', true),
     'email', now(), now(), now()
   );
@@ -203,8 +203,8 @@ begin
      phone, email, address_line1, city, state, postal, country,
      do_policy_number, do_carrier, do_expiration_date, status)
   values
-    (null, 'mga', 'entity', 'self', 'Evertas Underwriting Managers',
-     '312-555-0100', 'ops@evertas-mga.example', '120 N Wacker Dr', 'Chicago', 'IL', '60606', 'USA',
+    (null, 'mga', 'entity', 'self', 'dataview Underwriting Managers',
+     '312-555-0100', 'ops@dataview-mga.example', '120 N Wacker Dr', 'Chicago', 'IL', '60606', 'USA',
      'DO-EUM-2026', 'Hartford', date '2027-03-01', 'active')
   returning id into v_mga;
 
@@ -248,15 +248,15 @@ begin
   -- Underwriters
   -- ==========================================================================
   insert into public.underwriters (first_name, last_name, title_role, email, phone, status)
-  values ('Sarah', 'Chen', 'Senior Underwriter', 'sarah.chen@evertas-mga.example', '312-555-0201', 'active')
+  values ('Sarah', 'Chen', 'Senior Underwriter', 'sarah.chen@dataview-mga.example', '312-555-0201', 'active')
   returning id into v_uw_chen;
 
   insert into public.underwriters (first_name, last_name, title_role, email, phone, status)
-  values ('Michael', 'Rodriguez', 'UW Manager', 'michael.rodriguez@evertas-mga.example', '312-555-0202', 'active')
+  values ('Michael', 'Rodriguez', 'UW Manager', 'michael.rodriguez@dataview-mga.example', '312-555-0202', 'active')
   returning id into v_uw_rod;
 
   insert into public.underwriters (first_name, last_name, title_role, email, phone, status)
-  values ('Emily', 'Johnson', 'Underwriter', 'emily.johnson@evertas-mga.example', '312-555-0203', 'on_leave')
+  values ('Emily', 'Johnson', 'Underwriter', 'emily.johnson@dataview-mga.example', '312-555-0203', 'on_leave')
   returning id into v_uw_john;
 
   -- ==========================================================================

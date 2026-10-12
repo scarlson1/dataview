@@ -1,6 +1,6 @@
 # Database Testing Plan
 
-Testing strategy for the Evertas Postgres/Supabase database, following
+Testing strategy for the dataview Postgres/Supabase database, following
 [Supabase's database testing guide](https://supabase.com/docs/guides/database/testing).
 
 Tests run with **pgTAP** via the Supabase CLI:
@@ -79,17 +79,17 @@ rollback;
 
 Proposed layout under `supabase/tests/database/`:
 
-| File | Covers |
-|------|--------|
-| `00_schema.test.sql` | structural smoke checks (tables/views/columns/PK/FK exist) |
-| `01_rls_grants.test.sql` | RLS enabled + `authenticated` can read/write, `anon` cannot |
-| `10_bind_new_business.test.sql` | NBS → POL transition + guard clauses |
-| `11_bind_renewal.test.sql` | RNW → POL, parent link, expiring policy → `expired` |
-| `12_seed_renewals.test.sql` | window filter + "no duplicate renewal" logic |
-| `20_generate_invoice.test.sql` | POL → INV → AR → CAP fan-out + one-invoice guard |
-| `21_record_ar_payment.test.sql` | payment insert + `ar_status` recompute |
-| `22_record_cap_remittance.test.sql` | remittance bound by `available_for_payment` |
-| `30_computed_views.test.sql` | financial math in `policies_computed` / `net_com_uep` |
+| File                                | Covers                                                      |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `00_schema.test.sql`                | structural smoke checks (tables/views/columns/PK/FK exist)  |
+| `01_rls_grants.test.sql`            | RLS enabled + `authenticated` can read/write, `anon` cannot |
+| `10_bind_new_business.test.sql`     | NBS → POL transition + guard clauses                        |
+| `11_bind_renewal.test.sql`          | RNW → POL, parent link, expiring policy → `expired`         |
+| `12_seed_renewals.test.sql`         | window filter + "no duplicate renewal" logic                |
+| `20_generate_invoice.test.sql`      | POL → INV → AR → CAP fan-out + one-invoice guard            |
+| `21_record_ar_payment.test.sql`     | payment insert + `ar_status` recompute                      |
+| `22_record_cap_remittance.test.sql` | remittance bound by `available_for_payment`                 |
+| `30_computed_views.test.sql`        | financial math in `policies_computed` / `net_com_uep`       |
 
 Number-prefix ordering just makes the TAP output readable; files are independent.
 
@@ -104,6 +104,7 @@ the happy path (rows land in every target table with correct values) and each
 `raise exception` branch.
 
 **`bind_new_business(nbs_id)`**
+
 - Happy path: given a bound-ready NBS, a `policies` row is created with the
   mirrored fields (client, carrier, premiums, dates), and the NBS is updated to
   `stage = 'bound'` with `policy_id` back-filled.
@@ -113,6 +114,7 @@ the happy path (rows land in every target table with correct values) and each
   `policy_exp_date`) are null.
 
 **`bind_renewal(renewal_id)`**
+
 - Happy path: new POL created from expiring policy + overrides;
   `parent_policy_id` links to the expiring policy; `coalesce` overrides win where
   provided and fall back to the expiring policy otherwise.
@@ -122,12 +124,14 @@ the happy path (rows land in every target table with correct values) and each
   expiring policy not found.
 
 **`seed_renewals(days_ahead)`**
+
 - Inserts a `pending` renewal for an active policy expiring inside the window.
 - Does **not** insert for policies outside the window, already-renewed policies
   (child exists via `parent_policy_id`), or policies that already have a renewal
   row. Assert the returned row count.
 
 **`generate_invoice(policy_id)`**
+
 - Happy path fan-out: one `invoices` row, one `accounts_receivable` row,
   `invoices.ar_id` back-filled, and — only for single-carrier placements
   (`carrier_id is not null`) — one `capacity` row.
@@ -136,12 +140,14 @@ the happy path (rows land in every target table with correct values) and each
   for the policy (the one-invoice-per-policy guard `net_com_uep` relies on).
 
 **`record_ar_payment(...)`**
+
 - Inserts an `accounts_receivable_payments` row.
 - `ar_status` recompute: `outstanding` → `partial` (partial pay) → `paid` when
   cumulative payments ≥ `invoice_total - write_off_amt`. Test each boundary.
 - `throws_ok` on non-positive amount and unknown AR id.
 
 **`record_cap_remittance(...)`**
+
 - Inserts a `capacity_remittance` row and recomputes `ap_status`
   (`outstanding`/`partial`/`paid`) vs `net_premium_due_carrier`.
 - `throws_ok` when amount exceeds `available_for_payment` (respect the 0.005
@@ -199,17 +205,17 @@ POL → INV → AR → CAP, and the presence of each computed view.
 
 ## 5. Useful pgTAP assertions
 
-| Function | Use |
-|----------|-----|
-| `has_table` / `has_view` / `has_column` | structure exists |
-| `col_is_pk` / `col_is_fk` / `fk_ok` | keys and relationships |
-| `is(a, b, desc)` / `isnt` | scalar value equality (financial math) |
-| `results_eq(sql, sql/array)` | full result-set comparison |
-| `is_empty` / `isnt_empty` | RLS visibility checks |
-| `throws_ok(sql, errmsg)` | guard-clause / exception branches |
-| `lives_ok(sql)` | happy-path shouldn't error |
-| `function_returns` / `has_function` | function signatures intact |
-| `results_ne`, `bag_eq`, `set_eq` | order-independent set comparisons |
+| Function                                | Use                                    |
+| --------------------------------------- | -------------------------------------- |
+| `has_table` / `has_view` / `has_column` | structure exists                       |
+| `col_is_pk` / `col_is_fk` / `fk_ok`     | keys and relationships                 |
+| `is(a, b, desc)` / `isnt`               | scalar value equality (financial math) |
+| `results_eq(sql, sql/array)`            | full result-set comparison             |
+| `is_empty` / `isnt_empty`               | RLS visibility checks                  |
+| `throws_ok(sql, errmsg)`                | guard-clause / exception branches      |
+| `lives_ok(sql)`                         | happy-path shouldn't error             |
+| `function_returns` / `has_function`     | function signatures intact             |
+| `results_ne`, `bag_eq`, `set_eq`        | order-independent set comparisons      |
 
 ---
 
